@@ -4,10 +4,6 @@ FROM golang:1.23-alpine AS builder
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the Go modules and source code
-COPY go.mod go.sum ./
-RUN go mod download
-
 COPY . .
 
 # Build the Go application
@@ -24,8 +20,8 @@ RUN addgroup -g 10014 appgroup && \
 # Set working directory in the minimal image
 WORKDIR /app
 
-# Copy the compiled binary from the build stage
-COPY --from=build /app/ballerina-compiler-backend .
+# Copy the compiled binary from the build stage (changed 'build' to 'builder')
+COPY --from=builder /app/ballerina-compiler-backend .
 
 # Change ownership of the application files to the non-root user
 RUN chown -R appuser:appgroup /app
