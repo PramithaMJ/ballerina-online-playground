@@ -1,0 +1,119 @@
+openapi: 3.0.1
+info:
+  title: Ballerina Compiler API
+  description: API to compile and run Ballerina programs in a Dockerized environment.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8081
+    description: Local development server
+
+paths:
+  /run:
+    post:
+      summary: Compile and run a Ballerina program
+      description: This endpoint compiles and runs a Ballerina program sent in the request body.
+      operationId: runBallerinaCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: The Ballerina program code to run.
+                  example: |
+                    import ballerina/io;
+                    public function main() {
+                        io:println("Hello World");
+                    }
+      responses:
+        '200':
+          description: Successfully compiled and run the Ballerina program
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  output:
+                    type: string
+                    description: The output of the Ballerina program.
+                    example: "Hello World"
+        '400':
+          description: Invalid Ballerina code or compilation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message from the Ballerina compiler.
+                    example: "Syntax error: missing semicolon"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Internal error message.
+                    example: "Internal error while running Ballerina code"
+
+  /compile:
+    post:
+      summary: Compile a Ballerina program
+      description: This endpoint compiles a Ballerina program sent in the request body but does not run it.
+      operationId: compileBallerinaCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: The Ballerina program code to compile.
+                  example: |
+                    import ballerina/io;
+                    public function main() {
+                        io:println("Hello World");
+                    }
+      responses:
+        '200':
+          description: Successfully compiled the Ballerina program
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Compilation status.
+                    example: "Compilation successful"
+        '400':
+          description: Invalid Ballerina code or compilation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message from the Ballerina compiler.
+                    example: "Syntax error: missing semicolon"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Internal error message.
+                    example: "Internal error while compiling Ballerina code"

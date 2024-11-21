@@ -1,0 +1,16 @@
+version: 0.1
+
+# +required List of endpoints to create for the Ballerina compiler service.
+endpoints:
+  # +required Unique name for the Ballerina compiler endpoint.
+  - name: Ballerina Compiler Integration
+    # +required Numeric port value that gets exposed via this endpoint
+    port: 8081
+    # +required Type of the traffic this endpoint is accepting. For the Ballerina compiler, it will be REST.
+    type: REST
+    # +optional Network level visibility of this endpoint. Set to Public for wider access.
+    networkVisibility: Public
+    # +optional Context (base path) for the API that will be exposed via this endpoint.
+    context: /compile
+    # +optional Path to the schema definition file. It should define how the compiler endpoints behave.
+    schemaFilePath: openapi.yaml
