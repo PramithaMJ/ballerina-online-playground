@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  go-backend:
+    build:
+      context: ./ # Path to the directory containing the Dockerfile for your Go backend
+    ports:
+      - "8081:8081" # Map container port 8081 to host port 8081
+    volumes:
+      - ./data:/app/data # Optional: mount local data directory to persist data
+    environment:
+      - BAL_COMPILER_URL=http://ballerina:8080 # URL of the Ballerina service
+    depends_on:
+      - ballerina
+
+  ballerina:
+    image: ballerina/ballerina:1.0.2 # Replace with the desired Ballerina Docker tag
+    ports:
+      - "8080:8080" # expose it for external access
+    volumes:
+      - ./ballerina:/home/ballerina # Mount local Ballerina files for execution
