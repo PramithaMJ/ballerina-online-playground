@@ -21,7 +21,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
-          'codemirror': ['@uiw/react-codemirror']
+          'monaco-editor': ['@monaco-editor/react']
         }
       }
     }
