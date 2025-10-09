@@ -12,6 +12,9 @@ RUN go build -o ballerina-compiler-backend .
 # Use a minimal image for the final build
 FROM alpine:3.20.2
 
+# Install Docker CLI
+RUN apk add --no-cache docker-cli
+
 # Create a non-root user and group
 # Using a fixed UID/GID for better security and predictability
 RUN addgroup -g 10014 appgroup && \
@@ -26,8 +29,9 @@ COPY --from=builder /app/ballerina-compiler-backend .
 # Change ownership of the application files to the non-root user
 RUN chown -R appuser:appgroup /app
 
-# Switch to non-root user
-USER 10014
+# Note: Running as root to access Docker socket
+# In production, consider using Docker socket proxy for better security
+# USER 10014
 
 # Expose port 8080
 EXPOSE 8081

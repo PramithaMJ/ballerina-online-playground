@@ -1,0 +1,63 @@
+╔════════════════════════════════════════════════════════════════╗
+║          BALLERINA PLAYGROUND - DEPLOYMENT FIX                 ║
+╚════════════════════════════════════════════════════════════════╝
+
+📋 QUICK FIX - Run this on Ubuntu server:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+cd ~/ballerina-online-playground
+git pull origin dev
+./deploy-fix.sh
+
+
+📝 WHAT WAS FIXED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Fixed Docker-in-Docker path mounting
+✓ Updated environment variables (TEMP_DIR & HOST_TEMP_DIR)
+✓ Added debug logging for troubleshooting
+✓ Simplified volume mounting strategy
+
+
+🔍 VERIFY IT'S WORKING:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Check logs for correct paths:
+   sudo docker-compose logs backend | grep DEBUG
+
+   You should see:
+   DEBUG: packageDir (container): /tmp/ballerina-playground/ballerina-pkg-XXXXXX
+   DEBUG: hostPath (for Docker mount): /tmp/ballerina-playground/ballerina-pkg-XXXXXX
+
+2. Test with curl:
+   curl -X POST http://localhost:8081/execute \
+     -H "Content-Type: application/json" \
+     -d '{"code":"import ballerina/io;\n\npublic function main() {\n    io:println(\"Hello!\");\n}"}'
+
+   Expected:
+   {"output":"Ballerina 2201.10.2 (Swan Lake Update 10)\n\nHello!\n","error":""}
+
+
+🌐 ACCESS POINTS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Frontend: http://54.160.240.225:5173
+Backend:  http://54.160.240.225:8081
+
+
+💡 USEFUL COMMANDS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+View logs:          sudo docker-compose logs -f
+Restart services:   sudo docker-compose restart
+Stop services:      sudo docker-compose down
+Check status:       sudo docker-compose ps
+Rebuild backend:    sudo docker-compose build --no-cache backend
+
+
+⚠️  IMPORTANT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The backend MUST be rebuilt with --no-cache for the fix to work!
+Environment variables are baked into the container at build time.
+

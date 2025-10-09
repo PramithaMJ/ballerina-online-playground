@@ -29,7 +29,7 @@ func CompileCode(w http.ResponseWriter, r *http.Request) {
 	defer os.Remove(tempFile) // Cleanup temp file
 
 	// Compile code using Docker
-	output, execErr := utils.RunInDocker(tempFile, "ballerina/ballerina:latest", "bal", "build", "/home/ballerina/code.bal")
+	output, execErr := utils.RunInDocker(tempFile, "ballerina/ballerina:2201.10.2", "bal", "build", "/home/ballerina/code.bal")
 	response := CodeResponse{
 		Output: output,
 		Error:  "",

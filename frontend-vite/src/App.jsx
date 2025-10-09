@@ -137,8 +137,11 @@ function App() {
     setOutput('Running your code... Please wait.')
     setError('')
 
+    // Use environment variable for API URL, fallback to localhost for development
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8081'
+
     try {
-      const response = await fetch('http://localhost:8081/execute', {
+      const response = await fetch(`${apiUrl}/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
@@ -159,7 +162,7 @@ function App() {
         setOutput('')
       }
     } catch (err) {
-      setError(`Connection Error: ${err.message}\n\nMake sure the backend server is running on http://localhost:8081`)
+      setError(`Connection Error: ${err.message}\n\nMake sure the backend server is running on ${apiUrl}`)
       setOutput('')
     } finally {
       setIsRunning(false)
