@@ -27,6 +27,10 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 	// Convert container path to host path for Docker-in-Docker
 	hostPath := convertToHostPath(packageDir)
 
+	// Log the paths for debugging
+	log.Printf("DEBUG: packageDir (container): %s", packageDir)
+	log.Printf("DEBUG: hostPath (for Docker mount): %s", hostPath)
+
 	// Docker arguments with resource limits for security
 	// We mount as read-write because Ballerina needs to create build artifacts
 	args := []string{
