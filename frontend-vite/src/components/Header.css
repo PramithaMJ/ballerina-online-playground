@@ -3,9 +3,10 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%);
-  border-bottom: 1px solid #2a3142;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .header-left {
@@ -18,14 +19,19 @@
   height: 45px;
   width: auto;
   filter: brightness(0) invert(1);
+  transition: filter 0.3s ease;
+}
+
+:root[data-theme="light"] .logo {
+  filter: brightness(0) invert(0);
 }
 
 .title-section h1 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #52c3c2;
+  color: var(--accent-color);
   margin: 0;
-  background: linear-gradient(135deg, #52c3c2 0%, #6dd5d4 100%);
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -33,7 +39,7 @@
 
 .subtitle {
   font-size: 0.875rem;
-  color: #8b92a7;
+  color: var(--text-secondary);
   margin: 0.25rem 0 0 0;
 }
 
@@ -63,13 +69,13 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #52c3c2 0%, #45a9a8 100%);
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
   color: white;
   box-shadow: 0 2px 8px rgba(82, 195, 194, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #6dd5d4 0%, #52c3c2 100%);
+  background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%);
   box-shadow: 0 4px 12px rgba(82, 195, 194, 0.4);
   transform: translateY(-1px);
 }
@@ -79,15 +85,15 @@
 }
 
 .btn-secondary {
-  background: #2a3142;
-  color: #e4e6eb;
-  border: 1px solid #3a4456;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-  background: #3a4456;
-  border-color: #52c3c2;
-  color: #52c3c2;
+  background: var(--bg-tertiary);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .btn-icon {
@@ -96,8 +102,8 @@
   justify-content: center;
   padding: 0.625rem;
   background: transparent;
-  color: #8b92a7;
-  border: 1px solid #3a4456;
+  color: var(--text-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -105,8 +111,8 @@
 }
 
 .btn-icon:hover {
-  color: #52c3c2;
-  border-color: #52c3c2;
+  color: var(--accent-color);
+  border-color: var(--accent-color);
   background: rgba(82, 195, 194, 0.1);
 }
 

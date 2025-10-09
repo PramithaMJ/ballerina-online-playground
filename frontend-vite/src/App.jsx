@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Header from './components/Header'
 import CodeEditor from './components/CodeEditor'
 import OutputPanel from './components/OutputPanel'
+import ResizablePanels from './components/ResizablePanels'
 import './App.css'
 
 const SAMPLE_CODE = `import ballerina/io;
@@ -23,6 +24,20 @@ function App() {
   const [output, setOutput] = useState('')
   const [isRunning, setIsRunning] = useState(false)
   const [error, setError] = useState('')
+  const [theme, setTheme] = useState(localStorage.getItem('app-theme') || 'dark')
+
+  // Apply theme to document
+  useState(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('app-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(newTheme)
+    document.documentElement.setAttribute('data-theme', newTheme)
+    localStorage.setItem('app-theme', newTheme)
+  }
 
   const handleRun = async () => {
     if (!code.trim()) {
@@ -83,11 +98,13 @@ function App() {
         onClear={handleClear}
         onReset={handleReset}
         isRunning={isRunning}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
-      <div className="main-content">
-        <CodeEditor code={code} onChange={setCode} />
-        <OutputPanel output={output} error={error} />
-      </div>
+      <ResizablePanels
+        leftPanel={<CodeEditor code={code} onChange={setCode} />}
+        rightPanel={<OutputPanel output={output} error={error} />}
+      />
     </div>
   )
 }
