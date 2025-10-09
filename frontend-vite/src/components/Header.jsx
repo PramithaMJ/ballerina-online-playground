@@ -109,7 +109,7 @@ const Header = ({
         </button>
         
         <a 
-          href="https://github.com/PramithaMJ/ballerina-online-playground" 
+          href="https://github.com/PramithaMJ" 
           target="_blank" 
           rel="noopener noreferrer"
           className="btn btn-icon"

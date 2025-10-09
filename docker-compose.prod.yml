@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ballerina-playground-backend
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - GIN_MODE=release
+      - TEMP_DIR=/tmp/ballerina-playground
+      - HOST_TEMP_DIR=/tmp/ballerina-playground
+      - GOMAXPROCS=2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/ballerina-playground:/tmp/ballerina-playground:rw
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
