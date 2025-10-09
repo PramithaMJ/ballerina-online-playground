@@ -18,14 +18,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/ballerina-playground:/tmp/ballerina-playground:rw
     restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2G
-        reservations:
-          cpus: '1.0'
-          memory: 512M
+    # Resource limits for docker-compose v1 compatibility
+    mem_limit: 2g
+    mem_reservation: 512m
+    cpus: 2.0
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/health"]
       interval: 30s
