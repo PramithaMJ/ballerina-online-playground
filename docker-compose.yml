@@ -13,10 +13,10 @@ services:
       - PORT=8081
       - GIN_MODE=release
       - TEMP_DIR=/tmp/ballerina-playground
-      - HOST_TEMP_DIR=/tmp/ballerina-playground-host
+      - HOST_TEMP_DIR=/tmp/ballerina-playground
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Required for Docker execution
-      - /tmp/ballerina-playground-host:/tmp/ballerina-playground:rw  # Shared temp directory with read-write access
+      - /tmp/ballerina-playground:/tmp/ballerina-playground:rw  # Shared temp directory with read-write access
     restart: unless-stopped
     networks:
       - playground-network
