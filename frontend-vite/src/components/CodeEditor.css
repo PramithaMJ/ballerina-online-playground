@@ -1,0 +1,100 @@
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: #252526;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #52c3c2;
+  font-size: 0.9rem;
+}
+
+.editor-info {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.language-badge {
+  padding: 0.25rem 0.75rem;
+  background: rgba(82, 195, 194, 0.15);
+  color: #52c3c2;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(82, 195, 194, 0.3);
+}
+
+.line-info {
+  color: #8b92a7;
+  font-size: 0.75rem;
+}
+
+.editor-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.editor-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #1e1e1e;
+  z-index: 10;
+  gap: 1rem;
+}
+
+.spinner-large {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(82, 195, 194, 0.2);
+  border-top-color: #52c3c2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.editor-loading p {
+  color: #8b92a7;
+  font-size: 0.9rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .editor-container {
+    min-height: 300px;
+  }
+
+  .panel-header {
+    padding: 0.5rem 1rem;
+  }
+
+  .editor-info {
+    gap: 0.5rem;
+  }
+}
