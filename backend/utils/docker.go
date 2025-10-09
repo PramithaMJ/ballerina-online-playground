@@ -66,7 +66,7 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 
 	// Prepend Ballerina version information to output
 	versionInfo := "Ballerina 2201.10.2 (Swan Lake Update 10)\n\n"
-	
+
 	// Combine stdout and stderr if there's content in stderr
 	var outputWithVersion string
 	if stderrStr != "" {
