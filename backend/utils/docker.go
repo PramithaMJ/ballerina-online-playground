@@ -30,25 +30,25 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 	// Log the paths for debugging
 	log.Printf("DEBUG: packageDir (container): %s", packageDir)
 	log.Printf("DEBUG: hostPath (for Docker mount): %s", hostPath)
-	
+
 	// Check if files exist before mounting
 	tomlPath := filepath.Join(packageDir, "Ballerina.toml")
 	mainPath := filepath.Join(packageDir, "main.bal")
-	
+
 	if _, err := os.Stat(tomlPath); os.IsNotExist(err) {
 		log.Printf("ERROR: Ballerina.toml not found at %s", tomlPath)
 		return "", fmt.Errorf("Ballerina.toml file not created")
 	} else {
 		log.Printf("DEBUG: Ballerina.toml exists at %s", tomlPath)
 	}
-	
+
 	if _, err := os.Stat(mainPath); os.IsNotExist(err) {
 		log.Printf("ERROR: main.bal not found at %s", mainPath)
 		return "", fmt.Errorf("main.bal file not created")
 	} else {
 		log.Printf("DEBUG: main.bal exists at %s", mainPath)
 	}
-	
+
 	// List directory contents
 	entries, _ := os.ReadDir(packageDir)
 	log.Printf("DEBUG: Directory contents of %s:", packageDir)
@@ -69,9 +69,9 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 		"-v", hostPath + ":/home/ballerina/app", // Read-write mount for build artifacts
 		"-w", "/home/ballerina/app", // Set working directory
 		"ballerina/ballerina:2201.10.2",
-		"bal", "run", ".", // Run the current directory as a package
+		"bal", "run", "main.bal", // Run the main.bal file directly
 	}
-	
+
 	log.Printf("DEBUG: Docker command: docker %s", strings.Join(args, " "))
 
 	cmd := exec.CommandContext(ctx, "docker", args...)
