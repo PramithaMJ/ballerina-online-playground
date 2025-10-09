@@ -25,6 +25,13 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 
 func main() {
 
+	// Health check endpoint
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"healthy","service":"ballerina-compiler-backend"}`))
+	})
+
 	http.HandleFunc("/run", enableCORS(handler.RunCode))
 	http.HandleFunc("/compile", enableCORS(handler.CompileCode))
 	http.HandleFunc("/execute", enableCORS(handler.RunCode)) // Alias for frontend compatibility

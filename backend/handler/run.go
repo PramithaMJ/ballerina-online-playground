@@ -45,23 +45,23 @@ func RunCode(w http.ResponseWriter, r *http.Request) {
 	// Log the execution request
 	log.Printf("Executing Ballerina code (%d bytes)", len(req.Code))
 
-	// Save code to a temporary file
-	tempFile, err := utils.SaveToTempFile(req.Code, "code.bal")
+	// Create a Ballerina package structure
+	packageDir, err := utils.CreateBallerinaPackage(req.Code)
 	if err != nil {
-		log.Printf("Error saving temp file: %v", err)
+		log.Printf("Error creating Ballerina package: %v", err)
 		response := CodeResponse{
 			Output: "",
-			Error:  "Failed to save code: " + err.Error(),
+			Error:  "Failed to create package: " + err.Error(),
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(response)
 		return
 	}
-	defer os.Remove(tempFile) // Cleanup temp file
+	defer os.RemoveAll(packageDir) // Cleanup temp directory
 
 	// Run code using Docker
-	output, execErr := utils.RunInDocker(tempFile, "ballerina/ballerina:latest", "bal", "run", "/home/ballerina/code.bal")
+	output, execErr := utils.RunBallerinaPackage(packageDir)
 
 	response := CodeResponse{
 		Output: output,

@@ -12,8 +12,11 @@ services:
     environment:
       - PORT=8081
       - GIN_MODE=release
+      - TEMP_DIR=/tmp/ballerina-playground
+      - HOST_TEMP_DIR=${PWD}/.tmp/ballerina-playground
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Required for Docker execution
+      - ${PWD}/.tmp/ballerina-playground:/tmp/ballerina-playground  # Shared temp directory
     restart: unless-stopped
     networks:
       - playground-network
@@ -49,4 +52,8 @@ services:
 networks:
   playground-network:
     driver: bridge
+
+volumes:
+  ballerina-temp:
+    driver: local
 
