@@ -42,7 +42,7 @@ services:
       context: ./frontend-vite
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://54.160.240.225:8081
+        - VITE_API_URL=http://54.196.236.102:8081
     container_name: ballerina-playground-frontend
     ports:
       - "80:80"
