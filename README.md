@@ -4,7 +4,6 @@
 
 A web-based interactive playground for writing and executing Ballerina code in real-time.
 
-
 ## Architecture
 
 ```
@@ -27,6 +26,12 @@ A web-based interactive playground for writing and executing Ballerina code in r
 ## **Modern web browser** (for frontend)
 
 ![1760033251719](images/README/1760033251719.png)
+
+![1760042352457](images/README/1760042352457.png)
+
+![1760042371205](images/README/1760042371205.png)
+
+![1760042377305](images/README/1760042377305.png)
 
 ## API Endpoints
 
