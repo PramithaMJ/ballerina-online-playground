@@ -48,13 +48,17 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 		return "", fmt.Errorf("execution timeout: code took longer than 30 seconds")
 	}
 
+	// Prepend Ballerina version information to output
+	versionInfo := "Ballerina 2201.12.2 (Swan Lake Update 12)\n\n"
+	outputWithVersion := versionInfo + out.String()
+
 	if err != nil {
 		// Return both stdout and stderr for better error messages
-		combinedOutput := out.String() + "\n" + stderr.String()
+		combinedOutput := outputWithVersion + "\n" + stderr.String()
 		return combinedOutput, err
 	}
 
-	return out.String(), nil
+	return outputWithVersion, nil
 }
 
 // convertToHostPath converts a container path to a host path for Docker-in-Docker
