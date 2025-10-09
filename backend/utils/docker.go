@@ -1,14 +1,14 @@
 package utils
 
 import (
-"bytes"
-"context"
-"fmt"
-"os"
-"os/exec"
-"path/filepath"
-"strings"
-"time"
+	"bytes"
+	"context"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"time"
 )
 
 // RunBallerinaPackage runs a Ballerina package in Docker
@@ -26,11 +26,11 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 		"run",
 		"--rm",
 		"--network", "none", // Disable network access
-		"--memory", "512m",   // Increased memory for compilation
-		"--cpus", "1.0",      // Increased CPU for compilation
+		"--memory", "512m", // Increased memory for compilation
+		"--cpus", "1.0", // Increased CPU for compilation
 		"--pids-limit", "50", // Limit number of processes
 		"-v", hostPath + ":/home/ballerina/app", // Read-write mount for build artifacts
-		"-w", "/home/ballerina/app",              // Set working directory
+		"-w", "/home/ballerina/app", // Set working directory
 		"ballerina/ballerina:latest",
 		"bal", "run",
 	}
@@ -94,11 +94,11 @@ func RunInDocker(filePath string, image string, command ...string) (string, erro
 		"run",
 		"--rm",
 		"--network", "none", // Disable network access
-		"--memory", "256m",  // Limit memory to 256MB
-		"--cpus", "0.5",     // Limit CPU usage
+		"--memory", "256m", // Limit memory to 256MB
+		"--cpus", "0.5", // Limit CPU usage
 		"--pids-limit", "50", // Limit number of processes
 		"-v", filePath + ":/home/ballerina/code.bal:ro", // Read-only mount
-		"-w", "/home/ballerina",                          // Set working directory
+		"-w", "/home/ballerina", // Set working directory
 		image,
 	}
 	args = append(args, command...)
