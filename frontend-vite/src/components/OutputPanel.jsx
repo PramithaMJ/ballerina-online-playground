@@ -11,7 +11,7 @@ const OutputPanel = ({ output, error }) => {
       <div className="panel-header">
         <div className="panel-title">
           <Terminal size={18} />
-          <span>Output Console</span>
+          <span>Output Console • Ballerina 2201.12.2 (Swan Lake Update 12)</span>
         </div>
         {hasContent && (
           <div className="output-status">
