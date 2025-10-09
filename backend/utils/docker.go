@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -49,19 +50,34 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 
 	err := cmd.Run()
 
+	// Capture both stdout and stderr
+	stdoutStr := out.String()
+	stderrStr := stderr.String()
+
+	// Debug logging
+	log.Printf("DEBUG: stdout length: %d, stderr length: %d", len(stdoutStr), len(stderrStr))
+	log.Printf("DEBUG: stdout content: %q", stdoutStr)
+	log.Printf("DEBUG: stderr content: %q", stderrStr)
+
 	// Check if context deadline exceeded (timeout)
 	if ctx.Err() == context.DeadlineExceeded {
 		return "", fmt.Errorf("execution timeout: code took longer than 30 seconds")
 	}
 
 	// Prepend Ballerina version information to output
-	versionInfo := "Ballerina 2201.12.2 (Swan Lake Update 12)\n\n"
-	outputWithVersion := versionInfo + out.String()
+	versionInfo := "Ballerina 2201.10.2 (Swan Lake Update 10)\n\n"
+	
+	// Combine stdout and stderr if there's content in stderr
+	var outputWithVersion string
+	if stderrStr != "" {
+		outputWithVersion = versionInfo + stdoutStr + "\n" + stderrStr
+	} else {
+		outputWithVersion = versionInfo + stdoutStr
+	}
 
 	if err != nil {
-		// Return both stdout and stderr for better error messages
-		combinedOutput := outputWithVersion + "\n" + stderr.String()
-		return combinedOutput, err
+		// Return combined output with error
+		return outputWithVersion, err
 	}
 
 	return outputWithVersion, nil
@@ -72,7 +88,7 @@ func ensureBallerinaImage() error {
 	// Check if image exists locally
 	checkCmd := exec.Command("docker", "images", "-q", "ballerina/ballerina:2201.10.2")
 	output, err := checkCmd.Output()
-	
+
 	// If image exists (output is not empty), return immediately
 	if err == nil && len(strings.TrimSpace(string(output))) > 0 {
 		return nil
@@ -84,7 +100,7 @@ func ensureBallerinaImage() error {
 
 	pullCmd := exec.CommandContext(ctx, "docker", "pull", "ballerina/ballerina:2201.10.2")
 	pullErr := pullCmd.Run()
-	
+
 	if pullErr != nil {
 		if ctx.Err() == context.DeadlineExceeded {
 			return fmt.Errorf("timeout pulling Ballerina image")
