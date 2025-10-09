@@ -85,11 +85,15 @@ fi
 
 # Stop existing containers
 echo -e "${YELLOW}🛑 Stopping existing containers...${NC}"
-docker-compose -f docker-compose.prod.yml down 2>/dev/null || true
+docker-compose -f docker-compose.prod.yml down --remove-orphans 2>/dev/null || true
+
+# Clean up orphan containers if any
+echo -e "${YELLOW}🧹 Cleaning up orphan containers...${NC}"
+docker container prune -f 2>/dev/null || true
 
 # Build and start containers
 echo -e "${YELLOW}🔨 Building and starting backend...${NC}"
-docker-compose -f docker-compose.prod.yml up --build -d
+docker-compose -f docker-compose.prod.yml up --build -d --remove-orphans
 
 # Wait for service to be ready
 echo -e "${YELLOW}⏳ Waiting for backend to be healthy...${NC}"
