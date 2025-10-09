@@ -69,7 +69,7 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 		"-v", hostPath + ":/home/ballerina/app", // Read-write mount for build artifacts
 		"-w", "/home/ballerina/app", // Set working directory
 		"ballerina/ballerina:2201.10.2",
-		"bal", "run", "main.bal", // Run the main.bal file directly
+		"bal", "run", // Run the package without arguments
 	}
 
 	log.Printf("DEBUG: Docker command: docker %s", strings.Join(args, " "))
@@ -96,23 +96,20 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 		return "", fmt.Errorf("execution timeout: code took longer than 30 seconds")
 	}
 
-	// Prepend Ballerina version information to output
-	versionInfo := "Ballerina 2201.10.2 (Swan Lake Update 10)\n\n"
-
 	// Combine stdout and stderr if there's content in stderr
-	var outputWithVersion string
+	var output string
 	if stderrStr != "" {
-		outputWithVersion = versionInfo + stdoutStr + "\n" + stderrStr
+		output = stdoutStr + "\n" + stderrStr
 	} else {
-		outputWithVersion = versionInfo + stdoutStr
+		output = stdoutStr
 	}
 
 	if err != nil {
 		// Return combined output with error
-		return outputWithVersion, err
+		return output, err
 	}
 
-	return outputWithVersion, nil
+	return output, nil
 }
 
 // ensureBallerinaImage ensures the Ballerina Docker image is available locally
