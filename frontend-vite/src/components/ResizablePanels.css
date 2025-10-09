@@ -5,62 +5,6 @@
   width: 100%;
 }
 
-/* Layout Controls */
-.layout-controls {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-color);
-  align-items: center;
-  justify-content: flex-end;
-  flex-shrink: 0;
-}
-
-.layout-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-tertiary);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 500;
-}
-
-.layout-btn:hover {
-  background: var(--bg-panel);
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-.layout-btn.active {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
-  color: #ffffff;
-}
-
-.reset-btn {
-  padding: 0.5rem 1rem;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-tertiary);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.reset-btn:hover {
-  background: var(--bg-panel);
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
 /* Resizable Container */
 .resizable-container {
   display: flex;

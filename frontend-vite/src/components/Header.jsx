@@ -1,4 +1,4 @@
-import { Play, Eraser, RotateCcw, Github, Sun, Moon, Columns, Rows, Maximize2 } from 'lucide-react'
+import { Play, Eraser, RotateCcw, Github, Sun, Moon, Columns, Rows, Maximize2, Maximize, Minimize } from 'lucide-react'
 import './Header.css'
 
 const Header = ({ 
@@ -10,7 +10,9 @@ const Header = ({
   onToggleTheme,
   layout,
   onToggleLayout,
-  onResetSplit
+  onResetSplit,
+  isFullscreen,
+  onToggleFullscreen
 }) => {
   return (
     <header className="header">
@@ -83,6 +85,17 @@ const Header = ({
         >
           <Maximize2 size={18} />
           <span className="btn-text">Reset Split</span>
+        </button>
+        
+        <div className="header-divider"></div>
+
+        <button 
+          className="btn btn-secondary" 
+          onClick={onToggleFullscreen}
+          title={isFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen (F11)"}
+        >
+          {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+          <span className="btn-text">{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
         </button>
         
         <div className="header-divider"></div>

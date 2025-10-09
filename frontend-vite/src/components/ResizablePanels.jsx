@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
-import { Columns, Rows, GripVertical, GripHorizontal } from 'lucide-react'
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
+import { GripVertical, GripHorizontal } from 'lucide-react'
 import './ResizablePanels.css'
 
-const ResizablePanels = ({ leftPanel, rightPanel }) => {
+const ResizablePanels = forwardRef(({ leftPanel, rightPanel }, ref) => {
   const [isResizing, setIsResizing] = useState(false)
   const [splitPosition, setSplitPosition] = useState(() => {
     return parseInt(localStorage.getItem('splitPosition')) || 50
@@ -11,6 +11,17 @@ const ResizablePanels = ({ leftPanel, rightPanel }) => {
     return localStorage.getItem('panelLayout') || 'horizontal'
   })
   const containerRef = useRef(null)
+
+  // Expose methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    toggleLayout: () => {
+      setLayout(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')
+    },
+    resetSplit: () => {
+      setSplitPosition(50)
+    },
+    layout: layout
+  }))
 
   // Save preferences
   useEffect(() => {
@@ -50,14 +61,6 @@ const ResizablePanels = ({ leftPanel, rightPanel }) => {
     setIsResizing(false)
   }
 
-  const toggleLayout = () => {
-    setLayout(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')
-  }
-
-  const resetSplit = () => {
-    setSplitPosition(50)
-  }
-
   useEffect(() => {
     if (isResizing) {
       document.addEventListener('mousemove', handleMouseMove)
@@ -88,34 +91,6 @@ const ResizablePanels = ({ leftPanel, rightPanel }) => {
 
   return (
     <div className="resizable-container-wrapper">
-      {/* Layout Controls */}
-      <div className="layout-controls">
-        <button 
-          className={`layout-btn ${layout === 'horizontal' ? 'active' : ''}`}
-          onClick={toggleLayout}
-          title="Toggle Horizontal/Vertical Layout"
-        >
-          {layout === 'horizontal' ? (
-            <>
-              <Columns size={16} />
-              <span>Horizontal</span>
-            </>
-          ) : (
-            <>
-              <Rows size={16} />
-              <span>Vertical</span>
-            </>
-          )}
-        </button>
-        <button 
-          className="reset-btn"
-          onClick={resetSplit}
-          title="Reset to 50-50 split"
-        >
-          Reset Split
-        </button>
-      </div>
-
       {/* Resizable Container */}
       <div 
         ref={containerRef}
@@ -150,6 +125,8 @@ const ResizablePanels = ({ leftPanel, rightPanel }) => {
       </div>
     </div>
   )
-}
+})
+
+ResizablePanels.displayName = 'ResizablePanels'
 
 export default ResizablePanels

@@ -36,6 +36,23 @@
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Fullscreen mode */
+.app:fullscreen,
+.app:-webkit-full-screen,
+.app:-moz-full-screen,
+.app:-ms-fullscreen {
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-primary);
+}
+
+.app:fullscreen .header,
+.app:-webkit-full-screen .header,
+.app:-moz-full-screen .header,
+.app:-ms-fullscreen .header {
+  flex-shrink: 0;
+}
+
 .main-content {
   display: flex;
   flex: 1;

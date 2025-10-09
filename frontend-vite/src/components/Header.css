@@ -47,6 +47,14 @@
   display: flex;
   gap: 0.75rem;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.header-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border-color);
+  opacity: 0.5;
 }
 
 .btn {
@@ -61,6 +69,16 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+}
+
+.btn .btn-text {
+  display: inline;
+}
+
+@media (max-width: 1024px) {
+  .btn .btn-text {
+    display: none;
+  }
 }
 
 .btn:disabled {
@@ -94,6 +112,12 @@
   background: var(--bg-tertiary);
   border-color: var(--accent-color);
   color: var(--accent-color);
+}
+
+.btn-secondary.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #ffffff;
 }
 
 .btn-icon {
