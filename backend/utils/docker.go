@@ -13,6 +13,12 @@ import (
 
 // RunBallerinaPackage runs a Ballerina package in Docker
 func RunBallerinaPackage(packageDir string) (string, error) {
+	// Ensure Ballerina image is available
+	ensureImageErr := ensureBallerinaImage()
+	if ensureImageErr != nil {
+		return "", fmt.Errorf("failed to ensure Ballerina image: %v", ensureImageErr)
+	}
+
 	// Create context with timeout to prevent long-running executions
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -31,7 +37,7 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 		"--pids-limit", "50", // Limit number of processes
 		"-v", hostPath + ":/home/ballerina/app", // Read-write mount for build artifacts
 		"-w", "/home/ballerina/app", // Set working directory
-		"ballerina/ballerina:latest",
+		"ballerina/ballerina:2201.10.2",
 		"bal", "run",
 	}
 
@@ -59,6 +65,34 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 	}
 
 	return outputWithVersion, nil
+}
+
+// ensureBallerinaImage ensures the Ballerina Docker image is available locally
+func ensureBallerinaImage() error {
+	// Check if image exists locally
+	checkCmd := exec.Command("docker", "images", "-q", "ballerina/ballerina:2201.10.2")
+	output, err := checkCmd.Output()
+	
+	// If image exists (output is not empty), return immediately
+	if err == nil && len(strings.TrimSpace(string(output))) > 0 {
+		return nil
+	}
+
+	// Image doesn't exist, pull it with a timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
+	pullCmd := exec.CommandContext(ctx, "docker", "pull", "ballerina/ballerina:2201.10.2")
+	pullErr := pullCmd.Run()
+	
+	if pullErr != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			return fmt.Errorf("timeout pulling Ballerina image")
+		}
+		return pullErr
+	}
+
+	return nil
 }
 
 // convertToHostPath converts a container path to a host path for Docker-in-Docker
