@@ -1,0 +1,78 @@
+/* Theme Variables */
+:root[data-theme="dark"] {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #1e1e1e;
+  --bg-tertiary: #252526;
+  --bg-panel: #2d2d30;
+  --border-color: #3a3a3a;
+  --text-primary: #e4e6eb;
+  --text-secondary: #8b92a7;
+  --text-tertiary: #9ca3af;
+  --accent-color: #52c3c2;
+  --accent-hover: #6dd5d4;
+  --separator-color: #52c3c2;
+}
+
+:root[data-theme="light"] {
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f8f9fa;
+  --bg-panel: #e9ecef;
+  --border-color: #dee2e6;
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-tertiary: #6c757d;
+  --accent-color: #0d9488;
+  --accent-hover: #14b8a6;
+  --separator-color: #0d9488;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Fullscreen mode */
+.app:fullscreen,
+.app:-webkit-full-screen,
+.app:-moz-full-screen,
+.app:-ms-fullscreen {
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-primary);
+}
+
+.app:fullscreen .header,
+.app:-webkit-full-screen .header,
+.app:-moz-full-screen .header,
+.app:-ms-fullscreen .header {
+  flex-shrink: 0;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 2px;
+  background: var(--separator-color);
+  height: 100%;
+  min-height: 0;
+}
+
+.main-content > * {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+  }
+}
