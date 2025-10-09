@@ -31,7 +31,7 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 		"--pids-limit", "50", // Limit number of processes
 		"-v", hostPath + ":/home/ballerina/app", // Read-write mount for build artifacts
 		"-w", "/home/ballerina/app",              // Set working directory
-		"ballerina/ballerina:2201.10.0",
+		"ballerina/ballerina:latest",
 		"bal", "run",
 	}
 
