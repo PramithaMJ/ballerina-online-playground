@@ -3,7 +3,7 @@
 # Create the host temporary directory for Ballerina execution
 # This directory will be shared between the backend container and Ballerina containers
 
-TEMP_DIR="/tmp/ballerina-playground-host"
+TEMP_DIR="/tmp/ballerina-playground"
 
 echo "Setting up temporary directory for Ballerina execution..."
 
