@@ -39,7 +39,7 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 		"-v", hostPath + ":/home/ballerina/app", // Read-write mount for build artifacts
 		"-w", "/home/ballerina/app", // Set working directory
 		"ballerina/ballerina:2201.10.2",
-		"bal", "run",
+		"bal", "run", ".", // Run the current directory as a package
 	}
 
 	cmd := exec.CommandContext(ctx, "docker", args...)
