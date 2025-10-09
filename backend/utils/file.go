@@ -44,7 +44,7 @@ func CreateBallerinaPackage(code string) (string, error) {
 org = "playground"
 name = "playground"
 version = "0.1.0"
-distribution = "2201.10.2"
+distribution = "2201.10.0"
 
 [build-options]
 observabilityIncluded = false

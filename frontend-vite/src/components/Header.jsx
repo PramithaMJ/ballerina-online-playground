@@ -24,7 +24,7 @@ const Header = ({
         />
         <div className="title-section">
           <h1>Ballerina Playground</h1>
-          <p className="subtitle">Write, Run & Debug Ballerina Code Online</p>
+          <p className="subtitle">Write, Run & Debug Ballerina Code Online • Ballerina 2201.12.2 (Swan Lake Update 12)</p>
         </div>
       </div>
       
