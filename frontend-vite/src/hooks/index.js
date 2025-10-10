@@ -10,3 +10,4 @@ export { useCodeExecution } from './useCodeExecution';
 export { useEditorSettings } from './useEditorSettings';
 export { useResizablePanels } from './useResizablePanels';
 export { useExecutionProgress } from './useExecutionProgress';
+export { useCodeEditorFullscreen } from './useCodeEditorFullscreen';

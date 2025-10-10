@@ -4,7 +4,7 @@
  * @component
  */
 
-import { ZoomIn, ZoomOut, Sun, Moon, Settings } from 'lucide-react';
+import { ZoomIn, ZoomOut, Sun, Moon, Settings, Maximize2, Minimize2 } from 'lucide-react';
 
 /**
  * @param {Object} props
@@ -16,6 +16,8 @@ import { ZoomIn, ZoomOut, Sun, Moon, Settings } from 'lucide-react';
  * @param {Function} props.onCycleTheme - Theme cycle handler
  * @param {boolean} props.showSettings - Settings panel visibility
  * @param {Function} props.onToggleSettings - Settings toggle handler
+ * @param {boolean} props.isEditorFullscreen - Editor fullscreen state
+ * @param {Function} props.onToggleEditorFullscreen - Editor fullscreen toggle handler
  */
 const EditorToolbar = ({
   lineCount,
@@ -26,11 +28,22 @@ const EditorToolbar = ({
   onCycleTheme,
   showSettings,
   onToggleSettings,
+  isEditorFullscreen,
+  onToggleEditorFullscreen,
 }) => {
   const isLightTheme = theme.includes('light') || theme.includes('github');
 
   return (
     <div className="editor-controls">
+      <button 
+        className="control-btn" 
+        onClick={onToggleEditorFullscreen}
+        title={isEditorFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+        aria-label={isEditorFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+      >
+        {isEditorFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+      </button>
+      
       <button 
         className="control-btn" 
         onClick={onDecreaseFontSize}
