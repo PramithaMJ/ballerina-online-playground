@@ -1,6 +1,40 @@
-import { Play, Eraser, RotateCcw, Github, Sun, Moon, Columns, Rows, Maximize2, Maximize, Minimize } from 'lucide-react'
-import './Header.css'
+/**
+ * Header Component
+ * Application header with controls
+ * Following SOLID principles and clean architecture
+ * @component
+ */
 
+import { 
+  Play, 
+  Eraser, 
+  RotateCcw, 
+  Github, 
+  Sun, 
+  Moon, 
+  Columns, 
+  Rows, 
+  Maximize2, 
+  Maximize, 
+  Minimize 
+} from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
+import './Header.css';
+
+/**
+ * @param {Object} props
+ * @param {Function} props.onRun - Run code handler
+ * @param {Function} props.onClear - Clear code handler
+ * @param {Function} props.onReset - Reset code handler
+ * @param {boolean} props.isRunning - Running state
+ * @param {string} props.theme - Current theme
+ * @param {Function} props.onToggleTheme - Theme toggle handler
+ * @param {string} props.layout - Current layout
+ * @param {Function} props.onToggleLayout - Layout toggle handler
+ * @param {Function} props.onResetSplit - Reset split handler
+ * @param {boolean} props.isFullscreen - Fullscreen state
+ * @param {Function} props.onToggleFullscreen - Fullscreen toggle handler
+ */
 const Header = ({ 
   onRun, 
   onClear, 
@@ -14,6 +48,9 @@ const Header = ({
   isFullscreen,
   onToggleFullscreen
 }) => {
+  const isHorizontal = layout === 'horizontal';
+  const isDark = theme === 'dark';
+
   return (
     <header className="header">
       <div className="header-left">
@@ -29,14 +66,16 @@ const Header = ({
       </div>
       
       <div className="header-right">
+        {/* Primary Actions */}
         <button 
           className="btn btn-primary" 
           onClick={onRun}
           disabled={isRunning}
+          aria-label="Run code"
         >
           {isRunning ? (
             <>
-              <div className="spinner"></div>
+              <LoadingSpinner size="small" />
               Running...
             </>
           ) : (
@@ -47,25 +86,34 @@ const Header = ({
           )}
         </button>
         
-        <button className="btn btn-secondary" onClick={onReset}>
+        <button 
+          className="btn btn-secondary" 
+          onClick={onReset}
+          aria-label="Reset code"
+        >
           <RotateCcw size={18} />
           Reset
         </button>
         
-        <button className="btn btn-secondary" onClick={onClear}>
+        <button 
+          className="btn btn-secondary" 
+          onClick={onClear}
+          aria-label="Clear code"
+        >
           <Eraser size={18} />
           Clear
         </button>
 
         {/* Layout Controls */}
-        <div className="header-divider"></div>
+        <div className="header-divider" role="separator"></div>
         
         <button 
-          className={`btn btn-secondary ${layout === 'horizontal' ? 'active' : ''}`}
+          className={`btn btn-secondary ${isHorizontal ? 'active' : ''}`}
           onClick={onToggleLayout}
-          title={`Switch to ${layout === 'horizontal' ? 'vertical' : 'horizontal'} layout`}
+          title={`Switch to ${isHorizontal ? 'vertical' : 'horizontal'} layout`}
+          aria-label={`Switch to ${isHorizontal ? 'vertical' : 'horizontal'} layout`}
         >
-          {layout === 'horizontal' ? (
+          {isHorizontal ? (
             <>
               <Columns size={18} />
               <span className="btn-text">Horizontal</span>
@@ -82,30 +130,35 @@ const Header = ({
           className="btn btn-secondary" 
           onClick={onResetSplit}
           title="Reset panel split to 50-50"
+          aria-label="Reset panel split"
         >
           <Maximize2 size={18} />
           <span className="btn-text">Reset Split</span>
         </button>
         
-        <div className="header-divider"></div>
+        <div className="header-divider" role="separator"></div>
 
+        {/* Fullscreen Control */}
         <button 
           className="btn btn-secondary" 
           onClick={onToggleFullscreen}
           title={isFullscreen ? "Exit fullscreen (Esc)" : "Enter fullscreen (F11)"}
+          aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
         >
           {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
           <span className="btn-text">{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
         </button>
         
-        <div className="header-divider"></div>
+        <div className="header-divider" role="separator"></div>
 
+        {/* Theme and External Links */}
         <button 
           className="btn btn-icon" 
           onClick={onToggleTheme}
-          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+          aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
         >
-          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          {isDark ? <Sun size={20} /> : <Moon size={20} />}
         </button>
         
         <a 
@@ -114,12 +167,13 @@ const Header = ({
           rel="noopener noreferrer"
           className="btn btn-icon"
           title="View on GitHub"
+          aria-label="View on GitHub"
         >
           <Github size={20} />
         </a>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;
