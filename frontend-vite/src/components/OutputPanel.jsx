@@ -1,10 +1,23 @@
-import { Terminal, CheckCircle2, AlertCircle, Info } from 'lucide-react'
-import './OutputPanel.css'
+/**
+ * OutputPanel Component
+ * Displays code execution output and errors
+ * @component
+ */
 
+import { Terminal, Info, AlertCircle } from 'lucide-react';
+import OutputStatus from './OutputStatus';
+import EmptyState from './EmptyState';
+import './OutputPanel.css';
+
+/**
+ * @param {Object} props
+ * @param {string} props.output - Standard output
+ * @param {string} props.error - Error output
+ */
 const OutputPanel = ({ output, error }) => {
-  const hasContent = output || error
-  const isSuccess = output && !error
-  const isError = error
+  const hasContent = output || error;
+  const isSuccess = output && !error;
+  const isError = !!error;
 
   return (
     <div className="output-container">
@@ -13,30 +26,21 @@ const OutputPanel = ({ output, error }) => {
           <Terminal size={18} />
           <span>Output Console</span>
         </div>
+        
         {hasContent && (
           <div className="output-status">
-            {isSuccess && (
-              <span className="status-badge status-success">
-                <CheckCircle2 size={14} />
-                Success
-              </span>
-            )}
-            {isError && (
-              <span className="status-badge status-error">
-                <AlertCircle size={14} />
-                Error
-              </span>
-            )}
+            <OutputStatus isSuccess={isSuccess} isError={isError} />
           </div>
         )}
       </div>
+      
       <div className="output-wrapper">
         {!hasContent ? (
-          <div className="output-empty">
-            <Info size={32} className="empty-icon" />
-            <p className="empty-title">No output yet</p>
-            <p className="empty-subtitle">Run your code to see the output here</p>
-          </div>
+          <EmptyState
+            icon={Info}
+            title="No output yet"
+            subtitle="Run your code to see the output here"
+          />
         ) : (
           <div className="output-content">
             {error && (
@@ -48,6 +52,7 @@ const OutputPanel = ({ output, error }) => {
                 <pre className="output-text error-text">{error}</pre>
               </div>
             )}
+            
             {output && (
               <div className="output-section output-section-standard">
                 <div className="section-header">
@@ -61,7 +66,7 @@ const OutputPanel = ({ output, error }) => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default OutputPanel
+export default OutputPanel;

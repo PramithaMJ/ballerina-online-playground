@@ -14,13 +14,25 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1.25rem;
-  background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-color);
+  background: rgba(37, 37, 38, 0.85);
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  border-bottom: 1px solid rgba(82, 195, 194, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
   gap: 1rem;
   flex-wrap: wrap;
   transition: background-color 0.3s ease, border-color 0.3s ease;
   min-height: 52px;
   flex-shrink: 0;
+}
+
+/* Light theme variant */
+[data-theme="light"] .editor-container .panel-header {
+  background: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .panel-title {
@@ -74,8 +86,12 @@
 }
 
 .settings-panel {
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border-color);
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border-bottom: 1px solid rgba(82, 195, 194, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
   padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
@@ -83,6 +99,14 @@
   animation: slideDown 0.2s ease-out;
   transition: background-color 0.3s ease, border-color 0.3s ease;
   flex-shrink: 0;
+}
+
+/* Light theme variant */
+[data-theme="light"] .settings-panel {
+  background: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 @keyframes slideDown {
@@ -210,11 +234,14 @@
 .language-badge {
   padding: 0.25rem 0.75rem;
   background: rgba(82, 195, 194, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #52c3c2;
   border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 600;
   border: 1px solid rgba(82, 195, 194, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .line-info {

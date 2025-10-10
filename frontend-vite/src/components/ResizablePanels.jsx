@@ -1,97 +1,103 @@
-import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
-import { GripVertical, GripHorizontal } from 'lucide-react'
-import './ResizablePanels.css'
+/**
+ * ResizablePanels Component
+ * Resizable split panel container
+ * @component
+ */
 
+import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { GripVertical, GripHorizontal } from 'lucide-react';
+import { useResizablePanels } from '../hooks';
+import { LAYOUTS } from '../constants/app.constants';
+import './ResizablePanels.css';
+
+/**
+ * @param {Object} props
+ * @param {React.ReactNode} props.leftPanel - Left/top panel content
+ * @param {React.ReactNode} props.rightPanel - Right/bottom panel content
+ * @param {React.Ref} ref - Forwarded ref
+ */
 const ResizablePanels = forwardRef(({ leftPanel, rightPanel }, ref) => {
-  const [isResizing, setIsResizing] = useState(false)
-  const [splitPosition, setSplitPosition] = useState(() => {
-    return parseInt(localStorage.getItem('splitPosition')) || 50
-  })
-  const [layout, setLayout] = useState(() => {
-    return localStorage.getItem('panelLayout') || 'horizontal'
-  })
-  const containerRef = useRef(null)
+  const containerRef = useRef(null);
+  
+  const {
+    splitPosition,
+    setSplitPosition,
+    layout,
+    toggleLayout,
+    resetSplit,
+    isResizing,
+    setIsResizing,
+  } = useResizablePanels();
 
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => ({
-    toggleLayout: () => {
-      setLayout(prev => prev === 'horizontal' ? 'vertical' : 'horizontal')
-    },
-    resetSplit: () => {
-      setSplitPosition(50)
-    },
-    layout: layout
-  }))
+    toggleLayout,
+    resetSplit,
+    layout,
+  }));
 
-  // Save preferences
-  useEffect(() => {
-    localStorage.setItem('splitPosition', splitPosition.toString())
-  }, [splitPosition])
-
-  useEffect(() => {
-    localStorage.setItem('panelLayout', layout)
-  }, [layout])
-
+  // Handle mouse down on resizer
   const handleMouseDown = (e) => {
-    e.preventDefault()
-    setIsResizing(true)
-  }
+    e.preventDefault();
+    setIsResizing(true);
+  };
 
+  // Handle mouse move for resizing
   const handleMouseMove = (e) => {
-    if (!isResizing || !containerRef.current) return
+    if (!isResizing || !containerRef.current) return;
 
-    const container = containerRef.current
-    const rect = container.getBoundingClientRect()
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
     
-    let newPosition
-    if (layout === 'horizontal') {
-      const mouseX = e.clientX - rect.left
-      newPosition = (mouseX / rect.width) * 100
+    let newPosition;
+    if (layout === LAYOUTS.HORIZONTAL) {
+      const mouseX = e.clientX - rect.left;
+      newPosition = (mouseX / rect.width) * 100;
     } else {
-      const mouseY = e.clientY - rect.top
-      newPosition = (mouseY / rect.height) * 100
+      const mouseY = e.clientY - rect.top;
+      newPosition = (mouseY / rect.height) * 100;
     }
 
-    // Constrain between 20% and 80%
-    newPosition = Math.max(20, Math.min(80, newPosition))
-    setSplitPosition(newPosition)
-  }
+    setSplitPosition(newPosition);
+  };
 
+  // Handle mouse up to stop resizing
   const handleMouseUp = () => {
-    setIsResizing(false)
-  }
+    setIsResizing(false);
+  };
 
+  // Setup and cleanup event listeners
   useEffect(() => {
     if (isResizing) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-      document.body.style.cursor = layout === 'horizontal' ? 'col-resize' : 'row-resize'
-      document.body.style.userSelect = 'none'
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = layout === LAYOUTS.HORIZONTAL ? 'col-resize' : 'row-resize';
+      document.body.style.userSelect = 'none';
 
       return () => {
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-        document.body.style.cursor = 'default'
-        document.body.style.userSelect = 'auto'
-      }
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.cursor = 'default';
+        document.body.style.userSelect = 'auto';
+      };
     }
-  }, [isResizing, layout])
+  }, [isResizing, layout, handleMouseMove]);
 
+  // Calculate styles
   const containerStyle = {
-    flexDirection: layout === 'horizontal' ? 'row' : 'column'
-  }
+    flexDirection: layout === LAYOUTS.HORIZONTAL ? 'row' : 'column'
+  };
 
-  const leftPanelStyle = layout === 'horizontal'
+  const leftPanelStyle = layout === LAYOUTS.HORIZONTAL
     ? { width: `${splitPosition}%`, height: '100%' }
-    : { width: '100%', height: `${splitPosition}%` }
+    : { width: '100%', height: `${splitPosition}%` };
 
-  const rightPanelStyle = layout === 'horizontal'
+  const rightPanelStyle = layout === LAYOUTS.HORIZONTAL
     ? { width: `${100 - splitPosition}%`, height: '100%' }
-    : { width: '100%', height: `${100 - splitPosition}%` }
+    : { width: '100%', height: `${100 - splitPosition}%` };
 
   return (
     <div className="resizable-container-wrapper">
-      {/* Resizable Container */}
       <div 
         ref={containerRef}
         className={`resizable-container ${layout} ${isResizing ? 'resizing' : ''}`}
@@ -106,10 +112,15 @@ const ResizablePanels = forwardRef(({ leftPanel, rightPanel }, ref) => {
         <div 
           className={`resizer ${layout}`}
           onMouseDown={handleMouseDown}
+          role="separator"
+          aria-orientation={layout === LAYOUTS.HORIZONTAL ? 'vertical' : 'horizontal'}
+          aria-valuenow={splitPosition}
+          aria-valuemin={20}
+          aria-valuemax={80}
         >
           <div className="resizer-line">
             <div className="resizer-handle">
-              {layout === 'horizontal' ? (
+              {layout === LAYOUTS.HORIZONTAL ? (
                 <GripVertical size={20} />
               ) : (
                 <GripHorizontal size={20} />
@@ -124,9 +135,9 @@ const ResizablePanels = forwardRef(({ leftPanel, rightPanel }, ref) => {
         </div>
       </div>
     </div>
-  )
-})
+  );
+});
 
-ResizablePanels.displayName = 'ResizablePanels'
+ResizablePanels.displayName = 'ResizablePanels';
 
-export default ResizablePanels
+export default ResizablePanels;

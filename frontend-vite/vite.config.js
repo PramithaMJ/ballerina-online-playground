@@ -5,7 +5,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   // Base path for GitHub Pages deployment
-  // Change 'ballerina-online-playground' to your repository name
   base: process.env.NODE_ENV === 'production' ? '/ballerina-online-playground/' : '/',
   server: {
     port: 3000,
