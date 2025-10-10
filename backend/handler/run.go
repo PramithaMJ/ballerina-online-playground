@@ -60,8 +60,8 @@ func RunCode(w http.ResponseWriter, r *http.Request) {
 	}
 	defer os.RemoveAll(packageDir) // Cleanup temp directory
 
-	// Run code using Docker
-	output, execErr := utils.RunBallerinaPackage(packageDir)
+	// Run code using Docker with request context for cancellation support
+	output, execErr := utils.RunBallerinaPackageWithContext(r.Context(), packageDir)
 
 	response := CodeResponse{
 		Output: output,

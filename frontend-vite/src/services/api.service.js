@@ -15,9 +15,10 @@ class ApiService {
   /**
    * Execute Ballerina code
    * @param {string} code - The Ballerina code to execute
+   * @param {AbortSignal} signal - Optional abort signal for cancellation
    * @returns {Promise<{output: string, error: string}>}
    */
-  async executeCode(code) {
+  async executeCode(code, signal = null) {
     if (!code || !code.trim()) {
       return {
         output: '',
@@ -26,11 +27,20 @@ class ApiService {
     }
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+      // Use the provided signal or the timeout controller
+      const finalSignal = signal || controller.signal;
+
       const response = await fetch(`${this.baseUrl}${API_ENDPOINTS.EXECUTE}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
+        signal: finalSignal,
       });
+
+      clearTimeout(timeoutId);
 
       const result = await response.json();
 
@@ -52,6 +62,9 @@ class ApiService {
         error: result.error || ERROR_MESSAGES.SERVER_ERROR,
       };
     } catch (err) {
+      if (err.name === 'AbortError') {
+        throw err; // Re-throw AbortError to be handled by the caller
+      }
       return {
         output: '',
         error: `${ERROR_MESSAGES.CONNECTION_ERROR}: ${err.message}\n\nMake sure the backend server is running on ${this.baseUrl}`,

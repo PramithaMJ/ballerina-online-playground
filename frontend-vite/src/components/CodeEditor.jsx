@@ -1,7 +1,6 @@
 /**
  * CodeEditor Component
  * Monaco-based code editor with Ballerina support
- * Following SOLID principles and clean architecture
  * @component
  */
 

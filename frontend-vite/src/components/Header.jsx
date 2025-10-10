@@ -1,12 +1,12 @@
 /**
  * Header Component
  * Application header with controls
- * Following SOLID principles and clean architecture
  * @component
  */
 
 import { 
   Play, 
+  Square,
   Eraser, 
   RotateCcw, 
   Github, 
@@ -24,9 +24,12 @@ import './Header.css';
 /**
  * @param {Object} props
  * @param {Function} props.onRun - Run code handler
+ * @param {Function} props.onStop - Stop execution handler
  * @param {Function} props.onClear - Clear code handler
  * @param {Function} props.onReset - Reset code handler
  * @param {boolean} props.isRunning - Running state
+ * @param {number} props.progress - Execution progress (0-100)
+ * @param {string} props.elapsedTime - Formatted elapsed time
  * @param {string} props.theme - Current theme
  * @param {Function} props.onToggleTheme - Theme toggle handler
  * @param {string} props.layout - Current layout
@@ -37,9 +40,12 @@ import './Header.css';
  */
 const Header = ({ 
   onRun, 
+  onStop,
   onClear, 
   onReset, 
-  isRunning, 
+  isRunning,
+  progress = 0,
+  elapsedTime = '0s',
   theme, 
   onToggleTheme,
   layout,
@@ -67,24 +73,47 @@ const Header = ({
       
       <div className="header-right">
         {/* Primary Actions */}
-        <button 
-          className="btn btn-primary" 
-          onClick={onRun}
-          disabled={isRunning}
-          aria-label="Run code"
-        >
-          {isRunning ? (
-            <>
-              <LoadingSpinner size="small" />
-              Running...
-            </>
-          ) : (
-            <>
-              <Play size={18} />
-              Run Code
-            </>
-          )}
-        </button>
+        {isRunning ? (
+          <div className="execution-container">
+            <button 
+              className="btn btn-stop" 
+              onClick={onStop}
+              aria-label="Stop execution"
+              title="Stop execution (Ctrl+Shift+Q)"
+            >
+              <Square size={18} />
+              <span>Stop</span>
+              <span className="keyboard-hint">Ctrl+Shift+Q</span>
+            </button>
+            
+            {/* Progress Bar */}
+            <div className="execution-progress">
+              <div className="progress-bar-container">
+                <div 
+                  className="progress-bar-fill" 
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <span className="progress-text">{progress}%</span>
+            </div>
+            
+            {/* Elapsed Time */}
+            <div className="execution-time">
+              <span className="time-label">Running:</span>
+              <span className="time-value">{elapsedTime}</span>
+            </div>
+          </div>
+        ) : (
+          <button 
+            className="btn btn-primary" 
+            onClick={onRun}
+            disabled={isRunning}
+            aria-label="Run code"
+          >
+            <Play size={18} />
+            Run Code
+          </button>
+        )}
         
         <button 
           className="btn btn-secondary" 

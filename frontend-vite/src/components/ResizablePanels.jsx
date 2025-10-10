@@ -1,7 +1,6 @@
 /**
  * ResizablePanels Component
  * Resizable split panel container
- * Following SOLID principles and clean architecture
  * @component
  */
 

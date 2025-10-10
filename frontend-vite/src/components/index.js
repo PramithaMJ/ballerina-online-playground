@@ -15,3 +15,4 @@ export { default as EditorSettings } from './EditorSettings';
 export { default as OutputStatus } from './OutputStatus';
 export { default as EmptyState } from './EmptyState';
 export { default as LoadingSpinner } from './LoadingSpinner';
+export { default as ConfirmDialog } from './ConfirmDialog';

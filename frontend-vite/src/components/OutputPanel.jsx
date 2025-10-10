@@ -1,7 +1,6 @@
 /**
  * OutputPanel Component
  * Displays code execution output and errors
- * Following SOLID principles and clean architecture
  * @component
  */
 
