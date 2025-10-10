@@ -16,3 +16,4 @@ export { default as OutputStatus } from './OutputStatus';
 export { default as EmptyState } from './EmptyState';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as ConfirmDialog } from './ConfirmDialog';
+export { default as ErrorNotification } from './ErrorNotification';

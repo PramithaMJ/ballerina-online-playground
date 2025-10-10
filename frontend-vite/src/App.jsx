@@ -10,6 +10,7 @@ import CodeEditor from './components/CodeEditor';
 import OutputPanel from './components/OutputPanel';
 import ResizablePanels from './components/ResizablePanels';
 import ConfirmDialog from './components/ConfirmDialog';
+import ErrorNotification from './components/ErrorNotification';
 import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress } from './hooks';
 import { DEFAULT_SAMPLE_CODE } from './constants/app.constants';
 import './App.css';
@@ -22,6 +23,7 @@ function App() {
   // State management
   const [code, setCode] = useState(DEFAULT_SAMPLE_CODE);
   const [showStopConfirm, setShowStopConfirm] = useState(false);
+  const [connectionError, setConnectionError] = useState(null);
   const resizablePanelsRef = useRef(null);
 
   // Custom hooks for feature management
@@ -52,7 +54,24 @@ function App() {
 
   // Handler functions
   const handleRun = async () => {
-    await executeCode(code);
+    try {
+      setConnectionError(null);
+      await executeCode(code);
+    } catch (err) {
+      // Check if it's a connection error
+      if (err.message && err.message.includes('connection')) {
+        setConnectionError(err.message);
+      }
+    }
+  };
+
+  const handleRetryConnection = () => {
+    setConnectionError(null);
+    handleRun();
+  };
+
+  const handleCloseError = () => {
+    setConnectionError(null);
   };
 
   const handleStop = () => {
@@ -126,6 +145,15 @@ function App() {
         onCancel={handleCancelStop}
         type="danger"
       />
+
+      {/* Backend Connection Error Notification */}
+      {connectionError && (
+        <ErrorNotification
+          message={connectionError}
+          onClose={handleCloseError}
+          onRetry={handleRetryConnection}
+        />
+      )}
     </div>
   );
 }

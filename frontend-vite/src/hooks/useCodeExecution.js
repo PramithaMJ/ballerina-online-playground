@@ -24,12 +24,23 @@ export const useCodeExecution = () => {
 
     try {
       const result = await apiService.executeCode(code, abortControllerRef.current.signal);
+      
+      // Check if it's a connection error
+      if (result.error && result.error.includes('Connection failed')) {
+        setIsRunning(false);
+        abortControllerRef.current = null;
+        throw new Error(result.error);
+      }
+      
       setOutput(result.output);
       setError(result.error);
     } catch (err) {
       if (err.name === 'AbortError') {
         setOutput('Execution stopped by user.');
         setError('');
+      } else if (err.message && err.message.includes('Connection failed')) {
+        // Re-throw connection errors to be handled by App.jsx
+        throw err;
       } else {
         setOutput('');
         setError(`Unexpected error: ${err.message}`);
