@@ -1,7 +1,92 @@
 /**
  * Ballerina Code Validator
- * Provides real-time syntax validation for Ballerina code
+ * Provides real-time syntax validation and security checks for Ballerina code
  */
+
+// Security constants
+const MAX_CODE_SIZE = 50 * 1024; // 50KB
+const MAX_LINE_COUNT = 1000;
+const MAX_LOOP_COUNT = 10;
+
+/**
+ * Validates Ballerina code for security issues
+ * @param {string} code - The code to validate
+ * @returns {Object} { isValid: boolean, errors: Array<string> }
+ */
+export const validateCodeSecurity = (code) => {
+  const errors = [];
+
+  // Size validation
+  if (code.length > MAX_CODE_SIZE) {
+    errors.push(`Code size exceeds ${MAX_CODE_SIZE / 1024}KB limit`);
+  }
+
+  // Line count validation
+  const lines = code.split('\n');
+  if (lines.length > MAX_LINE_COUNT) {
+    errors.push(`Too many lines (max ${MAX_LINE_COUNT})`);
+  }
+
+  // Check for forbidden imports
+  const forbiddenImports = [
+    { pattern: /import\s+ballerina\/file/gi, message: 'File system operations are not allowed' },
+    { pattern: /import\s+ballerina\/http/gi, message: 'HTTP operations are not allowed' },
+    { pattern: /import\s+ballerina\/tcp/gi, message: 'TCP operations are not allowed' },
+    { pattern: /import\s+ballerina\/udp/gi, message: 'UDP operations are not allowed' },
+    { pattern: /import\s+ballerina\/websocket/gi, message: 'WebSocket operations are not allowed' },
+    { pattern: /import\s+ballerina\/sql/gi, message: 'Database operations are not allowed' },
+    { pattern: /import\s+ballerina\/mysql/gi, message: 'Database operations are not allowed' },
+    { pattern: /import\s+ballerina\/java/gi, message: 'Java interop is not allowed' },
+    { pattern: /import\s+ballerina\/email/gi, message: 'Email operations are not allowed' },
+    { pattern: /import\s+ballerina\/ftp/gi, message: 'FTP operations are not allowed' },
+    { pattern: /import\s+ballerina\/kafka/gi, message: 'Kafka operations are not allowed' },
+    { pattern: /import\s+ballerina\/os/gi, message: 'OS operations are not allowed' },
+    { pattern: /import\s+ballerina\/runtime/gi, message: 'Runtime operations are not allowed' },
+  ];
+
+  forbiddenImports.forEach(({ pattern, message }) => {
+    if (pattern.test(code)) {
+      errors.push(message);
+    }
+  });
+
+  // Check for forbidden annotations
+  const forbiddenAnnotations = [
+    { pattern: /@docker:/gi, message: 'Docker annotations are not allowed' },
+    { pattern: /@kubernetes:/gi, message: 'Kubernetes annotations are not allowed' },
+    { pattern: /@cloud:/gi, message: 'Cloud annotations are not allowed' },
+  ];
+
+  forbiddenAnnotations.forEach(({ pattern, message }) => {
+    if (pattern.test(code)) {
+      errors.push(message);
+    }
+  });
+
+  // Check for Java interop
+  if (/\bjava:/gi.test(code) || /@java:/gi.test(code)) {
+    errors.push('Java interoperability is not allowed');
+  }
+
+  // Check for excessive loops
+  const whileCount = (code.match(/\bwhile\s*\(/gi) || []).length;
+  const foreachCount = (code.match(/\bforeach\s+/gi) || []).length;
+  const loopCount = whileCount + foreachCount;
+  
+  if (loopCount > MAX_LOOP_COUNT) {
+    errors.push(`Too many loops detected (max ${MAX_LOOP_COUNT})`);
+  }
+
+  // Check for infinite loop patterns
+  if (/while\s*\(\s*true\s*\)/gi.test(code)) {
+    errors.push('Infinite loop detected: while(true) is not allowed');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
 
 /**
  * Validates Ballerina code and returns error markers

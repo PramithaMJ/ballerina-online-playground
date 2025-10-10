@@ -20,6 +20,18 @@ func CompileCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Security validation
+	if err := utils.ValidateCode(req.Code); err != nil {
+		response := CodeResponse{
+			Output: "",
+			Error:  "Security validation failed: " + err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
 	// Save code to a temporary file
 	tempFile, err := utils.SaveToTempFile(req.Code, "code.bal")
 	if err != nil {
@@ -30,12 +42,16 @@ func CompileCode(w http.ResponseWriter, r *http.Request) {
 
 	// Compile code using Docker
 	output, execErr := utils.RunInDocker(tempFile, "ballerina/ballerina:2201.10.2", "bal", "build", "/home/ballerina/code.bal")
+
+	// Sanitize output
+	sanitizedOutput := utils.SanitizeErrorOutput(output)
+
 	response := CodeResponse{
-		Output: output,
+		Output: sanitizedOutput,
 		Error:  "",
 	}
 	if execErr != nil {
-		response.Error = execErr.Error()
+		response.Error = utils.SanitizeErrorOutput(execErr.Error())
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -7,6 +7,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { apiService } from '../services/api.service';
 import { SUCCESS_MESSAGES } from '../constants/app.constants';
+import { validateCodeSecurity } from '../utils/ballerina-validator.util';
 
 export const useCodeExecution = () => {
   const [output, setOutput] = useState('');
@@ -15,6 +16,14 @@ export const useCodeExecution = () => {
   const abortControllerRef = useRef(null);
 
   const executeCode = useCallback(async (code) => {
+    // Security validation before execution
+    const validation = validateCodeSecurity(code);
+    if (!validation.isValid) {
+      setError(`Security validation failed:\n${validation.errors.join('\n')}`);
+      setOutput('');
+      return;
+    }
+
     setIsRunning(true);
     setOutput(SUCCESS_MESSAGES.RUNNING);
     setError('');
