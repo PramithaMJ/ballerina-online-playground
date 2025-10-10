@@ -4,9 +4,10 @@
  * @component
  */
 
-import { Terminal, Info, AlertCircle } from 'lucide-react';
+import { Terminal, Info, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
 import OutputStatus from './OutputStatus';
 import EmptyState from './EmptyState';
+import { useOutputFullscreen } from '../hooks';
 import './OutputPanel.css';
 
 /**
@@ -18,20 +19,36 @@ const OutputPanel = ({ output, error }) => {
   const hasContent = output || error;
   const isSuccess = output && !error;
   const isError = !!error;
+  
+  const {
+    isOutputFullscreen,
+    toggleOutputFullscreen,
+  } = useOutputFullscreen();
 
   return (
-    <div className="output-container">
+    <div className={`output-container ${isOutputFullscreen ? 'output-fullscreen' : ''}`}>
       <div className="panel-header">
         <div className="panel-title">
           <Terminal size={18} />
           <span>Output Console</span>
         </div>
         
-        {hasContent && (
-          <div className="output-status">
-            <OutputStatus isSuccess={isSuccess} isError={isError} />
-          </div>
-        )}
+        <div className="output-header-controls">
+          {hasContent && (
+            <div className="output-status">
+              <OutputStatus isSuccess={isSuccess} isError={isError} />
+            </div>
+          )}
+          
+          <button 
+            className="control-btn" 
+            onClick={toggleOutputFullscreen}
+            title={isOutputFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+            aria-label={isOutputFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+          >
+            {isOutputFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+          </button>
+        </div>
       </div>
       
       <div className="output-wrapper">
