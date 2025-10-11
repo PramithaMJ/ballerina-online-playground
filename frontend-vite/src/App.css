@@ -4,6 +4,7 @@
   --bg-secondary: #1e1e1e;
   --bg-tertiary: #252526;
   --bg-panel: #2d2d30;
+  --bg-hover: #2a2a2a;
   --border-color: #3a3a3a;
   --text-primary: #e4e6eb;
   --text-secondary: #8b92a7;
@@ -11,6 +12,10 @@
   --accent-color: #52c3c2;
   --accent-hover: #6dd5d4;
   --separator-color: #52c3c2;
+  --primary-color: #52c3c2;
+  --primary-hover: #6dd5d4;
+  --success-color: #4ade80;
+  --warning-color: #ff9800;
 }
 
 :root[data-theme="light"] {
@@ -18,6 +23,7 @@
   --bg-secondary: #ffffff;
   --bg-tertiary: #f8f9fa;
   --bg-panel: #e9ecef;
+  --bg-hover: #f0f0f0;
   --border-color: #dee2e6;
   --text-primary: #212529;
   --text-secondary: #495057;
@@ -25,6 +31,10 @@
   --accent-color: #0d9488;
   --accent-hover: #14b8a6;
   --separator-color: #0d9488;
+  --primary-color: #0d9488;
+  --primary-hover: #14b8a6;
+  --success-color: #10b981;
+  --warning-color: #ff9800;
 }
 
 .app {

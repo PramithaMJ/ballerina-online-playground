@@ -11,6 +11,7 @@ import OutputPanel from './components/OutputPanel';
 import ResizablePanels from './components/ResizablePanels';
 import ConfirmDialog from './components/ConfirmDialog';
 import ErrorNotification from './components/ErrorNotification';
+import UserGuide from './components/UserGuide';
 import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress } from './hooks';
 import { DEFAULT_SAMPLE_CODE } from './constants/app.constants';
 import './App.css';
@@ -24,6 +25,7 @@ function App() {
   const [code, setCode] = useState(DEFAULT_SAMPLE_CODE);
   const [showStopConfirm, setShowStopConfirm] = useState(false);
   const [connectionError, setConnectionError] = useState(null);
+  const [showUserGuide, setShowUserGuide] = useState(false);
   const resizablePanelsRef = useRef(null);
 
   // Custom hooks for feature management
@@ -106,6 +108,14 @@ function App() {
     resizablePanelsRef.current?.resetSplit();
   };
 
+  const handleOpenUserGuide = () => {
+    setShowUserGuide(true);
+  };
+
+  const handleCloseUserGuide = () => {
+    setShowUserGuide(false);
+  };
+
   // Get current layout from ref
   const currentLayout = resizablePanelsRef.current?.layout || 'horizontal';
 
@@ -126,6 +136,7 @@ function App() {
         onResetSplit={handleResetSplit}
         isFullscreen={isFullscreen}
         onToggleFullscreen={toggleFullscreen}
+        onOpenUserGuide={handleOpenUserGuide}
       />
       
       <ResizablePanels
@@ -154,6 +165,12 @@ function App() {
           onRetry={handleRetryConnection}
         />
       )}
+
+      {/* User Guide Modal */}
+      <UserGuide
+        isOpen={showUserGuide}
+        onClose={handleCloseUserGuide}
+      />
     </div>
   );
 }
