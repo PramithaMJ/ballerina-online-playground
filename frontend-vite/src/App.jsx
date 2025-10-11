@@ -11,8 +11,10 @@ import OutputPanel from './components/OutputPanel';
 import ResizablePanels from './components/ResizablePanels';
 import ConfirmDialog from './components/ConfirmDialog';
 import ErrorNotification from './components/ErrorNotification';
+import UserGuide from './components/UserGuide';
 import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress } from './hooks';
 import { DEFAULT_SAMPLE_CODE } from './constants/app.constants';
+import { isFirstVisit, markAsVisited } from './utils';
 import './App.css';
 
 /**
@@ -24,6 +26,8 @@ function App() {
   const [code, setCode] = useState(DEFAULT_SAMPLE_CODE);
   const [showStopConfirm, setShowStopConfirm] = useState(false);
   const [connectionError, setConnectionError] = useState(null);
+  const [showUserGuide, setShowUserGuide] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(false);
   const resizablePanelsRef = useRef(null);
 
   // Custom hooks for feature management
@@ -31,6 +35,20 @@ function App() {
   const { isFullscreen, toggleFullscreen } = useFullscreen();
   const { output, error, isRunning, executeCode, stopExecution, clearOutput } = useCodeExecution();
   const { elapsedTime, formattedTime, progress } = useExecutionProgress(isRunning);
+
+  // Check for first visit and show User Guide
+  useEffect(() => {
+    if (isFirstVisit()) {
+      // Show user guide after a small delay for better UX
+      const timer = setTimeout(() => {
+        setIsFirstTime(true);
+        setShowUserGuide(true);
+        markAsVisited();
+      }, 800); // 800ms delay to let the page load smoothly
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // Keyboard shortcut handler (Ctrl+Shift+Q to stop)
   useEffect(() => {
@@ -106,6 +124,17 @@ function App() {
     resizablePanelsRef.current?.resetSplit();
   };
 
+  const handleOpenUserGuide = () => {
+    setIsFirstTime(false); // Manual open, not first time
+    setShowUserGuide(true);
+  };
+
+  const handleCloseUserGuide = () => {
+    setShowUserGuide(false);
+    // Reset first time flag after closing
+    setTimeout(() => setIsFirstTime(false), 300);
+  };
+
   // Get current layout from ref
   const currentLayout = resizablePanelsRef.current?.layout || 'horizontal';
 
@@ -126,6 +155,7 @@ function App() {
         onResetSplit={handleResetSplit}
         isFullscreen={isFullscreen}
         onToggleFullscreen={toggleFullscreen}
+        onOpenUserGuide={handleOpenUserGuide}
       />
       
       <ResizablePanels
@@ -154,6 +184,13 @@ function App() {
           onRetry={handleRetryConnection}
         />
       )}
+
+      {/* User Guide Modal */}
+      <UserGuide
+        isOpen={showUserGuide}
+        onClose={handleCloseUserGuide}
+        isFirstVisit={isFirstTime}
+      />
     </div>
   );
 }

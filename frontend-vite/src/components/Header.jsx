@@ -16,7 +16,8 @@ import {
   Rows, 
   Maximize2, 
   Maximize, 
-  Minimize 
+  Minimize,
+  BookOpen
 } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import './Header.css';
@@ -37,6 +38,7 @@ import './Header.css';
  * @param {Function} props.onResetSplit - Reset split handler
  * @param {boolean} props.isFullscreen - Fullscreen state
  * @param {Function} props.onToggleFullscreen - Fullscreen toggle handler
+ * @param {Function} props.onOpenUserGuide - User guide handler
  */
 const Header = ({ 
   onRun, 
@@ -52,7 +54,8 @@ const Header = ({
   onToggleLayout,
   onResetSplit,
   isFullscreen,
-  onToggleFullscreen
+  onToggleFullscreen,
+  onOpenUserGuide
 }) => {
   const isHorizontal = layout === 'horizontal';
   const isDark = theme === 'dark';
@@ -181,6 +184,15 @@ const Header = ({
         <div className="header-divider" role="separator"></div>
 
         {/* Theme and External Links */}
+        <button 
+          className="btn btn-icon" 
+          onClick={onOpenUserGuide}
+          title="User Guide & Documentation"
+          aria-label="Open user guide"
+        >
+          <BookOpen size={20} />
+        </button>
+
         <button 
           className="btn btn-icon" 
           onClick={onToggleTheme}

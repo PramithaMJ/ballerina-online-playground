@@ -10,7 +10,7 @@ import { Code2 } from 'lucide-react';
 import EditorToolbar from './EditorToolbar';
 import EditorSettings from './EditorSettings';
 import LoadingSpinner from './LoadingSpinner';
-import { useEditorSettings } from '../hooks';
+import { useEditorSettings, useCodeEditorFullscreen } from '../hooks';
 import { setupMonacoEditor } from '../utils/monaco-setup.util';
 import { EDITOR_OPTIONS } from '../constants/app.constants';
 import './CodeEditor.css';
@@ -35,6 +35,11 @@ const CodeEditor = ({ code, onChange }) => {
     cycleTheme,
   } = useEditorSettings();
 
+  const {
+    isEditorFullscreen,
+    toggleEditorFullscreen,
+  } = useCodeEditorFullscreen();
+
   // Update editor font size when it changes
   useEffect(() => {
     if (editorRef) {
@@ -53,7 +58,7 @@ const CodeEditor = ({ code, onChange }) => {
   const lineCount = code.split('\n').length;
 
   return (
-    <div className="editor-container">
+    <div className={`editor-container ${isEditorFullscreen ? 'editor-fullscreen' : ''}`}>
       <div className="panel-header">
         <div className="panel-title">
           <Code2 size={18} />
@@ -74,6 +79,8 @@ const CodeEditor = ({ code, onChange }) => {
           onCycleTheme={cycleTheme}
           showSettings={showSettings}
           onToggleSettings={() => setShowSettings(!showSettings)}
+          isEditorFullscreen={isEditorFullscreen}
+          onToggleEditorFullscreen={toggleEditorFullscreen}
         />
       </div>
       

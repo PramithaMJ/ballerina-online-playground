@@ -21,7 +21,7 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 	}
 
 	// Create context with timeout, respecting parent context cancellation
-	ctx, cancel := context.WithTimeout(parentCtx, 30*time.Second)
+	ctx, cancel := context.WithTimeout(parentCtx, 10*time.Second)
 	defer cancel()
 
 	// Convert container path to host path for Docker-in-Docker
@@ -57,16 +57,23 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 		log.Printf("  - %s (mode: %v)", entry.Name(), info.Mode())
 	}
 
-	// Docker arguments with resource limits for security
+	// Docker arguments with enhanced security constraints
 	args := []string{
 		"run",
 		"--rm",
 		"--network", "none", // Disable network access
-		"--memory", "512m", // Increased memory for compilation
-		"--cpus", "1.0", // Increased CPU for compilation
+		"--memory", "256m", // Reduced memory limit
+		"--memory-swap", "256m", // Prevent swap usage
+		"--cpus", "0.5", // Reduced CPU limit
 		"--pids-limit", "50", // Limit number of processes
-		"-v", hostPath + ":/home/ballerina/app", // Read-write mount for build artifacts
+		"--read-only",                               // Read-only root filesystem
+		"--tmpfs", "/tmp:rw,noexec,nosuid,size=50m", // Temporary writable space for build artifacts
+		"--security-opt", "no-new-privileges", // Prevent privilege escalation
+		"--cap-drop", "ALL", // Drop all capabilities
+		"-v", hostPath + ":/home/ballerina/app:ro", // Read-only mount of source
+		"--tmpfs", "/home/ballerina/app/target:rw,noexec,nosuid,size=100m", // Writable target directory
 		"-w", "/home/ballerina/app", // Set working directory
+		"-u", "65534:65534", // Run as nobody user
 		"ballerina/ballerina:2201.10.2",
 		"bal", "run", // Run the package without arguments
 	}
@@ -97,7 +104,7 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 
 	// Check if context deadline exceeded (timeout)
 	if ctx.Err() == context.DeadlineExceeded {
-		return "", fmt.Errorf("execution timeout: code took longer than 30 seconds")
+		return "", fmt.Errorf("execution timeout: code took longer than 10 seconds")
 	}
 
 	// Combine stdout and stderr if there's content in stderr
@@ -269,19 +276,25 @@ func convertToHostPath(containerPath string) string {
 
 func RunInDocker(filePath string, image string, command ...string) (string, error) {
 	// Create context with timeout to prevent long-running executions
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Docker arguments with resource limits for security
+	// Docker arguments with enhanced security constraints
 	args := []string{
 		"run",
 		"--rm",
 		"--network", "none", // Disable network access
-		"--memory", "256m", // Limit memory to 256MB
-		"--cpus", "0.5", // Limit CPU usage
-		"--pids-limit", "50", // Limit number of processes
+		"--memory", "128m", // Reduced memory limit
+		"--memory-swap", "128m", // Prevent swap usage
+		"--cpus", "0.25", // Limited CPU usage
+		"--pids-limit", "30", // Limit number of processes
+		"--read-only",                               // Read-only root filesystem
+		"--tmpfs", "/tmp:rw,noexec,nosuid,size=20m", // Small temporary space
+		"--security-opt", "no-new-privileges", // Prevent privilege escalation
+		"--cap-drop", "ALL", // Drop all capabilities
 		"-v", filePath + ":/home/ballerina/code.bal:ro", // Read-only mount
 		"-w", "/home/ballerina", // Set working directory
+		"-u", "65534:65534", // Run as nobody user
 		image,
 	}
 	args = append(args, command...)
@@ -296,7 +309,7 @@ func RunInDocker(filePath string, image string, command ...string) (string, erro
 
 	// Check if context deadline exceeded (timeout)
 	if ctx.Err() == context.DeadlineExceeded {
-		return "", fmt.Errorf("execution timeout: code took longer than 30 seconds")
+		return "", fmt.Errorf("compilation timeout: code took longer than 10 seconds")
 	}
 
 	if err != nil {

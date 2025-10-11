@@ -42,8 +42,25 @@ func RunCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log the execution request
-	log.Printf("Executing Ballerina code (%d bytes)", len(req.Code))
+	// Security validation
+	if err := utils.ValidateCode(req.Code); err != nil {
+		log.Printf("Code validation failed: %v", err)
+		response := CodeResponse{
+			Output: "",
+			Error:  "Security validation failed: " + err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	// Log the execution request with client IP
+	clientIP := r.Header.Get("X-Forwarded-For")
+	if clientIP == "" {
+		clientIP = r.RemoteAddr
+	}
+	log.Printf("Executing Ballerina code from IP: %s (%d bytes)", clientIP, len(req.Code))
 
 	// Create a Ballerina package structure
 	packageDir, err := utils.CreateBallerinaPackage(req.Code)
@@ -63,13 +80,17 @@ func RunCode(w http.ResponseWriter, r *http.Request) {
 	// Run code using Docker with request context for cancellation support
 	output, execErr := utils.RunBallerinaPackageWithContext(r.Context(), packageDir)
 
+	// Sanitize output to remove sensitive information
+	sanitizedOutput := utils.SanitizeErrorOutput(output)
+
 	response := CodeResponse{
-		Output: output,
+		Output: sanitizedOutput,
 		Error:  "",
 	}
 
 	if execErr != nil {
-		response.Error = execErr.Error()
+		sanitizedError := utils.SanitizeErrorOutput(execErr.Error())
+		response.Error = sanitizedError
 		log.Printf("Execution error: %v", execErr)
 	} else {
 		log.Printf("Execution successful")
