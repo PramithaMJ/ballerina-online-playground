@@ -25,7 +25,7 @@ const UserGuide = ({ isOpen, onClose, isFirstVisit = false }) => {
           <div className="user-guide-title">
             <BookOpen size={24} />
             <h2>
-              {isFirstVisit ? '👋 Welcome to Ballerina Playground!' : 'Ballerina Playground - User Guide'}
+              {isFirstVisit ? 'Welcome to Ballerina Playground!' : 'Ballerina Playground - User Guide'}
             </h2>
           </div>
           <button 
@@ -43,7 +43,7 @@ const UserGuide = ({ isOpen, onClose, isFirstVisit = false }) => {
           {isFirstVisit && (
             <section className="guide-section welcome-section">
               <div className="welcome-banner">
-                <h3>🎉 Thanks for trying out the Ballerina Playground!</h3>
+                <h3> Thanks for trying out the Ballerina Playground!</h3>
                 <p>
                   This guide will help you understand what you can do here and how to get started.
                   Take a moment to read through the key features and limitations below.
@@ -308,7 +308,7 @@ public function main() {
             </p>
           )}
           <button className="btn btn-primary" onClick={onClose}>
-            {isFirstVisit ? "Let's Get Started! 🚀" : "Got it, Let's Code!"}
+            {isFirstVisit ? "Let's Get Started!" : "Got it, Let's Code!"}
           </button>
         </div>
       </div>
