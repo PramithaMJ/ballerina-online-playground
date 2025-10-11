@@ -4,6 +4,7 @@
  * @component
  */
 
+import { useState } from 'react';
 import { X, BookOpen, Check, AlertCircle, Info, Keyboard, Zap } from 'lucide-react';
 import './UserGuide.css';
 
@@ -11,8 +12,9 @@ import './UserGuide.css';
  * @param {Object} props
  * @param {boolean} props.isOpen - Guide visibility state
  * @param {Function} props.onClose - Close handler
+ * @param {boolean} props.isFirstVisit - Whether this is the user's first visit
  */
-const UserGuide = ({ isOpen, onClose }) => {
+const UserGuide = ({ isOpen, onClose, isFirstVisit = false }) => {
   if (!isOpen) return null;
 
   return (
@@ -22,7 +24,9 @@ const UserGuide = ({ isOpen, onClose }) => {
         <div className="user-guide-header">
           <div className="user-guide-title">
             <BookOpen size={24} />
-            <h2>Ballerina Playground - User Guide</h2>
+            <h2>
+              {isFirstVisit ? '👋 Welcome to Ballerina Playground!' : 'Ballerina Playground - User Guide'}
+            </h2>
           </div>
           <button 
             className="user-guide-close" 
@@ -35,6 +39,19 @@ const UserGuide = ({ isOpen, onClose }) => {
 
         {/* Content */}
         <div className="user-guide-content">
+          {/* First Visit Welcome Message */}
+          {isFirstVisit && (
+            <section className="guide-section welcome-section">
+              <div className="welcome-banner">
+                <h3>🎉 Thanks for trying out the Ballerina Playground!</h3>
+                <p>
+                  This guide will help you understand what you can do here and how to get started.
+                  Take a moment to read through the key features and limitations below.
+                </p>
+              </div>
+            </section>
+          )}
+
           {/* Introduction */}
           <section className="guide-section">
             <h3><Info size={20} /> Welcome to Ballerina Playground</h3>
@@ -285,8 +302,13 @@ public function main() {
 
         {/* Footer */}
         <div className="user-guide-footer">
+          {isFirstVisit && (
+            <p className="first-visit-note">
+              💡 You can access this guide anytime by clicking the 📖 icon in the header
+            </p>
+          )}
           <button className="btn btn-primary" onClick={onClose}>
-            Got it, Let's Code!
+            {isFirstVisit ? "Let's Get Started! 🚀" : "Got it, Let's Code!"}
           </button>
         </div>
       </div>

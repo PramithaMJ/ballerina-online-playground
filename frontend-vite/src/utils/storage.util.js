@@ -63,3 +63,32 @@ export const clearStorage = () => {
     return false;
   }
 };
+
+/**
+ * Check if this is the user's first visit
+ * @returns {boolean} True if first visit, false otherwise
+ */
+export const isFirstVisit = () => {
+  try {
+    const hasVisited = localStorage.getItem('hasVisitedBefore');
+    return hasVisited === null;
+  } catch (error) {
+    console.error('Error checking first visit', error);
+    return false;
+  }
+};
+
+/**
+ * Mark that the user has visited the site
+ * @returns {boolean} Success status
+ */
+export const markAsVisited = () => {
+  try {
+    localStorage.setItem('hasVisitedBefore', 'true');
+    localStorage.setItem('firstVisitDate', new Date().toISOString());
+    return true;
+  } catch (error) {
+    console.error('Error marking as visited', error);
+    return false;
+  }
+};

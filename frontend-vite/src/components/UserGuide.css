@@ -133,6 +133,46 @@
   margin-bottom: 0;
 }
 
+/* Welcome Section for First-Time Visitors */
+.welcome-section {
+  margin-bottom: 24px;
+}
+
+.welcome-banner {
+  background: linear-gradient(135deg, rgba(82, 195, 194, 0.15) 0%, rgba(82, 195, 194, 0.05) 100%);
+  border: 2px solid var(--primary-color);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  animation: welcomePulse 2s ease-in-out;
+}
+
+@keyframes welcomePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+.welcome-banner h3 {
+  color: var(--primary-color);
+  font-size: 20px;
+  margin: 0 0 12px 0;
+  font-weight: 700;
+  border: none;
+  padding: 0;
+}
+
+.welcome-banner p {
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 500;
+}
+
 .guide-section h3 {
   display: flex;
   align-items: center;
@@ -328,8 +368,21 @@ kbd {
   border-top: 1px solid var(--border-color);
   background: var(--bg-secondary);
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   border-radius: 0 0 12px 12px;
+}
+
+.first-visit-note {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+  text-align: center;
+  padding: 8px 16px;
+  background: rgba(82, 195, 194, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(82, 195, 194, 0.3);
 }
 
 .user-guide-footer .btn {
