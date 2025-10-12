@@ -57,10 +57,10 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 		log.Printf("  - %s (mode: %v)", entry.Name(), info.Mode())
 	}
 
-	// Create target directory for Ballerina build artifacts
+	// Create target directory on host for separate mount
 	targetDir := filepath.Join(packageDir, "target")
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
-		return "", fmt.Errorf("failed to create target directory: %v", err)
+		return "", fmt.Errorf("failed to create target directory: %w", err)
 	}
 	log.Printf("DEBUG: Created target directory at %s", targetDir)
 
@@ -71,19 +71,19 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 	args := []string{
 		"run",
 		"--rm",
-		"--network", "none", // Disable network access
-		"--memory", "256m", // Reduced memory limit
-		"--memory-swap", "256m", // Prevent swap usage
-		"--cpus", "0.5", // Reduced CPU limit
-		"--pids-limit", "50", // Limit number of processes
+		"--network", "none",                         // Disable network access
+		"--memory", "256m",                          // Reduced memory limit
+		"--memory-swap", "256m",                     // Prevent swap usage
+		"--cpus", "0.5",                             // Reduced CPU limit
+		"--pids-limit", "50",                        // Limit number of processes
 		"--read-only",                               // Read-only root filesystem
 		"--tmpfs", "/tmp:rw,noexec,nosuid,size=50m", // Temporary writable space for build artifacts
-		"--security-opt", "no-new-privileges", // Prevent privilege escalation
-		"--cap-drop", "ALL", // Drop all capabilities
-		"-v", hostPath + ":/home/ballerina/app:ro", // Read-only mount of source
-		"-v", hostTargetPath + ":/home/ballerina/app/target:rw,noexec,nosuid", // Writable target directory as separate mount
-		"-w", "/home/ballerina/app", // Set working directory
-		"-u", "65534:65534", // Run as nobody user
+		"--security-opt", "no-new-privileges",       // Prevent privilege escalation
+		"--cap-drop", "ALL",                         // Drop all capabilities
+		"-v", hostPath + ":/home/ballerina/app:ro",  // Read-only mount of source
+		"-v", hostTargetPath + ":/home/ballerina/app/target:rw", // Writable target directory as separate mount
+		"-w", "/home/ballerina/app",                 // Set working directory
+		"-u", "65534:65534",                         // Run as nobody user
 		"ballerina/ballerina:2201.10.2",
 		"bal", "run", // Run the package without arguments
 	}
