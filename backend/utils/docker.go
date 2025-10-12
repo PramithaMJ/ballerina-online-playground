@@ -57,6 +57,16 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 		log.Printf("  - %s (mode: %v)", entry.Name(), info.Mode())
 	}
 
+	// Create target directory for Ballerina build artifacts
+	targetDir := filepath.Join(packageDir, "target")
+	if err := os.MkdirAll(targetDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create target directory: %v", err)
+	}
+	log.Printf("DEBUG: Created target directory at %s", targetDir)
+
+	// Convert target directory to host path
+	hostTargetPath := convertToHostPath(targetDir)
+
 	// Docker arguments with enhanced security constraints
 	args := []string{
 		"run",
@@ -71,7 +81,7 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 		"--security-opt", "no-new-privileges", // Prevent privilege escalation
 		"--cap-drop", "ALL", // Drop all capabilities
 		"-v", hostPath + ":/home/ballerina/app:ro", // Read-only mount of source
-		"--tmpfs", "/home/ballerina/app/target:rw,noexec,nosuid,size=100m", // Writable target directory
+		"-v", hostTargetPath + ":/home/ballerina/app/target:rw,noexec,nosuid", // Writable target directory as separate mount
 		"-w", "/home/ballerina/app", // Set working directory
 		"-u", "65534:65534", // Run as nobody user
 		"ballerina/ballerina:2201.10.2",
