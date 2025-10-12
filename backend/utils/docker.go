@@ -68,10 +68,13 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 	}
 	log.Printf("DEBUG: Created target directory at %s with permissions 0777", targetDir)
 
-	// Convert target directory to host path
-	hostTargetPath := convertToHostPath(targetDir)
+	// Ensure package directory has proper permissions for Dependencies.toml creation
+	if err := os.Chmod(packageDir, 0777); err != nil {
+		return "", fmt.Errorf("failed to set permissions on package directory: %w", err)
+	}
 
 	// Docker arguments with enhanced security constraints
+	// Note: Package directory is mounted as rw to allow Dependencies.toml creation
 	args := []string{
 		"run",
 		"--rm",
@@ -85,8 +88,7 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 		"--tmpfs", "/.ballerina:rw,noexec,nosuid,size=10m", // Writable home for Ballerina config
 		"--security-opt", "no-new-privileges", // Prevent privilege escalation
 		"--cap-drop", "ALL", // Drop all capabilities
-		"-v", hostPath + ":/home/ballerina/app:ro", // Read-only mount of source
-		"-v", hostTargetPath + ":/home/ballerina/app/target:rw", // Writable target directory
+		"-v", hostPath + ":/home/ballerina/app:rw", // Read-write mount for Dependencies.toml
 		"-w", "/home/ballerina/app", // Set working directory
 		"-u", "65534:65534", // Run as nobody user
 		"ballerina/ballerina:2201.10.2",
