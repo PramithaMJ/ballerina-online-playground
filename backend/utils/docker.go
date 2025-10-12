@@ -21,7 +21,7 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 	}
 
 	// Create context with timeout, respecting parent context cancellation
-	ctx, cancel := context.WithTimeout(parentCtx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(parentCtx, 60*time.Second)
 	defer cancel()
 
 	// Convert container path to host path for Docker-in-Docker
@@ -119,7 +119,7 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 
 	// Check if context deadline exceeded (timeout)
 	if ctx.Err() == context.DeadlineExceeded {
-		return "", fmt.Errorf("execution timeout: code took longer than 10 seconds")
+		return "", fmt.Errorf("execution timeout: code took longer than 60 seconds")
 	}
 
 	// Combine stdout and stderr if there's content in stderr
@@ -147,7 +147,7 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 	}
 
 	// Create context with timeout to prevent long-running executions
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	// Convert container path to host path for Docker-in-Docker

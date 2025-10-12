@@ -119,6 +119,6 @@ func main() {
 	log.Println("  - Docker isolation with security constraints")
 	log.Println("  - Network disabled in containers")
 	log.Println("  - Resource limits enforced")
-	log.Println("  - Execution timeout: 10 seconds")
+	log.Println("  - Execution timeout: 60 seconds")
 	log.Fatal(server.ListenAndServe())
 }
