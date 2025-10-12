@@ -104,26 +104,27 @@ func main() {
 	}))
 
 	// Apply middleware chain to handlers with rate limiting
+	// Order matters: rightmost middleware is applied first
 	http.HandleFunc("/run", chain(
 		handler.RunCode,
-		enableCORS,
 		middleware.RateLimitMiddleware(rateLimiter),
 		performanceMiddleware,
 		loggingMiddleware,
+		enableCORS, // Apply CORS last (first in execution) to ensure headers are set
 	))
 	http.HandleFunc("/compile", chain(
 		handler.CompileCode,
-		enableCORS,
 		middleware.RateLimitMiddleware(rateLimiter),
 		performanceMiddleware,
 		loggingMiddleware,
+		enableCORS, // Apply CORS last (first in execution) to ensure headers are set
 	))
 	http.HandleFunc("/execute", chain(
 		handler.RunCode,
-		enableCORS,
 		middleware.RateLimitMiddleware(rateLimiter),
 		performanceMiddleware,
 		loggingMiddleware,
+		enableCORS, // Apply CORS last (first in execution) to ensure headers are set
 	))
 
 	// Configure server with security optimizations
