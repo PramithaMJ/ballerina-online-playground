@@ -77,11 +77,12 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 		"--cpus", "0.5", // Reduced CPU limit
 		"--pids-limit", "50", // Limit number of processes
 		"--read-only",                               // Read-only root filesystem
-		"--tmpfs", "/tmp:rw,noexec,nosuid,size=50m", // Temporary writable space for build artifacts
+		"--tmpfs", "/tmp:rw,noexec,nosuid,size=50m", // Temporary writable space
+		"--tmpfs", "/.ballerina:rw,noexec,nosuid,size=10m", // Writable home for Ballerina config
 		"--security-opt", "no-new-privileges", // Prevent privilege escalation
 		"--cap-drop", "ALL", // Drop all capabilities
 		"-v", hostPath + ":/home/ballerina/app:ro", // Read-only mount of source
-		"-v", hostTargetPath + ":/home/ballerina/app/target:rw", // Writable target directory as separate mount
+		"-v", hostTargetPath + ":/home/ballerina/app/target:rw", // Writable target directory
 		"-w", "/home/ballerina/app", // Set working directory
 		"-u", "65534:65534", // Run as nobody user
 		"ballerina/ballerina:2201.10.2",
