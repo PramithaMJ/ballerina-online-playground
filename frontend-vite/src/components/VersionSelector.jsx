@@ -12,8 +12,6 @@ const BALLERINA_VERSIONS = [
   { value: '2201.12.0', label: 'Swan Lake Update 12 (2201.12.0)', recommended: true },
   
   // Swan Lake Update 11
-  { value: '2201.11.2', label: 'Swan Lake Update 11.2 (2201.11.2)' },
-  { value: '2201.11.1', label: 'Swan Lake Update 11.1 (2201.11.1)' },
   { value: '2201.11.0', label: 'Swan Lake Update 11 (2201.11.0)' },
   
   // Swan Lake Update 10
@@ -41,7 +39,6 @@ const BALLERINA_VERSIONS = [
   
   // Swan Lake Update 7
   { value: '2201.7.2', label: 'Swan Lake Update 7.2 (2201.7.2)' },
-  { value: '2201.7.1', label: 'Swan Lake Update 7.1 (2201.7.1)' },
   { value: '2201.7.0', label: 'Swan Lake Update 7 (2201.7.0)' },
   
   // Swan Lake Update 6
@@ -53,30 +50,6 @@ const BALLERINA_VERSIONS = [
   // Swan Lake Update 4
   { value: '2201.4.1', label: 'Swan Lake Update 4.1 (2201.4.1)' },
   { value: '2201.4.0', label: 'Swan Lake Update 4 (2201.4.0)' },
-  
-  // Swan Lake Update 3
-  { value: '2201.3.3', label: 'Swan Lake Update 3.3 (2201.3.3)' },
-  { value: '2201.3.2', label: 'Swan Lake Update 3.2 (2201.3.2)' },
-  { value: '2201.3.1', label: 'Swan Lake Update 3.1 (2201.3.1)' },
-  { value: '2201.3.0', label: 'Swan Lake Update 3 (2201.3.0)' },
-  
-  // Swan Lake Update 2
-  { value: '2201.2.3', label: 'Swan Lake Update 2.3 (2201.2.3)' },
-  { value: '2201.2.2', label: 'Swan Lake Update 2.2 (2201.2.2)' },
-  { value: '2201.2.1', label: 'Swan Lake Update 2.1 (2201.2.1)' },
-  { value: '2201.2.0', label: 'Swan Lake Update 2 (2201.2.0)' },
-  
-  // Swan Lake Update 1
-  { value: '2201.1.3', label: 'Swan Lake Update 1.3 (2201.1.3)' },
-  { value: '2201.1.2', label: 'Swan Lake Update 1.2 (2201.1.2)' },
-  { value: '2201.1.1', label: 'Swan Lake Update 1.1 (2201.1.1)' },
-  { value: '2201.1.0', label: 'Swan Lake Update 1 (2201.1.0)' },
-  
-  // Swan Lake GA (Initial Release)
-  { value: '2201.0.3', label: 'Swan Lake GA 0.3 (2201.0.3)' },
-  { value: '2201.0.2', label: 'Swan Lake GA 0.2 (2201.0.2)' },
-  { value: '2201.0.1', label: 'Swan Lake GA 0.1 (2201.0.1)' },
-  { value: '2201.0.0', label: 'Swan Lake GA (2201.0.0)' },
   
   // Special tags
   { value: 'swan-lake', label: 'Swan Lake (Latest Development Build)' },
