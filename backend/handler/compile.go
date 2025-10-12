@@ -20,6 +20,24 @@ func CompileCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate and set default version if not provided
+	ballerinaVersion := req.Version
+	if ballerinaVersion == "" {
+		ballerinaVersion = "2201.12.0" // Default version (Latest Stable)
+	}
+
+	// Validate version format
+	if !utils.IsValidBallerinaVersion(ballerinaVersion) {
+		response := CodeResponse{
+			Output: "",
+			Error:  "Invalid Ballerina version. Please check supported versions at https://hub.docker.com/r/ballerina/ballerina/tags",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
 	// Security validation
 	if err := utils.ValidateCode(req.Code); err != nil {
 		response := CodeResponse{
@@ -40,8 +58,11 @@ func CompileCode(w http.ResponseWriter, r *http.Request) {
 	}
 	defer os.Remove(tempFile) // Cleanup temp file
 
+	// Get Docker image for the version
+	dockerImage := utils.GetBallerinaDockerImage(ballerinaVersion)
+
 	// Compile code using Docker
-	output, execErr := utils.RunInDocker(tempFile, "ballerina/ballerina:2201.10.2", "bal", "build", "/home/ballerina/code.bal")
+	output, execErr := utils.RunInDocker(tempFile, dockerImage, "bal", "build", "/home/ballerina/code.bal")
 
 	// Sanitize output
 	sanitizedOutput := utils.SanitizeErrorOutput(output)

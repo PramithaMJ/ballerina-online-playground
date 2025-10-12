@@ -28,6 +28,11 @@ paths:
                     public function main() {
                         io:println("Hello World");
                     }
+                version:
+                  type: string
+                  description: The Ballerina version to use (e.g., "2201.12.0", "2201.11.2", "2201.10.2", "swan-lake"). See https://hub.docker.com/r/ballerina/ballerina/tags for all available versions.
+                  default: "2201.12.0"
+                  example: "2201.12.0"
       responses:
         '200':
           description: Successfully compiled and run the Ballerina program
@@ -83,6 +88,11 @@ paths:
                     public function main() {
                         io:println("Hello World");
                     }
+                version:
+                  type: string
+                  description: The Ballerina version to use (e.g., "2201.12.0", "2201.11.2", "2201.10.2", "swan-lake"). See https://hub.docker.com/r/ballerina/ballerina/tags for all available versions.
+                  default: "2201.12.0"
+                  example: "2201.12.0"
       responses:
         '200':
           description: Successfully compiled the Ballerina program
