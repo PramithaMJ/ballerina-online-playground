@@ -19,10 +19,6 @@ func GetBallerinaDockerImage(version string) string {
 	// Swan Lake Update 12 and later
 	case "2201.12.0":
 		return "ballerina/ballerina:2201.12.0"
-	case "2201.11.2":
-		return "ballerina/ballerina:2201.11.2"
-	case "2201.11.1":
-		return "ballerina/ballerina:2201.11.1"
 	case "2201.11.0":
 		return "ballerina/ballerina:2201.11.0"
 	case "2201.10.5":
@@ -61,8 +57,6 @@ func GetBallerinaDockerImage(version string) string {
 		return "ballerina/ballerina:2201.8.0"
 	case "2201.7.2":
 		return "ballerina/ballerina:2201.7.2"
-	case "2201.7.1":
-		return "ballerina/ballerina:2201.7.1"
 	case "2201.7.0":
 		return "ballerina/ballerina:2201.7.0"
 	case "2201.6.0":
@@ -73,38 +67,6 @@ func GetBallerinaDockerImage(version string) string {
 		return "ballerina/ballerina:2201.4.1"
 	case "2201.4.0":
 		return "ballerina/ballerina:2201.4.0"
-	case "2201.3.3":
-		return "ballerina/ballerina:2201.3.3"
-	case "2201.3.2":
-		return "ballerina/ballerina:2201.3.2"
-	case "2201.3.1":
-		return "ballerina/ballerina:2201.3.1"
-	case "2201.3.0":
-		return "ballerina/ballerina:2201.3.0"
-	case "2201.2.3":
-		return "ballerina/ballerina:2201.2.3"
-	case "2201.2.2":
-		return "ballerina/ballerina:2201.2.2"
-	case "2201.2.1":
-		return "ballerina/ballerina:2201.2.1"
-	case "2201.2.0":
-		return "ballerina/ballerina:2201.2.0"
-	case "2201.1.3":
-		return "ballerina/ballerina:2201.1.3"
-	case "2201.1.2":
-		return "ballerina/ballerina:2201.1.2"
-	case "2201.1.1":
-		return "ballerina/ballerina:2201.1.1"
-	case "2201.1.0":
-		return "ballerina/ballerina:2201.1.0"
-	case "2201.0.3":
-		return "ballerina/ballerina:2201.0.3"
-	case "2201.0.2":
-		return "ballerina/ballerina:2201.0.2"
-	case "2201.0.1":
-		return "ballerina/ballerina:2201.0.1"
-	case "2201.0.0":
-		return "ballerina/ballerina:2201.0.0"
 	case "swan-lake", "latest":
 		return "ballerina/ballerina:swan-lake"
 	default:
@@ -119,7 +81,7 @@ func IsValidBallerinaVersion(version string) bool {
 		// Swan Lake Update 12 (Latest)
 		"2201.12.0",
 		// Swan Lake Update 11
-		"2201.11.2", "2201.11.1", "2201.11.0",
+		"2201.11.0",
 		// Swan Lake Update 10
 		"2201.10.5", "2201.10.4", "2201.10.3", "2201.10.2", "2201.10.1", "2201.10.0",
 		// Swan Lake Update 9
@@ -127,21 +89,13 @@ func IsValidBallerinaVersion(version string) bool {
 		// Swan Lake Update 8
 		"2201.8.6", "2201.8.5", "2201.8.4", "2201.8.3", "2201.8.2", "2201.8.1", "2201.8.0",
 		// Swan Lake Update 7
-		"2201.7.2", "2201.7.1", "2201.7.0",
+		"2201.7.2", "2201.7.0",
 		// Swan Lake Update 6
 		"2201.6.0",
 		// Swan Lake Update 5
 		"2201.5.0",
 		// Swan Lake Update 4
 		"2201.4.1", "2201.4.0",
-		// Swan Lake Update 3
-		"2201.3.3", "2201.3.2", "2201.3.1", "2201.3.0",
-		// Swan Lake Update 2
-		"2201.2.3", "2201.2.2", "2201.2.1", "2201.2.0",
-		// Swan Lake Update 1
-		"2201.1.3", "2201.1.2", "2201.1.1", "2201.1.0",
-		// Swan Lake GA
-		"2201.0.3", "2201.0.2", "2201.0.1", "2201.0.0",
 		// Special tags
 		"swan-lake", "latest",
 	}
