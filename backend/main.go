@@ -15,21 +15,30 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 		// Get allowed origin from environment or use default
 		allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 		if allowedOrigin == "" {
-			allowedOrigin = "*" // For development only
+			// Allow GitHub Pages and other common origins
+			origin := r.Header.Get("Origin")
+			if origin != "" {
+				allowedOrigin = origin
+			} else {
+				allowedOrigin = "*"
+			}
 		}
 
-		// Set CORS headers
+		// Set CORS headers FIRST before any other headers
 		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		w.Header().Set("Access-Control-Max-Age", "3600")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, HEAD")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		w.Header().Set("Access-Control-Expose-Headers", "Content-Length, Content-Type")
+		w.Header().Set("Access-Control-Max-Age", "86400") // 24 hours
 
 		// Add Vary header to indicate response varies by Origin
 		w.Header().Add("Vary", "Origin")
+		w.Header().Add("Vary", "Access-Control-Request-Method")
+		w.Header().Add("Vary", "Access-Control-Request-Headers")
 
 		// Handle preflight request
 		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
@@ -43,12 +52,23 @@ func performanceMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// Get context
 		ctx := r.Context()
 
-		// Add security headers
-		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("X-Frame-Options", "DENY")
-		w.Header().Set("X-XSS-Protection", "1; mode=block")
-		w.Header().Set("Content-Security-Policy", "default-src 'self'")
-		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		// Add security headers (but don't override CORS headers)
+		if w.Header().Get("X-Content-Type-Options") == "" {
+			w.Header().Set("X-Content-Type-Options", "nosniff")
+		}
+		if w.Header().Get("X-Frame-Options") == "" {
+			w.Header().Set("X-Frame-Options", "DENY")
+		}
+		if w.Header().Get("X-XSS-Protection") == "" {
+			w.Header().Set("X-XSS-Protection", "1; mode=block")
+		}
+		// Relax CSP to allow cross-origin requests
+		if w.Header().Get("Content-Security-Policy") == "" {
+			w.Header().Set("Content-Security-Policy", "default-src 'self'; connect-src *")
+		}
+		if w.Header().Get("Referrer-Policy") == "" {
+			w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		}
 
 		// Call next handler
 		next(w, r.WithContext(ctx))
@@ -77,11 +97,11 @@ func main() {
 	rateLimiter := middleware.NewRateLimiter(5*time.Second, 5)
 
 	// Health check endpoint
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/health", enableCORS(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status":"healthy","service":"ballerina-compiler-backend","security":"enabled"}`))
-	})
+	}))
 
 	// Apply middleware chain to handlers with rate limiting
 	http.HandleFunc("/run", chain(
