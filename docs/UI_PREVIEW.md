@@ -336,10 +336,10 @@ Gap between elements:
 
 ## Browser Compatibility
 
-✅ Chrome 90+
-✅ Firefox 88+
-✅ Safari 14+
-✅ Edge 90+
-✅ Opera 76+
+ Chrome 90+
+ Firefox 88+
+ Safari 14+
+ Edge 90+
+ Opera 76+
 
 All modern browsers with CSS Grid and Flexbox support.

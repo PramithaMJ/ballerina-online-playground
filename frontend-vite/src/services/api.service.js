@@ -10,6 +10,7 @@ import { API_ENDPOINTS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants/ap
 class ApiService {
   constructor(baseUrl) {
     this.baseUrl = baseUrl;
+    this.cache = new Map();
   }
 
   /**
@@ -27,9 +28,15 @@ class ApiService {
       };
     }
 
+    // Generate cache key
+    const cacheKey = `${code}-${version}`;
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey);
+    }
+
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
       // Use the provided signal or the timeout controller
       const finalSignal = signal || controller.signal;
@@ -45,17 +52,27 @@ class ApiService {
 
       const result = await response.json();
 
+      let outputResult;
       if (response.ok) {
         if (result.error) {
-          return {
+          outputResult = {
             output: result.output || '',
             error: result.error,
           };
+        } else {
+          outputResult = {
+            output: result.output || SUCCESS_MESSAGES.NO_OUTPUT,
+            error: '',
+          };
         }
-        return {
-          output: result.output || SUCCESS_MESSAGES.NO_OUTPUT,
-          error: '',
-        };
+        // Cache successful results
+        this.cache.set(cacheKey, outputResult);
+        // Limit cache size
+        if (this.cache.size > 50) {
+          const oldestKey = this.cache.keys().next().value;
+          this.cache.delete(oldestKey);
+        }
+        return outputResult;
       }
 
       return {

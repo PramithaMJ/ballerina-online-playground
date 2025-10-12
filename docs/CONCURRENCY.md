@@ -32,11 +32,11 @@ docker run --rm \
 ```
 
 **Key Isolation Features:**
-- ✅ **Process Isolation**: Each container is a separate process
-- ✅ **Network Isolation**: `--network none` prevents network access
-- ✅ **Resource Limits**: Memory (512MB), CPU (1.0 core), and process limits
-- ✅ **Automatic Removal**: `--rm` flag ensures containers are removed after execution
-- ✅ **Timeout Protection**: 30-second timeout prevents runaway processes
+-  **Process Isolation**: Each container is a separate process
+-  **Network Isolation**: `--network none` prevents network access
+-  **Resource Limits**: Memory (512MB), CPU (1.0 core), and process limits
+-  **Automatic Removal**: `--rm` flag ensures containers are removed after execution
+-  **Timeout Protection**: 30-second timeout prevents runaway processes
 
 ### 3. **Stateless Backend**
 

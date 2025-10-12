@@ -179,7 +179,7 @@ var editor = CodeMirror.fromTextArea(document.getElementById("codeInput"), {
 </script>
 ```
 
-## 📊 Performance Optimization
+##  Performance Optimization
 
 ### Backend Optimizations
 
@@ -267,7 +267,7 @@ go run main.go &
 pkill -f "go run main.go"
 ```
 
-## 📦 Building for Production
+##  Building for Production
 
 ### Build Backend Binary
 

@@ -1,6 +1,6 @@
 # Architecture Visualization
 
-## 📊 Complete System Architecture
+##  Complete System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -99,7 +99,7 @@
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 🔄 Data Flow Example: Running Code
+##  Data Flow Example: Running Code
 
 ```
 1. User clicks "Run" button
@@ -189,7 +189,7 @@ App
             └── Output Section
 ```
 
-## 📦 Module Dependencies
+##  Module Dependencies
 
 ```
 Components
@@ -290,12 +290,12 @@ EditorToolbar      → Only renders editor controls
 
 ```
 Adding new theme:
-  ✅ Add to monaco-themes.config.js (extend)
-  ❌ No need to modify existing components (closed)
+   Add to monaco-themes.config.js (extend)
+   No need to modify existing components (closed)
 
 Adding new hook:
-  ✅ Create new hook file (extend)
-  ❌ No need to modify existing hooks (closed)
+   Create new hook file (extend)
+   No need to modify existing hooks (closed)
 ```
 
 ### Liskov Substitution Principle (LSP)
@@ -313,12 +313,12 @@ const [value, setValue] = useIndexedDB(key, initial);
 
 ```
 EditorToolbar receives:
-  ✅ fontSize, onIncreaseFontSize (what it needs)
-  ❌ Not entire editor state (what it doesn't need)
+   fontSize, onIncreaseFontSize (what it needs)
+   Not entire editor state (what it doesn't need)
 
 OutputStatus receives:
-  ✅ isSuccess, isError (what it needs)
-  ❌ Not entire output/error strings (what it doesn't need)
+   isSuccess, isError (what it needs)
+   Not entire output/error strings (what it doesn't need)
 ```
 
 ### Dependency Inversion Principle (DIP)

@@ -109,10 +109,39 @@ func IsValidBallerinaVersion(version string) bool {
 
 // RunBallerinaPackageWithContext runs a Ballerina package in Docker with context support for cancellation
 func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string, version string) (string, error) {
+	startTime := time.Now()
+
 	// Set default version if empty
 	if version == "" {
 		version = "2201.12.0"
 	}
+
+	// Create context with timeout, respecting parent context cancellation
+	ctx, cancel := context.WithTimeout(parentCtx, 60*time.Second)
+	defer cancel()
+
+	// Try to use container pool if available
+	if Pool != nil {
+		container, err := Pool.GetContainer(version)
+		if err != nil {
+			log.Printf("⚠️  Pool unavailable for version %s, falling back to docker run: %v", version, err)
+		} else {
+			// Execute using pooled container
+			output, execErr := Pool.ExecuteInContainer(ctx, container, packageDir)
+
+			// Determine if container is still healthy
+			healthy := execErr == nil || ctx.Err() == nil
+
+			// Return container to pool
+			Pool.ReturnContainer(container, healthy)
+
+			log.Printf("⚡ Execution completed in %v using pooled container", time.Since(startTime))
+			return output, execErr
+		}
+	}
+
+	// Fallback to original docker run method if pool is not available
+	log.Printf("⚠️  Container pool not available, using docker run fallback")
 
 	// Get Docker image for the version
 	dockerImage := GetBallerinaDockerImage(version)
@@ -122,10 +151,6 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 	if ensureImageErr != nil {
 		return "", fmt.Errorf("failed to ensure Ballerina image: %v", ensureImageErr)
 	}
-
-	// Create context with timeout, respecting parent context cancellation
-	ctx, cancel := context.WithTimeout(parentCtx, 60*time.Second)
-	defer cancel()
 
 	// Convert container path to host path for Docker-in-Docker
 	hostPath := convertToHostPath(packageDir)
@@ -182,13 +207,13 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 		"run",
 		"--rm",
 		"--network", "none", // Disable network access
-		"--memory", "256m", // Reduced memory limit
-		"--memory-swap", "256m", // Prevent swap usage
-		"--cpus", "0.5", // Reduced CPU limit
-		"--pids-limit", "50", // Limit number of processes
-		"--read-only",                               // Read-only root filesystem
-		"--tmpfs", "/tmp:rw,noexec,nosuid,size=50m", // Temporary writable space
-		"--tmpfs", "/.ballerina:rw,noexec,nosuid,size=10m", // Writable home for Ballerina config
+		"--memory", "512m", // Increased memory limit
+		"--memory-swap", "512m", // Prevent swap usage
+		"--cpus", "1.0", // Increased CPU limit
+		"--pids-limit", "100", // Increased process limit
+		"--read-only",                                // Read-only root filesystem
+		"--tmpfs", "/tmp:rw,noexec,nosuid,size=100m", // Larger temporary writable space
+		"--tmpfs", "/.ballerina:rw,noexec,nosuid,size=20m", // Larger writable home for Ballerina config
 		"--security-opt", "no-new-privileges", // Prevent privilege escalation
 		"--cap-drop", "ALL", // Drop all capabilities
 		"-v", hostPath + ":/home/ballerina/app:rw", // Read-write mount for Dependencies.toml

@@ -10,11 +10,11 @@ GitHub Pages (HTTPS) cannot connect to EC2 backend (HTTP) due to browser securit
 ## ⭐ Option 1: Use Cloudflare Tunnel (FREE & EASIEST)
 
 ### Why Cloudflare Tunnel?
-- ✅ FREE HTTPS certificate
-- ✅ No need to configure nginx/SSL
-- ✅ Automatic certificate renewal
-- ✅ DDoS protection included
-- ✅ Takes 5 minutes to setup
+-  FREE HTTPS certificate
+-  No need to configure nginx/SSL
+-  Automatic certificate renewal
+-  DDoS protection included
+-  Takes 5 minutes to setup
 
 ### Steps:
 
@@ -93,7 +93,7 @@ git commit --allow-empty -m "Trigger redeploy"
 git push
 ```
 
-✅ Done! Your backend now has HTTPS via Cloudflare.
+ Done! Your backend now has HTTPS via Cloudflare.
 
 ---
 
@@ -230,12 +230,12 @@ This requires adding special handling in your frontend code, but browsers will s
 ## 🏆 Recommendation
 
 **Use Cloudflare Tunnel (Option 1)** because:
-1. ✅ Completely FREE
-2. ✅ Easiest to setup (5 minutes)
-3. ✅ No domain DNS configuration needed
-4. ✅ Auto-renewing certificates
-5. ✅ Built-in DDoS protection
-6. ✅ Better performance with CDN
+1.  Completely FREE
+2.  Easiest to setup (5 minutes)
+3.  No domain DNS configuration needed
+4.  Auto-renewing certificates
+5.  Built-in DDoS protection
+6.  Better performance with CDN
 
 ---
 
@@ -303,4 +303,4 @@ Access-Control-Allow-Origin: *
 2. Setup takes ~5 minutes
 3. Update GitHub Secret `VITE_API_URL`
 4. Redeploy frontend
-5. Test! ✅
+5. Test! 

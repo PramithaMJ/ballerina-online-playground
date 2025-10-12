@@ -91,7 +91,7 @@
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## 🔄 Request/Response Flow
+##  Request/Response Flow
 
 ### Complete Flow Diagram
 
@@ -260,7 +260,7 @@ Layer 7: Container Isolation
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-## 📊 Data Flow Diagram
+##  Data Flow Diagram
 
 ```
 Input: User Code

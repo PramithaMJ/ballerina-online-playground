@@ -3,9 +3,13 @@ package main
 import (
 	"ballerina-compiler/ballerina-compiler-backend/handler"
 	"ballerina-compiler/ballerina-compiler-backend/middleware"
+	"ballerina-compiler/ballerina-compiler-backend/utils"
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -125,6 +129,18 @@ func chain(handler http.HandlerFunc, middlewares ...func(http.HandlerFunc) http.
 }
 
 func main() {
+	// Initialize container pool in background
+	ctx := context.Background()
+	log.Println("🚀 Starting Ballerina Compiler Backend...")
+
+	// Initialize the container pool (pre-pull images and create containers)
+	go func() {
+		if err := utils.InitializePool(ctx); err != nil {
+			log.Printf("⚠️  Failed to initialize container pool: %v", err)
+			log.Println("⚠️  Will fallback to docker run for code execution")
+		}
+	}()
+
 	// Create rate limiter: 3 requests per 5 seconds per IP, burst of 5
 	rateLimiter := middleware.NewRateLimiter(5*time.Second, 5)
 
@@ -177,5 +193,35 @@ func main() {
 	log.Println("  - Network disabled in containers")
 	log.Println("  - Resource limits enforced")
 	log.Println("  - Execution timeout: 60 seconds")
-	log.Fatal(server.ListenAndServe())
+	log.Println("  - Container pooling for performance")
+
+	// Setup graceful shutdown
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	// Start server in goroutine
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server error: %v", err)
+		}
+	}()
+
+	// Wait for interrupt signal
+	<-stop
+	log.Println(" Shutting down server...")
+
+	// Graceful shutdown with timeout
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer shutdownCancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Server forced to shutdown: %v", err)
+	}
+
+	// Cleanup container pool
+	if utils.Pool != nil {
+		utils.Pool.Shutdown(context.Background())
+	}
+
+	log.Println(" Server gracefully stopped")
 }
