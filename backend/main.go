@@ -163,10 +163,10 @@ func main() {
 	server := &http.Server{
 		Addr:           ":8081",
 		Handler:        nil,
-		ReadTimeout:    15 * time.Second, // Reduced timeout
-		WriteTimeout:   15 * time.Second, // Reduced timeout
-		IdleTimeout:    60 * time.Second, // Reduced timeout
-		MaxHeaderBytes: 1 << 20,          // 1 MB
+		ReadTimeout:    30 * time.Second,  // Increased to handle larger requests
+		WriteTimeout:   90 * time.Second,  // Increased to handle compilation + execution time
+		IdleTimeout:    120 * time.Second, // Increased for long-running executions
+		MaxHeaderBytes: 1 << 20,           // 1 MB
 	}
 
 	log.Println("🚀 Server started on port 8081")
