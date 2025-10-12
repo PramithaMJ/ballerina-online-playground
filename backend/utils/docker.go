@@ -57,12 +57,16 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 		log.Printf("  - %s (mode: %v)", entry.Name(), info.Mode())
 	}
 
-	// Create target directory on host for separate mount
+	// Create target directory on host for separate mount with world-writable permissions
 	targetDir := filepath.Join(packageDir, "target")
-	if err := os.MkdirAll(targetDir, 0755); err != nil {
+	if err := os.MkdirAll(targetDir, 0777); err != nil {
 		return "", fmt.Errorf("failed to create target directory: %w", err)
 	}
-	log.Printf("DEBUG: Created target directory at %s", targetDir)
+	// Ensure the directory is writable by the nobody user (65534:65534)
+	if err := os.Chmod(targetDir, 0777); err != nil {
+		return "", fmt.Errorf("failed to set permissions on target directory: %w", err)
+	}
+	log.Printf("DEBUG: Created target directory at %s with permissions 0777", targetDir)
 
 	// Convert target directory to host path
 	hostTargetPath := convertToHostPath(targetDir)
