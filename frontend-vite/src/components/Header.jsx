@@ -20,6 +20,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
+import VersionSelector from './VersionSelector';
 import './Header.css';
 
 /**
@@ -39,6 +40,8 @@ import './Header.css';
  * @param {boolean} props.isFullscreen - Fullscreen state
  * @param {Function} props.onToggleFullscreen - Fullscreen toggle handler
  * @param {Function} props.onOpenUserGuide - User guide handler
+ * @param {string} props.ballerinaVersion - Selected Ballerina version
+ * @param {Function} props.onVersionChange - Version change handler
  */
 const Header = ({ 
   onRun, 
@@ -55,7 +58,9 @@ const Header = ({
   onResetSplit,
   isFullscreen,
   onToggleFullscreen,
-  onOpenUserGuide
+  onOpenUserGuide,
+  ballerinaVersion = '2201.12.0',
+  onVersionChange
 }) => {
   const isHorizontal = layout === 'horizontal';
   const isDark = theme === 'dark';
@@ -75,6 +80,15 @@ const Header = ({
       </div>
       
       <div className="header-right">
+        {/* Version Selector */}
+        <VersionSelector
+          selectedVersion={ballerinaVersion}
+          onVersionChange={onVersionChange}
+          disabled={isRunning}
+        />
+        
+        <div className="header-divider" role="separator"></div>
+
         {/* Primary Actions */}
         {isRunning ? (
           <div className="execution-container">

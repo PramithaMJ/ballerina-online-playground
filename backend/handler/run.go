@@ -10,7 +10,8 @@ import (
 )
 
 type CodeRequest struct {
-	Code string `json:"code"`
+	Code    string `json:"code"`
+	Version string `json:"version"` // Ballerina version (e.g., "2201.10.2", "2201.9.0")
 }
 
 type CodeResponse struct {
@@ -54,6 +55,24 @@ func RunCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate and set default version if not provided
+	ballerinaVersion := req.Version
+	if ballerinaVersion == "" {
+		ballerinaVersion = "2201.12.0" // Default version (Latest Stable)
+	}
+
+	// Validate version format
+	if !utils.IsValidBallerinaVersion(ballerinaVersion) {
+		response := CodeResponse{
+			Output: "",
+			Error:  "Invalid Ballerina version. Please check supported versions at https://hub.docker.com/r/ballerina/ballerina/tags",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
 	// Security validation
 	if err := utils.ValidateCode(req.Code); err != nil {
 		log.Printf("Code validation failed: %v", err)
@@ -90,7 +109,7 @@ func RunCode(w http.ResponseWriter, r *http.Request) {
 	defer os.RemoveAll(packageDir) // Cleanup temp directory
 
 	// Run code using Docker with request context for cancellation support
-	output, execErr := utils.RunBallerinaPackageWithContext(r.Context(), packageDir)
+	output, execErr := utils.RunBallerinaPackageWithContext(r.Context(), packageDir, ballerinaVersion)
 
 	// Sanitize output to remove sensitive information
 	sanitizedOutput := utils.SanitizeErrorOutput(output)

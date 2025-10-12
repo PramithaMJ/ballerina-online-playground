@@ -18,3 +18,4 @@ export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as ConfirmDialog } from './ConfirmDialog';
 export { default as ErrorNotification } from './ErrorNotification';
 export { default as UserGuide } from './UserGuide';
+export { default as VersionSelector } from './VersionSelector';

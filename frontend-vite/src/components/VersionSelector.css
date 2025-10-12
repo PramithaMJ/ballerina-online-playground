@@ -1,0 +1,111 @@
+/**
+ * VersionSelector Styles
+ */
+
+.version-selector-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+}
+
+.version-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  margin: 0;
+}
+
+.version-select-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.version-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 32px 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 200px;
+  outline: none;
+}
+
+.version-select:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  background: var(--background-hover);
+}
+
+.version-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+.version-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--background-disabled);
+}
+
+.version-select-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.version-select:hover:not(:disabled) + .version-select-icon {
+  color: var(--primary-color);
+}
+
+/* Option styles */
+.version-select option {
+  background: var(--background-primary);
+  color: var(--text-primary);
+  padding: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .version-selector-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .version-select {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+/* Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+  .version-select {
+    background: #1e1e1e;
+    border-color: #3c3c3c;
+    color: #d4d4d4;
+  }
+
+  .version-select:hover:not(:disabled) {
+    background: #2d2d2d;
+    border-color: #4a90e2;
+  }
+
+  .version-select option {
+    background: #1e1e1e;
+    color: #d4d4d4;
+  }
+}

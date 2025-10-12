@@ -15,10 +15,11 @@ class ApiService {
   /**
    * Execute Ballerina code
    * @param {string} code - The Ballerina code to execute
+   * @param {string} version - The Ballerina version to use
    * @param {AbortSignal} signal - Optional abort signal for cancellation
    * @returns {Promise<{output: string, error: string}>}
    */
-  async executeCode(code, signal = null) {
+  async executeCode(code, version = '2201.12.0', signal = null) {
     if (!code || !code.trim()) {
       return {
         output: '',
@@ -36,7 +37,7 @@ class ApiService {
       const response = await fetch(`${this.baseUrl}${API_ENDPOINTS.EXECUTE}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code, version }),
         signal: finalSignal,
       });
 

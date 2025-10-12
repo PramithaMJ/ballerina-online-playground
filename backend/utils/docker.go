@@ -12,10 +12,159 @@ import (
 	"time"
 )
 
+// GetBallerinaDockerImage returns the Docker image name for a given Ballerina version
+func GetBallerinaDockerImage(version string) string {
+	// Map version to Docker image
+	switch version {
+	// Swan Lake Update 12 and later
+	case "2201.12.0":
+		return "ballerina/ballerina:2201.12.0"
+	case "2201.11.2":
+		return "ballerina/ballerina:2201.11.2"
+	case "2201.11.1":
+		return "ballerina/ballerina:2201.11.1"
+	case "2201.11.0":
+		return "ballerina/ballerina:2201.11.0"
+	case "2201.10.5":
+		return "ballerina/ballerina:2201.10.5"
+	case "2201.10.4":
+		return "ballerina/ballerina:2201.10.4"
+	case "2201.10.3":
+		return "ballerina/ballerina:2201.10.3"
+	case "2201.10.2":
+		return "ballerina/ballerina:2201.10.2"
+	case "2201.10.1":
+		return "ballerina/ballerina:2201.10.1"
+	case "2201.10.0":
+		return "ballerina/ballerina:2201.10.0"
+	case "2201.9.3":
+		return "ballerina/ballerina:2201.9.3"
+	case "2201.9.2":
+		return "ballerina/ballerina:2201.9.2"
+	case "2201.9.1":
+		return "ballerina/ballerina:2201.9.1"
+	case "2201.9.0":
+		return "ballerina/ballerina:2201.9.0"
+	case "2201.8.6":
+		return "ballerina/ballerina:2201.8.6"
+	case "2201.8.5":
+		return "ballerina/ballerina:2201.8.5"
+	case "2201.8.4":
+		return "ballerina/ballerina:2201.8.4"
+	case "2201.8.3":
+		return "ballerina/ballerina:2201.8.3"
+	case "2201.8.2":
+		return "ballerina/ballerina:2201.8.2"
+	case "2201.8.1":
+		return "ballerina/ballerina:2201.8.1"
+	case "2201.8.0":
+		return "ballerina/ballerina:2201.8.0"
+	case "2201.7.2":
+		return "ballerina/ballerina:2201.7.2"
+	case "2201.7.1":
+		return "ballerina/ballerina:2201.7.1"
+	case "2201.7.0":
+		return "ballerina/ballerina:2201.7.0"
+	case "2201.6.0":
+		return "ballerina/ballerina:2201.6.0"
+	case "2201.5.0":
+		return "ballerina/ballerina:2201.5.0"
+	case "2201.4.1":
+		return "ballerina/ballerina:2201.4.1"
+	case "2201.4.0":
+		return "ballerina/ballerina:2201.4.0"
+	case "2201.3.3":
+		return "ballerina/ballerina:2201.3.3"
+	case "2201.3.2":
+		return "ballerina/ballerina:2201.3.2"
+	case "2201.3.1":
+		return "ballerina/ballerina:2201.3.1"
+	case "2201.3.0":
+		return "ballerina/ballerina:2201.3.0"
+	case "2201.2.3":
+		return "ballerina/ballerina:2201.2.3"
+	case "2201.2.2":
+		return "ballerina/ballerina:2201.2.2"
+	case "2201.2.1":
+		return "ballerina/ballerina:2201.2.1"
+	case "2201.2.0":
+		return "ballerina/ballerina:2201.2.0"
+	case "2201.1.3":
+		return "ballerina/ballerina:2201.1.3"
+	case "2201.1.2":
+		return "ballerina/ballerina:2201.1.2"
+	case "2201.1.1":
+		return "ballerina/ballerina:2201.1.1"
+	case "2201.1.0":
+		return "ballerina/ballerina:2201.1.0"
+	case "2201.0.3":
+		return "ballerina/ballerina:2201.0.3"
+	case "2201.0.2":
+		return "ballerina/ballerina:2201.0.2"
+	case "2201.0.1":
+		return "ballerina/ballerina:2201.0.1"
+	case "2201.0.0":
+		return "ballerina/ballerina:2201.0.0"
+	case "swan-lake", "latest":
+		return "ballerina/ballerina:swan-lake"
+	default:
+		// Default to latest stable version
+		return "ballerina/ballerina:2201.12.0"
+	}
+}
+
+// IsValidBallerinaVersion checks if the provided version is valid
+func IsValidBallerinaVersion(version string) bool {
+	validVersions := []string{
+		// Swan Lake Update 12 (Latest)
+		"2201.12.0",
+		// Swan Lake Update 11
+		"2201.11.2", "2201.11.1", "2201.11.0",
+		// Swan Lake Update 10
+		"2201.10.5", "2201.10.4", "2201.10.3", "2201.10.2", "2201.10.1", "2201.10.0",
+		// Swan Lake Update 9
+		"2201.9.3", "2201.9.2", "2201.9.1", "2201.9.0",
+		// Swan Lake Update 8
+		"2201.8.6", "2201.8.5", "2201.8.4", "2201.8.3", "2201.8.2", "2201.8.1", "2201.8.0",
+		// Swan Lake Update 7
+		"2201.7.2", "2201.7.1", "2201.7.0",
+		// Swan Lake Update 6
+		"2201.6.0",
+		// Swan Lake Update 5
+		"2201.5.0",
+		// Swan Lake Update 4
+		"2201.4.1", "2201.4.0",
+		// Swan Lake Update 3
+		"2201.3.3", "2201.3.2", "2201.3.1", "2201.3.0",
+		// Swan Lake Update 2
+		"2201.2.3", "2201.2.2", "2201.2.1", "2201.2.0",
+		// Swan Lake Update 1
+		"2201.1.3", "2201.1.2", "2201.1.1", "2201.1.0",
+		// Swan Lake GA
+		"2201.0.3", "2201.0.2", "2201.0.1", "2201.0.0",
+		// Special tags
+		"swan-lake", "latest",
+	}
+	for _, v := range validVersions {
+		if version == v {
+			return true
+		}
+	}
+	return false
+}
+
 // RunBallerinaPackageWithContext runs a Ballerina package in Docker with context support for cancellation
-func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string) (string, error) {
+func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string, version string) (string, error) {
+	// Set default version if empty
+	if version == "" {
+		version = "2201.12.0"
+	}
+
+	// Get Docker image for the version
+	dockerImage := GetBallerinaDockerImage(version)
+
 	// Ensure Ballerina image is available
-	ensureImageErr := ensureBallerinaImage()
+	ensureImageErr := ensureBallerinaImage(dockerImage)
 	if ensureImageErr != nil {
 		return "", fmt.Errorf("failed to ensure Ballerina image: %v", ensureImageErr)
 	}
@@ -91,7 +240,7 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 		"-v", hostPath + ":/home/ballerina/app:rw", // Read-write mount for Dependencies.toml
 		"-w", "/home/ballerina/app", // Set working directory
 		"-u", "65534:65534", // Run as nobody user
-		"ballerina/ballerina:2201.10.2",
+		dockerImage,
 		"bal", "run", // Run the package without arguments
 	}
 
@@ -142,8 +291,11 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 
 // RunBallerinaPackage runs a Ballerina package in Docker (deprecated - use RunBallerinaPackageWithContext)
 func RunBallerinaPackage(packageDir string) (string, error) {
+	// Default to version 2201.12.0
+	dockerImage := "ballerina/ballerina:2201.12.0"
+
 	// Ensure Ballerina image is available
-	ensureImageErr := ensureBallerinaImage()
+	ensureImageErr := ensureBallerinaImage(dockerImage)
 	if ensureImageErr != nil {
 		return "", fmt.Errorf("failed to ensure Ballerina image: %v", ensureImageErr)
 	}
@@ -196,7 +348,7 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 		"--pids-limit", "50", // Limit number of processes
 		"-v", hostPath + ":/home/ballerina/app", // Read-write mount for build artifacts
 		"-w", "/home/ballerina/app", // Set working directory
-		"ballerina/ballerina:2201.10.2",
+		dockerImage,
 		"bal", "run", // Run the package without arguments
 	}
 
@@ -241,9 +393,9 @@ func RunBallerinaPackage(packageDir string) (string, error) {
 }
 
 // ensureBallerinaImage ensures the Ballerina Docker image is available locally
-func ensureBallerinaImage() error {
+func ensureBallerinaImage(dockerImage string) error {
 	// Check if image exists locally
-	checkCmd := exec.Command("docker", "images", "-q", "ballerina/ballerina:2201.10.2")
+	checkCmd := exec.Command("docker", "images", "-q", dockerImage)
 	output, err := checkCmd.Output()
 
 	// If image exists (output is not empty), return immediately
@@ -255,16 +407,18 @@ func ensureBallerinaImage() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
-	pullCmd := exec.CommandContext(ctx, "docker", "pull", "ballerina/ballerina:2201.10.2")
+	log.Printf("Pulling Docker image: %s", dockerImage)
+	pullCmd := exec.CommandContext(ctx, "docker", "pull", dockerImage)
 	pullErr := pullCmd.Run()
 
 	if pullErr != nil {
 		if ctx.Err() == context.DeadlineExceeded {
-			return fmt.Errorf("timeout pulling Ballerina image")
+			return fmt.Errorf("timeout pulling Ballerina image: %s", dockerImage)
 		}
 		return pullErr
 	}
 
+	log.Printf("Successfully pulled Docker image: %s", dockerImage)
 	return nil
 }
 

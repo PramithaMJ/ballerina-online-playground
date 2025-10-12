@@ -15,7 +15,7 @@ export const useCodeExecution = () => {
   const [isRunning, setIsRunning] = useState(false);
   const abortControllerRef = useRef(null);
 
-  const executeCode = useCallback(async (code) => {
+  const executeCode = useCallback(async (code, version = '2201.12.0') => {
     // Security validation before execution
     const validation = validateCodeSecurity(code);
     if (!validation.isValid) {
@@ -32,7 +32,7 @@ export const useCodeExecution = () => {
     abortControllerRef.current = new AbortController();
 
     try {
-      const result = await apiService.executeCode(code, abortControllerRef.current.signal);
+      const result = await apiService.executeCode(code, version, abortControllerRef.current.signal);
       
       // Check if it's a connection error
       if (result.error && result.error.includes('Connection failed')) {

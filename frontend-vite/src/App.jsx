@@ -12,7 +12,7 @@ import ResizablePanels from './components/ResizablePanels';
 import ConfirmDialog from './components/ConfirmDialog';
 import ErrorNotification from './components/ErrorNotification';
 import UserGuide from './components/UserGuide';
-import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress } from './hooks';
+import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress, useBallerinaVersion } from './hooks';
 import { DEFAULT_SAMPLE_CODE } from './constants/app.constants';
 import { isFirstVisit, markAsVisited } from './utils';
 import './App.css';
@@ -35,6 +35,7 @@ function App() {
   const { isFullscreen, toggleFullscreen } = useFullscreen();
   const { output, error, isRunning, executeCode, stopExecution, clearOutput } = useCodeExecution();
   const { elapsedTime, formattedTime, progress } = useExecutionProgress(isRunning);
+  const { version: ballerinaVersion, changeVersion } = useBallerinaVersion();
 
   // Check for first visit and show User Guide
   useEffect(() => {
@@ -68,13 +69,13 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isRunning, code]);
+  }, [isRunning, code, ballerinaVersion]);
 
   // Handler functions
   const handleRun = async () => {
     try {
       setConnectionError(null);
-      await executeCode(code);
+      await executeCode(code, ballerinaVersion);
     } catch (err) {
       // Check if it's a connection error
       if (err.message && err.message.includes('connection')) {
@@ -156,6 +157,8 @@ function App() {
         isFullscreen={isFullscreen}
         onToggleFullscreen={toggleFullscreen}
         onOpenUserGuide={handleOpenUserGuide}
+        ballerinaVersion={ballerinaVersion}
+        onVersionChange={changeVersion}
       />
       
       <ResizablePanels
