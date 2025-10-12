@@ -19,6 +19,16 @@ type CodeResponse struct {
 }
 
 func RunCode(w http.ResponseWriter, r *http.Request) {
+	// Set CORS headers immediately for ALL responses
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		origin = "*"
+	}
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, HEAD")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+	w.Header().Set("Access-Control-Expose-Headers", "Content-Length, Content-Type")
+	
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
