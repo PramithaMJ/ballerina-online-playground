@@ -163,9 +163,9 @@ func main() {
 	server := &http.Server{
 		Addr:           ":8081",
 		Handler:        nil,
-		ReadTimeout:    30 * time.Second,  // Increased to handle larger requests
-		WriteTimeout:   90 * time.Second,  // Increased to handle compilation + execution time
-		IdleTimeout:    120 * time.Second, // Increased for long-running executions
+		ReadTimeout:    60 * time.Second,  // Time to read request body
+		WriteTimeout:   120 * time.Second, // 2 minutes for compilation + execution + response
+		IdleTimeout:    180 * time.Second, // 3 minutes for keep-alive connections
 		MaxHeaderBytes: 1 << 20,           // 1 MB
 	}
 
