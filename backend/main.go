@@ -9,7 +9,37 @@ import (
 	"time"
 )
 
-// CORS middleware with stricter configuration
+// ResponseWriter wrapper to ensure CORS headers are always set
+type corsResponseWriter struct {
+	http.ResponseWriter
+	wroteHeader bool
+	origin      string
+}
+
+func (w *corsResponseWriter) WriteHeader(statusCode int) {
+	if !w.wroteHeader {
+		// Set CORS headers before writing status
+		w.Header().Set("Access-Control-Allow-Origin", w.origin)
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, HEAD")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		w.Header().Set("Access-Control-Expose-Headers", "Content-Length, Content-Type")
+		w.Header().Set("Access-Control-Max-Age", "86400")
+		w.Header().Add("Vary", "Origin")
+		w.Header().Add("Vary", "Access-Control-Request-Method")
+		w.Header().Add("Vary", "Access-Control-Request-Headers")
+		w.wroteHeader = true
+	}
+	w.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (w *corsResponseWriter) Write(b []byte) (int, error) {
+	if !w.wroteHeader {
+		w.WriteHeader(http.StatusOK)
+	}
+	return w.ResponseWriter.Write(b)
+}
+
+// CORS middleware with response writer wrapper
 func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get allowed origin from environment or use default
@@ -24,25 +54,27 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 			}
 		}
 
-		// Set CORS headers FIRST before any other headers
-		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, HEAD")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
-		w.Header().Set("Access-Control-Expose-Headers", "Content-Length, Content-Type")
-		w.Header().Set("Access-Control-Max-Age", "86400") // 24 hours
-
-		// Add Vary header to indicate response varies by Origin
-		w.Header().Add("Vary", "Origin")
-		w.Header().Add("Vary", "Access-Control-Request-Method")
-		w.Header().Add("Vary", "Access-Control-Request-Headers")
-
-		// Handle preflight request
+		// Handle preflight request immediately
 		if r.Method == "OPTIONS" {
+			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, HEAD")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+			w.Header().Set("Access-Control-Expose-Headers", "Content-Length, Content-Type")
+			w.Header().Set("Access-Control-Max-Age", "86400")
+			w.Header().Add("Vary", "Origin")
+			w.Header().Add("Vary", "Access-Control-Request-Method")
+			w.Header().Add("Vary", "Access-Control-Request-Headers")
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
-		next(w, r)
+		// Wrap response writer to ensure CORS headers are always set
+		wrappedWriter := &corsResponseWriter{
+			ResponseWriter: w,
+			origin:         allowedOrigin,
+		}
+
+		next(wrappedWriter, r)
 	}
 }
 
