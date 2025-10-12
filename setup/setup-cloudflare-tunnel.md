@@ -19,5 +19,12 @@ grep -oP 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/cloudflare-tunnel.log�
 ```
 
 ```
+
 cat /tmp/cloudflare-tunnel.log | grep "trycloudflare.com"
 ```
+
+--
+
+screen -dmS cloudflare-tunnel bash -c "cloudflared tunnel --url http://localhost:8081 2>&1 | tee /tmp/cloudflare-tunnel.log"
+
+grep -oP 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/cloudflare-tunnel.log | tail -1

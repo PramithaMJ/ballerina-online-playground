@@ -18,10 +18,14 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 			allowedOrigin = "*" // For development only
 		}
 
+		// Set CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
-		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Max-Age", "3600")
+
+		// Add Vary header to indicate response varies by Origin
+		w.Header().Add("Vary", "Origin")
 
 		// Handle preflight request
 		if r.Method == "OPTIONS" {
