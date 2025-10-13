@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 🚀 Setup HTTPS Tunnel for Ballerina Playground Backend
+# Setup HTTPS Tunnel for Ballerina Playground Backend
 # This script automates the Cloudflare tunnel setup
 
 set -e  # Exit on error
 
-echo "🔒 Cloudflare Tunnel Setup Script"
+echo " Cloudflare Tunnel Setup Script"
 echo "=================================="
 echo ""
 
@@ -92,7 +92,7 @@ read -p "Choose option (1 or 2): " TUNNEL_OPTION
 
 if [[ $TUNNEL_OPTION == "1" ]]; then
     echo ""
-    echo "🚀 Starting Quick Tunnel (Free, Temporary URL)"
+    echo "Starting Quick Tunnel (Free, Temporary URL)"
     echo "=============================================="
     echo ""
     echo -e "${YELLOW}Important Notes:${NC}"

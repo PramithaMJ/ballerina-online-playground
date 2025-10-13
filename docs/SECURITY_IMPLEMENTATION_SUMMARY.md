@@ -177,7 +177,7 @@ Output Sanitization:     Active 🟢
 
 ---
 
-## 🚀 Deployment Instructions
+## Deployment Instructions
 
 ### 1. Configure Environment
 
@@ -204,8 +204,8 @@ go build -o ballerina-backend
 
 Check startup logs for:
 ```
-🚀 Server started on port 8081
-🔒 Security features enabled:
+Server started on port 8081
+ Security features enabled:
   - Rate limiting: 5 requests per 5 seconds
   - Code validation and sanitization
   - Docker isolation with security constraints

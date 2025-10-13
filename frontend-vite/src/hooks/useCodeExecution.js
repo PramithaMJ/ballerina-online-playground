@@ -102,7 +102,7 @@ export const useCodeExecution = () => {
       setProgress(0);
       
       if (err.name === 'AbortError') {
-        setOutput('🛑 Execution stopped by user.');
+        setOutput(' Execution stopped by user.');
         setError('');
       } else if (err.message && err.message.includes('Connection failed')) {
         // Re-throw connection errors to be handled by App.jsx

@@ -415,7 +415,7 @@ Backend Configuration:
 └── Docker image         → ballerina/ballerina:latest (handler/run.go)
 ```
 
-## 🚀 Deployment Architecture
+## Deployment Architecture
 
 ```
 Production Deployment Options:

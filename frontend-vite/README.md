@@ -6,14 +6,14 @@ A modern, professional React + Vite frontend for the Ballerina Online Playground
 
 - 🎨 Modern, professional UI with teal theme
 - 💻 Monaco Editor integration (VS Code editor)
-- 🚀 Lightning-fast Vite build system
+- Lightning-fast Vite build system
 - 📱 Fully responsive design
 - 🎯 Real-time code execution
 - 🎭 Beautiful animations and transitions
 - 🌙 Dark theme optimized
 - ⚡ Hot Module Replacement (HMR)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Install Dependencies
 
@@ -126,7 +126,7 @@ Breakpoint: `768px`
 4. **Reset**: Load sample code
 5. **Clear**: Start fresh
 
-## 🚀 Deployment
+## Deployment
 
 ### Netlify / Vercel
 

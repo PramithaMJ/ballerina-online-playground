@@ -86,7 +86,7 @@ var Pool *ContainerPool
 
 // InitializePool creates and initializes the container pool with all versions
 func InitializePool(ctx context.Context) error {
-	log.Println("🚀 Initializing high-performance container pool...")
+	log.Println("Initializing high-performance container pool...")
 	startTime := time.Now()
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -841,7 +841,7 @@ func (p *ContainerPool) printStats() {
 
 // Shutdown gracefully stops the pool and cleans up containers
 func (p *ContainerPool) Shutdown(ctx context.Context) error {
-	log.Println("🛑 Shutting down container pool...")
+	log.Println(" Shutting down container pool...")
 
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
