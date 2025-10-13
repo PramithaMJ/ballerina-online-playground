@@ -2,11 +2,22 @@ package handler
 
 import (
 	"ballerina-compiler/ballerina-compiler-backend/utils"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+	"sync"
+	"time"
+)
+
+// Simple in-memory cache for code execution results
+var (
+	resultCache = make(map[string]CodeResponse)
+	cacheMutex  sync.RWMutex
+	cacheExpiry = make(map[string]time.Time)
 )
 
 type CodeRequest struct {
@@ -54,6 +65,24 @@ func RunCode(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(response)
 		return
 	}
+
+	// Generate cache key
+	hasher := sha256.New()
+	hasher.Write([]byte(req.Code + req.Version))
+	cacheKey := hex.EncodeToString(hasher.Sum(nil))
+
+	// Check cache
+	cacheMutex.RLock()
+	if resp, found := resultCache[cacheKey]; found {
+		if time.Now().Before(cacheExpiry[cacheKey]) {
+			cacheMutex.RUnlock()
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("X-Cache", "HIT")
+			json.NewEncoder(w).Encode(resp)
+			return
+		}
+	}
+	cacheMutex.RUnlock()
 
 	// Validate and set default version if not provided
 	ballerinaVersion := req.Version
@@ -126,6 +155,12 @@ func RunCode(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Printf("Execution successful")
 	}
+
+	// Store in cache for 5 minutes
+	cacheMutex.Lock()
+	resultCache[cacheKey] = response
+	cacheExpiry[cacheKey] = time.Now().Add(5 * time.Minute)
+	cacheMutex.Unlock()
 
 	w.Header().Set("Content-Type", "application/json")
 

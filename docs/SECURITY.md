@@ -12,24 +12,24 @@ This document outlines the comprehensive security measures implemented in the Ba
 
 #### Implemented Protections:
 
-- ✅ **Code Size Limits**: Maximum 50KB per submission
-- ✅ **Line Count Limits**: Maximum 1,000 lines
-- ✅ **Loop Count Limits**: Maximum 10 loops to prevent excessive iterations
-- ✅ **Forbidden Imports Detection**: Blocks dangerous module imports
-- ✅ **Infinite Loop Detection**: Prevents `while(true)` patterns
-- ✅ **Java Interop Blocking**: Prevents Java interoperability
+-  **Code Size Limits**: Maximum 50KB per submission
+-  **Line Count Limits**: Maximum 1,000 lines
+-  **Loop Count Limits**: Maximum 10 loops to prevent excessive iterations
+-  **Forbidden Imports Detection**: Blocks dangerous module imports
+-  **Infinite Loop Detection**: Prevents `while(true)` patterns
+-  **Java Interop Blocking**: Prevents Java interoperability
 
 #### Forbidden Operations:
 
 ```javascript
-❌ import ballerina/file      // File system access
-❌ import ballerina/http      // HTTP operations
-❌ import ballerina/tcp       // Network operations
-❌ import ballerina/sql       // Database access
-❌ import ballerina/java      // Java interop
-❌ import ballerina/os        // OS operations
-❌ @docker:                   // Docker annotations
-❌ @kubernetes:               // Kubernetes annotations
+ import ballerina/file      // File system access
+ import ballerina/http      // HTTP operations
+ import ballerina/tcp       // Network operations
+ import ballerina/sql       // Database access
+ import ballerina/java      // Java interop
+ import ballerina/os        // OS operations
+ @docker:                   // Docker annotations
+ @kubernetes:               // Kubernetes annotations
 ```
 
 ### 2. Backend Security Validation
@@ -38,11 +38,11 @@ This document outlines the comprehensive security measures implemented in the Ba
 
 #### Comprehensive Code Analysis:
 
-- ✅ **Input Size Validation**: Enforces 50KB maximum
-- ✅ **Pattern Matching**: Regex-based detection of dangerous imports
-- ✅ **Complexity Analysis**: Detects excessive functions and loops
-- ✅ **Annotation Blocking**: Prevents deployment annotations
-- ✅ **Output Sanitization**: Removes file paths and sensitive data
+-  **Input Size Validation**: Enforces 50KB maximum
+-  **Pattern Matching**: Regex-based detection of dangerous imports
+-  **Complexity Analysis**: Detects excessive functions and loops
+-  **Annotation Blocking**: Prevents deployment annotations
+-  **Output Sanitization**: Removes file paths and sensitive data
 
 #### Security Functions:
 
@@ -82,13 +82,13 @@ docker run \
 
 #### Key Security Features:
 
-- ✅ **Network Isolation**: `--network none` prevents all network access
-- ✅ **Resource Limits**: Prevents resource exhaustion attacks
-- ✅ **Non-root User**: Runs as `nobody` (UID 65534)
-- ✅ **Read-only Filesystem**: Prevents file modification
-- ✅ **No Privilege Escalation**: Blocks privilege escalation attempts
-- ✅ **Capability Dropping**: Removes all Linux capabilities
-- ✅ **Execution Timeout**: 10-second maximum execution time
+-  **Network Isolation**: `--network none` prevents all network access
+-  **Resource Limits**: Prevents resource exhaustion attacks
+-  **Non-root User**: Runs as `nobody` (UID 65534)
+-  **Read-only Filesystem**: Prevents file modification
+-  **No Privilege Escalation**: Blocks privilege escalation attempts
+-  **Capability Dropping**: Removes all Linux capabilities
+-  **Execution Timeout**: 10-second maximum execution time
 
 ### 4. Rate Limiting
 
@@ -96,10 +96,10 @@ docker run \
 
 #### Token Bucket Implementation:
 
-- ✅ **Rate**: 5 requests per 5 seconds per IP
-- ✅ **Burst**: 5 requests burst capacity
-- ✅ **Per-IP Tracking**: Individual limits per client
-- ✅ **Automatic Cleanup**: Removes stale visitor data
+-  **Rate**: 5 requests per 5 seconds per IP
+-  **Burst**: 5 requests burst capacity
+-  **Per-IP Tracking**: Individual limits per client
+-  **Automatic Cleanup**: Removes stale visitor data
 
 #### Configuration:
 
@@ -202,13 +202,13 @@ docker stats
 
 ```ballerina
 // This should be blocked:
-import ballerina/http;  // ❌ Blocked by validation
+import ballerina/http;  //  Blocked by validation
 
 // This should be blocked:
-import ballerina/file;  // ❌ Blocked by validation
+import ballerina/file;  //  Blocked by validation
 
 // This should be blocked:
-while (true) { }        // ❌ Blocked by infinite loop detection
+while (true) { }        //  Blocked by infinite loop detection
 ```
 
 ### Test Rate Limiting:
@@ -232,4 +232,4 @@ done
 
 **Last Updated:** October 10, 2025
 **Security Version:** 1.0.0
-**Status:** ✅ Production Ready
+**Status:**  Production Ready

@@ -187,7 +187,7 @@ EOF
     sudo systemctl enable cloudflared
     
     echo ""
-    echo -e "${GREEN}✅ Persistent tunnel setup complete!${NC}"
+    echo -e "${GREEN} Persistent tunnel setup complete!${NC}"
     echo ""
     echo "Your backend is now accessible at:"
     echo -e "${BLUE}https://$SUBDOMAIN${NC}"

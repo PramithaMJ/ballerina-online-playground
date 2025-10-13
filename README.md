@@ -16,12 +16,12 @@ A web-based interactive playground for writing and executing Ballerina code in r
 
 ## Features
 
-- ✅ Real-time Ballerina code execution
-- ✅ Secure Docker-based sandboxed environment
-- ✅ Resource limits (CPU, Memory, Network)
-- ✅ Execution timeout protection (30s)
-- ✅ Clean, modern UI
-- ✅ Error handling and feedback
+-  Real-time Ballerina code execution
+-  Secure Docker-based sandboxed environment
+-  Resource limits (CPU, Memory, Network)
+-  Execution timeout protection (30s)
+-  Clean, modern UI
+-  Error handling and feedback
 
 ## **Modern web browser** (for frontend)
 
