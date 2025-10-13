@@ -137,21 +137,49 @@ func RunCode(w http.ResponseWriter, r *http.Request) {
 	}
 	defer os.RemoveAll(packageDir) // Cleanup temp directory
 
-	// Run code using Docker with request context for cancellation support
-	output, execErr := utils.RunBallerinaPackageWithContext(r.Context(), packageDir, ballerinaVersion)
+	// Execute in parallel using goroutine with result channel
+	type executionResult struct {
+		output string
+		err    error
+	}
+
+	resultChan := make(chan executionResult, 1)
+
+	// Run execution in background
+	go func() {
+		output, execErr := utils.RunBallerinaPackageWithContext(r.Context(), packageDir, ballerinaVersion)
+		resultChan <- executionResult{output: output, err: execErr}
+	}()
+
+	// Wait for result with context timeout
+	var execResult executionResult
+	select {
+	case execResult = <-resultChan:
+		// Execution completed
+	case <-r.Context().Done():
+		// Request cancelled by client
+		log.Printf("Request cancelled by client")
+		response := CodeResponse{
+			Output: "",
+			Error:  "Execution cancelled by user",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+		return
+	}
 
 	// Sanitize output to remove sensitive information
-	sanitizedOutput := utils.SanitizeErrorOutput(output)
+	sanitizedOutput := utils.SanitizeErrorOutput(execResult.output)
 
 	response := CodeResponse{
 		Output: sanitizedOutput,
 		Error:  "",
 	}
 
-	if execErr != nil {
-		sanitizedError := utils.SanitizeErrorOutput(execErr.Error())
+	if execResult.err != nil {
+		sanitizedError := utils.SanitizeErrorOutput(execResult.err.Error())
 		response.Error = sanitizedError
-		log.Printf("Execution error: %v", execErr)
+		log.Printf("Execution error: %v", execResult.err)
 	} else {
 		log.Printf("Execution successful")
 	}

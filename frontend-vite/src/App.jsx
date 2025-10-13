@@ -33,7 +33,7 @@ function App() {
   // Custom hooks for feature management
   const { theme, toggleTheme } = useTheme();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
-  const { output, error, isRunning, executeCode, stopExecution, clearOutput } = useCodeExecution();
+  const { output, error, isRunning, progress: executionProgress, executeCode, stopExecution, clearOutput } = useCodeExecution();
   const { elapsedTime, formattedTime, progress } = useExecutionProgress(isRunning);
   const { version: ballerinaVersion, changeVersion } = useBallerinaVersion();
 
@@ -164,7 +164,7 @@ function App() {
       <ResizablePanels
         ref={resizablePanelsRef}
         leftPanel={<CodeEditor code={code} onChange={setCode} />}
-        rightPanel={<OutputPanel output={output} error={error} />}
+        rightPanel={<OutputPanel output={output} error={error} isRunning={isRunning} progress={executionProgress} />}
       />
 
       {/* Stop Confirmation Dialog */}

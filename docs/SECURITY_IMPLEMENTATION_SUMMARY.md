@@ -259,7 +259,7 @@ public function main() {
 
 ---
 
-## 📈 Performance Impact
+##  Performance Impact
 
 ### Execution Times:
 - Validation overhead: **~5ms** per request

@@ -14,8 +14,10 @@ import './OutputPanel.css';
  * @param {Object} props
  * @param {string} props.output - Standard output
  * @param {string} props.error - Error output
+ * @param {boolean} props.isRunning - Whether code is currently executing
+ * @param {number} props.progress - Execution progress (0-100)
  */
-const OutputPanel = ({ output, error }) => {
+const OutputPanel = ({ output, error, isRunning, progress }) => {
   const hasContent = output || error;
   const isSuccess = output && !error;
   const isError = !!error;
@@ -34,7 +36,7 @@ const OutputPanel = ({ output, error }) => {
         </div>
         
         <div className="output-header-controls">
-          {hasContent && (
+          {hasContent && !isRunning && (
             <div className="output-status">
               <OutputStatus isSuccess={isSuccess} isError={isError} />
             </div>
@@ -50,6 +52,20 @@ const OutputPanel = ({ output, error }) => {
           </button>
         </div>
       </div>
+      
+      {/* Progress Bar */}
+      {isRunning && progress > 0 && (
+        <div className="execution-progress">
+          <div className="progress-bar-container">
+            <div 
+              className="progress-bar-fill" 
+              style={{ width: `${progress}%` }}
+            >
+              <span className="progress-text">{progress}%</span>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="output-wrapper">
         {!hasContent ? (

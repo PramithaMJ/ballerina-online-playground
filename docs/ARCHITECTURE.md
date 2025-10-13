@@ -462,7 +462,7 @@ Option 3: Serverless
 └─────────────────────────────────────┘
 ```
 
-## 📈 Scaling Considerations
+##  Scaling Considerations
 
 ```
 Single Server Setup (Current):

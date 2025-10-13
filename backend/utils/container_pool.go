@@ -102,7 +102,7 @@ func InitializePool(ctx context.Context) error {
 		stats:        &PoolStats{},
 	}
 
-	log.Printf("📊 System: 4GB RAM, optimizing for %d Ballerina versions", len(SupportedVersions))
+	log.Printf(" System: 4GB RAM, optimizing for %d Ballerina versions", len(SupportedVersions))
 	log.Printf("📥 Phase 1/2: Pre-pulling Docker images (this may take 2-3 minutes)...")
 
 	// Phase 1: Pre-pull all images with parallel downloads (rate limited)
@@ -134,13 +134,13 @@ func InitializePool(ctx context.Context) error {
 			Pool.pulledImages[ver] = true
 			Pool.imagePullMutex.Unlock()
 
-			log.Printf("  ✅ [%d/%d] Pulled %s", index+1, len(SupportedVersions), ver)
+			log.Printf("   [%d/%d] Pulled %s", index+1, len(SupportedVersions), ver)
 		}(version, idx)
 	}
 	pullWg.Wait()
 
 	pulledCount := len(Pool.pulledImages)
-	log.Printf("✅ Phase 1 complete: Pulled %d/%d images in %v",
+	log.Printf(" Phase 1 complete: Pulled %d/%d images in %v",
 		pulledCount, len(SupportedVersions), time.Since(pullStart))
 
 	// Phase 2: Create container pools in parallel
@@ -158,7 +158,7 @@ func InitializePool(ctx context.Context) error {
 		Pool.imagePullMutex.Unlock()
 
 		if !pulled {
-			log.Printf("  ⚠️  Skipping %s (image not available)", version)
+			log.Printf("    Skipping %s (image not available)", version)
 			continue
 		}
 
@@ -201,14 +201,56 @@ func InitializePool(ctx context.Context) error {
 				totalMutex.Lock()
 				totalContainersCreated += successCount
 				totalMutex.Unlock()
-				log.Printf("  ✅ %s: Created %d/%d containers", ver, successCount, size)
+				log.Printf("   %s: Created %d/%d containers", ver, successCount, size)
 			}
 		}(version, poolSize)
 	}
 	createWg.Wait()
 
-	log.Printf("✅ Phase 2 complete: Created %d containers in %v",
+	log.Printf(" Phase 2 complete: Created %d containers in %v",
 		totalContainersCreated, time.Since(createStart))
+
+	// Phase 3: Aggressive container warm-up to pre-compile and warm JVM
+	log.Printf(" Phase 3/3: Warming up containers (pre-compiling dummy code)...")
+	warmupStart := time.Now()
+
+	// Dummy Ballerina code to warm up containers
+	dummyCode := `import ballerina/io;
+
+public function main() {
+    io:println("Container warmed up");
+}
+`
+
+	var warmupWg sync.WaitGroup
+	warmedCount := 0
+	var warmupMutex sync.Mutex
+
+	for version, containers := range Pool.containers {
+		for idx, container := range containers {
+			warmupWg.Add(1)
+			go func(ver string, c *PooledContainer, index int) {
+				defer warmupWg.Done()
+
+				log.Printf("   [%d] Warming up %s (version: %s)...", index+1, c.ID[:12], ver)
+
+				// Execute dummy code to warm up the container
+				_, err := Pool.ExecuteInContainer(ctx, c, dummyCode)
+				if err != nil {
+					log.Printf("    Warmup failed for %s: %v", c.ID[:12], err)
+				} else {
+					warmupMutex.Lock()
+					warmedCount++
+					warmupMutex.Unlock()
+					log.Printf("   [%d] Warmed up %s (version: %s)", index+1, c.ID[:12], ver)
+				}
+			}(version, container, idx)
+		}
+	}
+	warmupWg.Wait()
+
+	log.Printf(" Phase 3 complete: Warmed up %d/%d containers in %v",
+		warmedCount, totalContainersCreated, time.Since(warmupStart))
 
 	// Start background maintenance tasks
 	go Pool.healthMonitor(ctx)
@@ -308,7 +350,7 @@ func (p *ContainerPool) GetContainer(ctx context.Context, version string) (*Pool
 				p.stats.mutex.Unlock()
 
 				p.mutex.Unlock()
-				log.Printf("✅ Retrieved pooled container for version %s (uses: %d)", version, container.UseCount)
+				log.Printf(" Retrieved pooled container for version %s (uses: %d)", version, container.UseCount)
 				return container, nil
 			}
 			container.mutex.Unlock()
@@ -343,7 +385,7 @@ func (p *ContainerPool) GetContainer(ctx context.Context, version string) (*Pool
 				p.stats.mutex.Unlock()
 				p.mutex.Unlock()
 
-				log.Printf("✅ Auto-scaled: Created new container for version %s", version)
+				log.Printf(" Auto-scaled: Created new container for version %s", version)
 				return newContainer, nil
 			}
 			p.mutex.Lock()
@@ -386,7 +428,7 @@ func (p *ContainerPool) ReturnContainer(container *PooledContainer, healthy bool
 			containerID[:12], uses, healthy)
 		go p.recycleContainer(context.Background(), containerID, version)
 	} else {
-		log.Printf("✅ Returned healthy container for version %s (uses: %d)", version, uses)
+		log.Printf(" Returned healthy container for version %s (uses: %d)", version, uses)
 	}
 }
 
@@ -398,7 +440,7 @@ func (p *ContainerPool) recycleContainer(ctx context.Context, containerID, versi
 
 	err := p.client.ContainerRemove(removeCtx, containerID, containertypes.RemoveOptions{Force: true})
 	if err != nil {
-		log.Printf("⚠️  Failed to remove container %s: %v", containerID[:12], err)
+		log.Printf("  Failed to remove container %s: %v", containerID[:12], err)
 	}
 
 	// Remove from pool
@@ -415,7 +457,7 @@ func (p *ContainerPool) recycleContainer(ctx context.Context, containerID, versi
 	// Create replacement container
 	newContainerID, err := p.createContainer(ctx, version)
 	if err != nil {
-		log.Printf("⚠️  Failed to create replacement container for version %s: %v", version, err)
+		log.Printf("  Failed to create replacement container for version %s: %v", version, err)
 		return
 	}
 
@@ -434,23 +476,64 @@ func (p *ContainerPool) recycleContainer(ctx context.Context, containerID, versi
 	p.containers[version] = append(p.containers[version], newContainer)
 	p.mutex.Unlock()
 
-	log.Printf("✅ Recycled container for version %s: %s → %s",
+	log.Printf(" Recycled container for version %s: %s → %s",
 		version, containerID[:12], newContainerID[:12])
 }
 
 // ExecuteInContainer executes Ballerina code in a pooled container with performance tracking
+// Uses TWO-STEP compilation: 1) Compile with 'bal build' 2) Run compiled JAR for faster execution
 func (p *ContainerPool) ExecuteInContainer(ctx context.Context, container *PooledContainer, code string) (string, error) {
 	startTime := time.Now()
 
-	// Copy code to container
+	// Step 1: Copy code to container
+	copyStart := time.Now()
 	if err := p.copyToContainer(ctx, container.ID, code); err != nil {
 		return "", fmt.Errorf("failed to copy code: %w", err)
 	}
+	log.Printf("📁 File copy took: %v", time.Since(copyStart))
 
-	// Execute Ballerina
+	// Step 2: Compile Ballerina package (bal build --offline)
+	compileStart := time.Now()
+	compileConfig := types.ExecConfig{
+		User:         "ballerina",
+		Cmd:          []string{"bal", "build", "--offline"},
+		AttachStdout: true,
+		AttachStderr: true,
+		WorkingDir:   "/home/ballerina/app",
+	}
+
+	compileResp, err := p.client.ContainerExecCreate(ctx, container.ID, compileConfig)
+	if err != nil {
+		return "", fmt.Errorf("compile exec create failed: %w", err)
+	}
+
+	compileAttach, err := p.client.ContainerExecAttach(ctx, compileResp.ID, types.ExecStartCheck{})
+	if err != nil {
+		return "", fmt.Errorf("compile exec attach failed: %w", err)
+	}
+
+	var compileBuf bytes.Buffer
+	var compileErrBuf bytes.Buffer
+	_, err = stdcopy.StdCopy(&compileBuf, &compileErrBuf, compileAttach.Reader)
+	compileAttach.Close()
+
+	if err != nil {
+		return "", fmt.Errorf("failed to read compile output: %w", err)
+	}
+
+	// Check compilation exit code
+	compileInspect, err := p.client.ContainerExecInspect(ctx, compileResp.ID)
+	if err == nil && compileInspect.ExitCode != 0 {
+		return compileBuf.String() + compileErrBuf.String(), fmt.Errorf("compilation failed with exit code %d", compileInspect.ExitCode)
+	}
+
+	log.Printf("🔨 Compilation took: %v", time.Since(compileStart))
+
+	// Step 3: Run the compiled JAR
+	execStart := time.Now()
 	execConfig := types.ExecConfig{
 		User:         "ballerina",
-		Cmd:          []string{"bal", "run", "/home/ballerina/app/main.bal"},
+		Cmd:          []string{"bal", "run", "target/bin/playground.jar"},
 		AttachStdout: true,
 		AttachStderr: true,
 		WorkingDir:   "/home/ballerina/app",
@@ -479,6 +562,8 @@ func (p *ContainerPool) ExecuteInContainer(ctx context.Context, container *Poole
 		return outputBuf.String() + errBuf.String(), fmt.Errorf("execution failed with exit code %d", execInspect.ExitCode)
 	}
 
+	log.Printf("⚡ Execution took: %v", time.Since(execStart))
+
 	duration := time.Since(startTime)
 
 	// Update statistics
@@ -489,16 +574,43 @@ func (p *ContainerPool) ExecuteInContainer(ctx context.Context, container *Poole
 	)
 	p.stats.mutex.Unlock()
 
-	log.Printf("⚡ Execution completed in %v using pooled container %s", duration, container.ID[:12])
+	log.Printf(" Total execution time: %v using pooled container %s", duration, container.ID[:12])
 
 	return outputBuf.String() + errBuf.String(), nil
 }
 
 // copyToContainer copies code to container using tar archive
+// Creates a complete Ballerina package with Ballerina.toml for proper compilation
 func (p *ContainerPool) copyToContainer(ctx context.Context, containerID, code string) error {
 	var buf bytes.Buffer
 	tw := tar.NewWriter(&buf)
 
+	// Create Ballerina.toml with optimized build options
+	ballerinaToml := `[package]
+org = "playground"
+name = "playground"
+version = "0.1.0"
+
+[build-options]
+observabilityIncluded = false
+offline = true
+cloud = "docker"
+`
+
+	// Add Ballerina.toml to archive
+	tomlHeader := &tar.Header{
+		Name: "Ballerina.toml",
+		Mode: 0644,
+		Size: int64(len(ballerinaToml)),
+	}
+	if err := tw.WriteHeader(tomlHeader); err != nil {
+		return fmt.Errorf("tar header write failed for Ballerina.toml: %w", err)
+	}
+	if _, err := tw.Write([]byte(ballerinaToml)); err != nil {
+		return fmt.Errorf("tar write failed for Ballerina.toml: %w", err)
+	}
+
+	// Add main.bal to archive
 	header := &tar.Header{
 		Name: "main.bal",
 		Mode: 0644,
@@ -506,11 +618,11 @@ func (p *ContainerPool) copyToContainer(ctx context.Context, containerID, code s
 	}
 
 	if err := tw.WriteHeader(header); err != nil {
-		return fmt.Errorf("tar header write failed: %w", err)
+		return fmt.Errorf("tar header write failed for main.bal: %w", err)
 	}
 
 	if _, err := tw.Write([]byte(code)); err != nil {
-		return fmt.Errorf("tar write failed: %w", err)
+		return fmt.Errorf("tar write failed for main.bal: %w", err)
 	}
 
 	if err := tw.Close(); err != nil {
@@ -552,7 +664,7 @@ func (p *ContainerPool) checkHealth(ctx context.Context) {
 				if err != nil || !containerJSON.State.Running {
 					container.Healthy = false
 					container.mutex.Unlock()
-					log.Printf("⚠️  Unhealthy container detected: %s (version: %s)",
+					log.Printf("  Unhealthy container detected: %s (version: %s)",
 						container.ID[:12], version)
 					go p.recycleContainer(context.Background(), container.ID, version)
 					continue
@@ -599,7 +711,7 @@ func (p *ContainerPool) scale(ctx context.Context) {
 
 		// Scale up if utilization > 80% and below max
 		if utilization > 0.8 && totalCount < MaxPoolSizePerVer {
-			log.Printf("📈 High utilization for %s: %.1f%% (%d/%d) - scaling up",
+			log.Printf(" High utilization for %s: %.1f%% (%d/%d) - scaling up",
 				version, utilization*100, inUseCount, totalCount)
 
 			p.mutex.Unlock()
@@ -617,7 +729,7 @@ func (p *ContainerPool) scale(ctx context.Context) {
 					UseCount:   0,
 				}
 				p.containers[version] = append(p.containers[version], newContainer)
-				log.Printf("✅ Scaled up %s: %d → %d containers", version, totalCount, totalCount+1)
+				log.Printf(" Scaled up %s: %d → %d containers", version, totalCount, totalCount+1)
 			}
 		}
 
@@ -628,7 +740,7 @@ func (p *ContainerPool) scale(ctx context.Context) {
 		}
 
 		if utilization < 0.2 && totalCount > minSize {
-			log.Printf("📉 Low utilization for %s: %.1f%% (%d/%d) - scaling down",
+			log.Printf(" Low utilization for %s: %.1f%% (%d/%d) - scaling down",
 				version, utilization*100, inUseCount, totalCount)
 
 			// Find an unused healthy container to remove
@@ -647,7 +759,7 @@ func (p *ContainerPool) scale(ctx context.Context) {
 						removeCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 						defer cancel()
 						p.client.ContainerRemove(removeCtx, id, containertypes.RemoveOptions{Force: true})
-						log.Printf("✅ Scaled down %s: removed container %s", version, id[:12])
+						log.Printf(" Scaled down %s: removed container %s", version, id[:12])
 					}(containerID)
 
 					break
@@ -682,7 +794,7 @@ func (p *ContainerPool) printStats() {
 	inUseContainers := 0
 	healthyContainers := 0
 
-	log.Println("📊 ========== Container Pool Statistics ==========")
+	log.Println(" ========== Container Pool Statistics ==========")
 
 	for version, containers := range p.containers {
 		versionInUse := 0
@@ -712,7 +824,7 @@ func (p *ContainerPool) printStats() {
 		hitRate = float64(p.stats.PoolHits) / float64(p.stats.PoolHits+p.stats.PoolMisses) * 100
 	}
 
-	log.Println("  📈 Performance Metrics:")
+	log.Println("   Performance Metrics:")
 	log.Printf("    - Total Containers: %d", totalContainers)
 	log.Printf("    - In Use: %d (%.1f%%)", inUseContainers,
 		float64(inUseContainers)/float64(totalContainers)*100)
@@ -749,7 +861,7 @@ func (p *ContainerPool) Shutdown(ctx context.Context) error {
 				if err := p.client.ContainerRemove(removeCtx, id, containertypes.RemoveOptions{Force: true}); err != nil {
 					errorsChan <- fmt.Errorf("failed to remove container %s (%s): %w", id[:12], ver, err)
 				} else {
-					log.Printf("✅ Removed container %s (%s)", id[:12], ver)
+					log.Printf(" Removed container %s (%s)", id[:12], ver)
 				}
 			}(container.ID, version)
 		}
@@ -768,10 +880,10 @@ func (p *ContainerPool) Shutdown(ctx context.Context) error {
 	}
 
 	if len(errors) > 0 {
-		log.Printf("⚠️  Encountered %d errors during shutdown", len(errors))
+		log.Printf("  Encountered %d errors during shutdown", len(errors))
 		return fmt.Errorf("shutdown completed with %d errors", len(errors))
 	}
 
-	log.Println("✅ Container pool shutdown complete")
+	log.Println(" Container pool shutdown complete")
 	return nil
 }

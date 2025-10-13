@@ -45,7 +45,7 @@ func CreateBallerinaPackage(code string) (string, error) {
 		return "", err
 	}
 
-	// Create Ballerina.toml
+	// Create Ballerina.toml with optimized build options
 	ballerinaToml := `[package]
 org = "playground"
 name = "playground"
@@ -54,6 +54,8 @@ distribution = "2201.10.0"
 
 [build-options]
 observabilityIncluded = false
+offline = true
+cloud = "docker"
 `
 	err = os.WriteFile(filepath.Join(tempDir, "Ballerina.toml"), []byte(ballerinaToml), 0666)
 	if err != nil {

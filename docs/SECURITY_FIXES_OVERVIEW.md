@@ -260,7 +260,7 @@ done
 
 ---
 
-## 📈 Performance Impact
+##  Performance Impact
 
 - **Validation Overhead:** ~5ms per request
 - **Rate Limiting Overhead:** ~1ms per request
