@@ -137,9 +137,10 @@ func (p *ContainerPool) createContainer(ctx context.Context, version string) (st
 	config := &container.Config{
 		Image:      image,
 		Cmd:        []string{"tail", "-f", "/dev/null"}, // Keep container running
-		WorkingDir: "/home/ballerina/app",
+		WorkingDir: "/home/ballerina",
 		Tty:        false,
 		OpenStdin:  false,
+		User:       "ballerina", // Run as ballerina user
 	}
 
 	hostConfig := &container.HostConfig{
@@ -165,6 +166,23 @@ func (p *ContainerPool) createContainer(ctx context.Context, version string) (st
 
 	if err := p.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return "", fmt.Errorf("container start failed: %v", err)
+	}
+
+	// Create app directory with proper permissions
+	execConfig := types.ExecConfig{
+		Cmd:          []string{"mkdir", "-p", "/home/ballerina/app"},
+		AttachStdout: true,
+		AttachStderr: true,
+		User:         "ballerina",
+	}
+
+	execResp, err := p.client.ContainerExecCreate(ctx, resp.ID, execConfig)
+	if err != nil {
+		log.Printf("Warning: failed to create app directory: %v", err)
+	} else {
+		if err := p.client.ContainerExecStart(ctx, execResp.ID, types.ExecStartCheck{}); err != nil {
+			log.Printf("Warning: failed to start exec for mkdir: %v", err)
+		}
 	}
 
 	return resp.ID, nil
@@ -278,7 +296,7 @@ func (p *ContainerPool) ExecuteInContainer(ctx context.Context, c *PooledContain
 		WorkingDir:   "/home/ballerina/app",
 		AttachStdout: true,
 		AttachStderr: true,
-		User:         "65534:65534", // nobody user
+		User:         "ballerina", // Run as ballerina user
 	}
 
 	// Create exec instance
@@ -423,7 +441,7 @@ func (p *ContainerPool) checkHealth(ctx context.Context) {
 			// Check if container is still running
 			inspect, err := p.client.ContainerInspect(ctx, c.ID)
 			if err != nil || !inspect.State.Running {
-				log.Printf("⚠️  Unhealthy container detected: %s (version: %s)", c.ID[:12], version)
+				log.Printf(" Unhealthy container detected: %s (version: %s)", c.ID[:12], version)
 
 				// Remove and replace
 				p.client.ContainerRemove(ctx, c.ID, container.RemoveOptions{Force: true})
