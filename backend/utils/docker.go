@@ -122,9 +122,9 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 
 	// Try to use container pool if available
 	if Pool != nil {
-		container, err := Pool.GetContainer(version)
+		container, err := Pool.GetContainer(ctx, version)
 		if err != nil {
-			log.Printf(" Pool unavailable for version %s, falling back to docker run: %v", version, err)
+			log.Printf("⚠️  Pool unavailable for version %s, falling back to docker run: %v", version, err)
 		} else {
 			// Execute using pooled container
 			output, execErr := Pool.ExecuteInContainer(ctx, container, packageDir)

@@ -7,58 +7,87 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
-	"path/filepath"
 	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
+	containertypes "github.com/docker/docker/api/types/container"
 	imagetypes "github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 )
 
-// ContainerPool manages a pool of reusable Docker containers for each Ballerina version
-type ContainerPool struct {
-	containers map[string][]*PooledContainer // version -> list of containers
-	mutex      sync.Mutex
-	maxSize    int
-	client     *client.Client
+// ALL supported Ballerina versions for comprehensive coverage
+var SupportedVersions = []string{
+	// Latest versions (high priority - more containers)
+	"2201.12.0", "2201.11.0", "2201.10.5", "2201.10.4", "2201.10.3", "2201.10.2", "2201.10.1", "2201.10.0",
+	// Common versions (medium priority)
+	"2201.9.2", "2201.9.1", "2201.9.0",
+	"2201.8.6", "2201.8.5", "2201.8.4", "2201.8.3", "2201.8.2", "2201.8.1", "2201.8.0",
+	"2201.7.2", "2201.7.1", "2201.7.0",
+	// Older versions (lower priority)
+	"2201.6.0", "2201.5.0", "2201.4.1", "2201.4.0", "2201.3.0",
 }
 
-// PooledContainer represents a container in the pool with metadata
-type PooledContainer struct {
-	ID          string
-	Version     string
-	InUse       bool
-	CreatedAt   time.Time
-	LastUsedAt  time.Time
-	UseCount    int
-	MaxUseCount int // Recycle container after this many uses
+// Priority-based pool sizing for optimal resource usage (4GB RAM system)
+var VersionPriority = map[string]int{
+	"2201.12.0": 6, // Latest - 6 containers
+	"2201.11.0": 4, // Popular - 4 containers
+	"2201.10.5": 4,
+	"2201.10.0": 3,
+	"2201.9.0":  3,
+	"2201.8.0":  2,
+	// Others: 2 containers (default)
 }
 
-var (
-	// Global pool instance
-	Pool *ContainerPool
-
-	// Supported versions to pre-initialize
-	SupportedVersions = []string{
-		"2201.12.0", // Latest
-		"2201.11.0",
-		"2201.10.5",
-		"2201.10.0",
-		"2201.9.0",
-	}
-
-	// Pool configuration
-	PoolSizePerVersion = 3  // Number of containers per version
-	MaxUseCount        = 50 // Recycle container after 50 uses
+const (
+	DefaultPoolSize     = 2  // Default containers per version
+	MaxPoolSizePerVer   = 10 // Max containers per version
+	MaxUseCount         = 30 // Recycle after 30 uses
+	HealthCheckInterval = 30 * time.Second
+	ScalingInterval     = 20 * time.Second
 )
 
-// InitializePool creates and initializes the container pool with pre-warmed containers
+// PooledContainer represents a container with thread-safe state management
+type PooledContainer struct {
+	ID         string
+	Version    string
+	InUse      bool
+	Healthy    bool
+	CreatedAt  time.Time
+	LastUsedAt time.Time
+	UseCount   int
+	mutex      sync.Mutex
+}
+
+// ContainerPool manages reusable Docker containers with advanced features
+type ContainerPool struct {
+	containers     map[string][]*PooledContainer
+	mutex          sync.RWMutex
+	client         *client.Client
+	ctx            context.Context
+	pulledImages   map[string]bool
+	imagePullMutex sync.Mutex
+	stats          *PoolStats
+}
+
+// PoolStats tracks pool performance metrics
+type PoolStats struct {
+	TotalExecutions  int64
+	CacheHits        int64
+	PoolHits         int64
+	PoolMisses       int64
+	TotalWaitTime    time.Duration
+	AvgExecutionTime time.Duration
+	mutex            sync.Mutex
+}
+
+var Pool *ContainerPool
+
+// InitializePool creates and initializes the container pool with all versions
 func InitializePool(ctx context.Context) error {
-	log.Println("🚀 Initializing container pool...")
+	log.Println("🚀 Initializing high-performance container pool...")
+	startTime := time.Now()
 
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -66,353 +95,432 @@ func InitializePool(ctx context.Context) error {
 	}
 
 	Pool = &ContainerPool{
-		containers: make(map[string][]*PooledContainer),
-		maxSize:    PoolSizePerVersion,
-		client:     cli,
+		containers:   make(map[string][]*PooledContainer),
+		client:       cli,
+		ctx:          ctx,
+		pulledImages: make(map[string]bool),
+		stats:        &PoolStats{},
 	}
 
-	// Pre-pull images and create containers for each supported version
-	var wg sync.WaitGroup
-	for _, version := range SupportedVersions {
-		wg.Add(1)
-		go func(ver string) {
-			defer wg.Done()
+	log.Printf("📊 System: 4GB RAM, optimizing for %d Ballerina versions", len(SupportedVersions))
+	log.Printf("📥 Phase 1/2: Pre-pulling Docker images (this may take 2-3 minutes)...")
+
+	// Phase 1: Pre-pull all images with parallel downloads (rate limited)
+	var pullWg sync.WaitGroup
+	pullSemaphore := make(chan struct{}, 6) // 6 concurrent pulls
+	pullStart := time.Now()
+
+	for idx, version := range SupportedVersions {
+		pullWg.Add(1)
+		go func(ver string, index int) {
+			defer pullWg.Done()
+			pullSemaphore <- struct{}{}        // Acquire
+			defer func() { <-pullSemaphore }() // Release
 
 			image := GetBallerinaDockerImage(ver)
-			log.Printf(" Pre-pulling image: %s", image)
+			log.Printf("  [%d/%d] Pulling %s...", index+1, len(SupportedVersions), ver)
 
-			// Pull image
 			reader, err := cli.ImagePull(ctx, image, imagetypes.PullOptions{})
 			if err != nil {
-				log.Printf(" Failed to pull image %s: %v", image, err)
+				log.Printf("  ❌ Failed to pull %s: %v", ver, err)
 				return
 			}
-			io.Copy(io.Discard, reader)
-			reader.Close()
-			log.Printf(" Successfully pulled image: %s", image)
+			defer reader.Close()
 
-			// Create initial containers for this version
-			for i := 0; i < PoolSizePerVersion; i++ {
+			// Drain the reader to complete the pull
+			io.Copy(io.Discard, reader)
+
+			Pool.imagePullMutex.Lock()
+			Pool.pulledImages[ver] = true
+			Pool.imagePullMutex.Unlock()
+
+			log.Printf("  ✅ [%d/%d] Pulled %s", index+1, len(SupportedVersions), ver)
+		}(version, idx)
+	}
+	pullWg.Wait()
+
+	pulledCount := len(Pool.pulledImages)
+	log.Printf("✅ Phase 1 complete: Pulled %d/%d images in %v",
+		pulledCount, len(SupportedVersions), time.Since(pullStart))
+
+	// Phase 2: Create container pools in parallel
+	log.Printf("🔧 Phase 2/2: Creating container pools...")
+	createStart := time.Now()
+
+	var createWg sync.WaitGroup
+	totalContainersCreated := 0
+	var totalMutex sync.Mutex
+
+	for _, version := range SupportedVersions {
+		// Check if image was successfully pulled
+		Pool.imagePullMutex.Lock()
+		pulled := Pool.pulledImages[version]
+		Pool.imagePullMutex.Unlock()
+
+		if !pulled {
+			log.Printf("  ⚠️  Skipping %s (image not available)", version)
+			continue
+		}
+
+		// Determine pool size based on priority
+		poolSize, hasPriority := VersionPriority[version]
+		if !hasPriority {
+			poolSize = DefaultPoolSize
+		}
+
+		createWg.Add(1)
+		go func(ver string, size int) {
+			defer createWg.Done()
+
+			successCount := 0
+			for i := 0; i < size; i++ {
 				containerID, err := Pool.createContainer(ctx, ver)
 				if err != nil {
-					log.Printf(" Failed to create container for %s: %v", ver, err)
+					log.Printf("  ❌ Failed to create container for %s: %v", ver, err)
 					continue
 				}
 
 				pooledContainer := &PooledContainer{
-					ID:          containerID,
-					Version:     ver,
-					InUse:       false,
-					CreatedAt:   time.Now(),
-					LastUsedAt:  time.Now(),
-					UseCount:    0,
-					MaxUseCount: MaxUseCount,
+					ID:         containerID,
+					Version:    ver,
+					InUse:      false,
+					Healthy:    true,
+					CreatedAt:  time.Now(),
+					LastUsedAt: time.Now(),
+					UseCount:   0,
 				}
 
 				Pool.mutex.Lock()
 				Pool.containers[ver] = append(Pool.containers[ver], pooledContainer)
 				Pool.mutex.Unlock()
 
-				log.Printf(" Pre-initialized container %d/%d for version %s: %s",
-					i+1, PoolSizePerVersion, ver, containerID[:12])
+				successCount++
 			}
-		}(version)
+
+			if successCount > 0 {
+				totalMutex.Lock()
+				totalContainersCreated += successCount
+				totalMutex.Unlock()
+				log.Printf("  ✅ %s: Created %d/%d containers", ver, successCount, size)
+			}
+		}(version, poolSize)
 	}
+	createWg.Wait()
 
-	wg.Wait()
+	log.Printf("✅ Phase 2 complete: Created %d containers in %v",
+		totalContainersCreated, time.Since(createStart))
 
-	// Start background health monitor
+	// Start background maintenance tasks
 	go Pool.healthMonitor(ctx)
+	go Pool.autoScaler(ctx)
+	go Pool.statsReporter(ctx)
 
-	log.Println(" Container pool initialization complete!")
+	totalTime := time.Since(startTime)
+	log.Printf("🎉 Container pool initialization complete in %v!", totalTime)
 	Pool.printStats()
 
 	return nil
 }
 
-// createContainer creates a new Docker container for the pool
+// createContainer creates a new Docker container with optimized settings
 func (p *ContainerPool) createContainer(ctx context.Context, version string) (string, error) {
 	image := GetBallerinaDockerImage(version)
 
-	config := &container.Config{
+	config := &containertypes.Config{
 		Image:      image,
-		Cmd:        []string{"tail", "-f", "/dev/null"}, // Keep container running
+		Cmd:        []string{"tail", "-f", "/dev/null"}, // Keep alive
 		WorkingDir: "/home/ballerina",
+		User:       "ballerina",
 		Tty:        false,
 		OpenStdin:  false,
-		User:       "ballerina", // Run as ballerina user
 	}
 
-	hostConfig := &container.HostConfig{
-		Resources: container.Resources{
-			Memory:   512 * 1024 * 1024, // 512MB
+	hostConfig := &containertypes.HostConfig{
+		Resources: containertypes.Resources{
+			Memory:   512 * 1024 * 1024, // 512MB per container
 			NanoCPUs: 1000000000,        // 1 CPU core
 		},
-		NetworkMode:    "none", // Disable network for security
-		AutoRemove:     false,  // Keep container for pooling
+		NetworkMode:    "none", // No network for security
+		AutoRemove:     false,
 		ReadonlyRootfs: false,
 		Tmpfs: map[string]string{
 			"/tmp":        "rw,noexec,nosuid,size=100m",
-			"/.ballerina": "rw,noexec,nosuid,size=20m",
+			"/.ballerina": "rw,noexec,nosuid,size=50m",
 		},
 		SecurityOpt: []string{"no-new-privileges"},
 		CapDrop:     []string{"ALL"},
+		IpcMode:     "private",
 	}
 
 	resp, err := p.client.ContainerCreate(ctx, config, hostConfig, nil, nil, "")
 	if err != nil {
-		return "", fmt.Errorf("container create failed: %v", err)
+		return "", fmt.Errorf("container create failed: %w", err)
 	}
 
-	if err := p.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
-		return "", fmt.Errorf("container start failed: %v", err)
+	if err := p.client.ContainerStart(ctx, resp.ID, containertypes.StartOptions{}); err != nil {
+		p.client.ContainerRemove(ctx, resp.ID, containertypes.RemoveOptions{Force: true})
+		return "", fmt.Errorf("container start failed: %w", err)
 	}
 
-	// Create app directory with proper permissions
+	// Pre-create app directory with proper permissions
 	execConfig := types.ExecConfig{
+		User:         "ballerina",
 		Cmd:          []string{"mkdir", "-p", "/home/ballerina/app"},
 		AttachStdout: true,
 		AttachStderr: true,
-		User:         "ballerina",
 	}
 
 	execResp, err := p.client.ContainerExecCreate(ctx, resp.ID, execConfig)
-	if err != nil {
-		log.Printf("Warning: failed to create app directory: %v", err)
-	} else {
-		if err := p.client.ContainerExecStart(ctx, execResp.ID, types.ExecStartCheck{}); err != nil {
-			log.Printf("Warning: failed to start exec for mkdir: %v", err)
-		}
+	if err == nil {
+		p.client.ContainerExecStart(ctx, execResp.ID, types.ExecStartCheck{})
 	}
 
 	return resp.ID, nil
 }
 
-// GetContainer retrieves an available container from the pool
-func (p *ContainerPool) GetContainer(version string) (*PooledContainer, error) {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+// GetContainer retrieves a container from the pool with smart waiting and auto-scaling
+func (p *ContainerPool) GetContainer(ctx context.Context, version string) (*PooledContainer, error) {
+	p.mutex.RLock()
+	containers, exists := p.containers[version]
+	p.mutex.RUnlock()
 
-	containers := p.containers[version]
-
-	// Find an available container
-	for _, c := range containers {
-		if !c.InUse {
-			c.InUse = true
-			c.LastUsedAt = time.Now()
-			c.UseCount++
-			log.Printf(" Using container from pool: %s (version: %s, uses: %d)",
-				c.ID[:12], version, c.UseCount)
-			return c, nil
-		}
+	if !exists || len(containers) == 0 {
+		return nil, fmt.Errorf("unsupported version: %s", version)
 	}
 
-	// No available container, create a new one if pool isn't full
-	if len(containers) < p.maxSize*2 { // Allow pool to grow up to 2x during high load
-		log.Printf(" Pool exhausted, creating new container for version %s", version)
-		containerID, err := p.createContainer(context.Background(), version)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create new container: %v", err)
+	maxWaitTime := 3 * time.Second
+	retryInterval := 50 * time.Millisecond
+	startTime := time.Now()
+
+	for {
+		p.mutex.Lock()
+		for _, container := range containers {
+			container.mutex.Lock()
+			if !container.InUse && container.Healthy {
+				container.InUse = true
+				container.UseCount++
+				container.LastUsedAt = time.Now()
+				container.mutex.Unlock()
+
+				// Track pool hit
+				p.stats.mutex.Lock()
+				p.stats.PoolHits++
+				p.stats.mutex.Unlock()
+
+				p.mutex.Unlock()
+				log.Printf("✅ Retrieved pooled container for version %s (uses: %d)", version, container.UseCount)
+				return container, nil
+			}
+			container.mutex.Unlock()
 		}
 
-		pooledContainer := &PooledContainer{
-			ID:          containerID,
-			Version:     version,
-			InUse:       true,
-			CreatedAt:   time.Now(),
-			LastUsedAt:  time.Now(),
-			UseCount:    1,
-			MaxUseCount: MaxUseCount,
-		}
+		currentSize := len(containers)
+		maxSize := MaxPoolSizePerVer
+		utilizationRate := float64(currentSize) / float64(maxSize)
 
-		p.containers[version] = append(p.containers[version], pooledContainer)
-		return pooledContainer, nil
-	}
-
-	return nil, fmt.Errorf("no available containers for version %s", version)
-}
-
-// ReturnContainer returns a container back to the pool
-func (p *ContainerPool) ReturnContainer(c *PooledContainer, healthy bool) {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
-
-	if !healthy || c.UseCount >= c.MaxUseCount {
-		// Remove unhealthy or overused container
-		log.Printf("  Recycling container: %s (healthy: %v, uses: %d/%d)",
-			c.ID[:12], healthy, c.UseCount, c.MaxUseCount)
-
-		go func() {
-			ctx := context.Background()
-			p.client.ContainerRemove(ctx, c.ID, container.RemoveOptions{Force: true})
-
-			// Create replacement container
-			newID, err := p.createContainer(ctx, c.Version)
-			if err != nil {
-				log.Printf(" Failed to create replacement container: %v", err)
-				return
-			}
-
-			newContainer := &PooledContainer{
-				ID:          newID,
-				Version:     c.Version,
-				InUse:       false,
-				CreatedAt:   time.Now(),
-				LastUsedAt:  time.Now(),
-				UseCount:    0,
-				MaxUseCount: MaxUseCount,
-			}
-
-			p.mutex.Lock()
-			// Replace old container with new one
-			containers := p.containers[c.Version]
-			for i, container := range containers {
-				if container.ID == c.ID {
-					p.containers[c.Version][i] = newContainer
-					break
-				}
-			}
+		// Auto-scale if utilization is high and we haven't reached max
+		if utilizationRate >= 0.8 && currentSize < maxSize {
 			p.mutex.Unlock()
+			log.Printf("⚡ Auto-scaling: Creating additional container for version %s (current: %d/%d)",
+				version, currentSize, maxSize)
 
-			log.Printf(" Replaced container: %s -> %s", c.ID[:12], newID[:12])
-		}()
-	} else {
-		// Return healthy container to pool
-		c.InUse = false
-		log.Printf(" Returned container to pool: %s (version: %s)", c.ID[:12], c.Version)
+			containerID, err := p.createContainer(ctx, version)
+			if err == nil {
+				newContainer := &PooledContainer{
+					ID:         containerID,
+					Version:    version,
+					InUse:      true,
+					Healthy:    true,
+					CreatedAt:  time.Now(),
+					LastUsedAt: time.Now(),
+					UseCount:   1,
+				}
+
+				p.mutex.Lock()
+				p.containers[version] = append(p.containers[version], newContainer)
+				p.stats.mutex.Lock()
+				p.stats.PoolHits++
+				p.stats.mutex.Unlock()
+				p.mutex.Unlock()
+
+				log.Printf("✅ Auto-scaled: Created new container for version %s", version)
+				return newContainer, nil
+			}
+			p.mutex.Lock()
+		}
+		p.mutex.Unlock()
+
+		// Check if we've exceeded max wait time
+		if time.Since(startTime) > maxWaitTime {
+			p.stats.mutex.Lock()
+			p.stats.PoolMisses++
+			p.stats.mutex.Unlock()
+			return nil, fmt.Errorf("pool exhausted for version %s after %v", version, maxWaitTime)
+		}
+
+		// Wait before retrying
+		time.Sleep(retryInterval)
 	}
 }
 
-// ExecuteInContainer executes Ballerina code in a pooled container
-func (p *ContainerPool) ExecuteInContainer(ctx context.Context, c *PooledContainer, packageDir string) (string, error) {
-	// Copy files to container
-	if err := p.copyToContainer(ctx, c.ID, packageDir); err != nil {
-		return "", fmt.Errorf("failed to copy files: %v", err)
+// ReturnContainer returns a container to the pool and marks health status
+func (p *ContainerPool) ReturnContainer(container *PooledContainer, healthy bool) {
+	if container == nil {
+		return
 	}
 
-	// Create exec configuration
+	container.mutex.Lock()
+	container.InUse = false
+	container.Healthy = healthy
+	container.LastUsedAt = time.Now()
+
+	// Check if container needs recycling
+	needsRecycle := container.UseCount >= 30 || !healthy
+	containerID := container.ID
+	version := container.Version
+	uses := container.UseCount
+	container.mutex.Unlock()
+
+	if needsRecycle {
+		log.Printf("♻️  Container %s needs recycling (uses: %d, healthy: %v)",
+			containerID[:12], uses, healthy)
+		go p.recycleContainer(context.Background(), containerID, version)
+	} else {
+		log.Printf("✅ Returned healthy container for version %s (uses: %d)", version, uses)
+	}
+}
+
+// recycleContainer removes and replaces an unhealthy or overused container
+func (p *ContainerPool) recycleContainer(ctx context.Context, containerID, version string) {
+	// Remove old container
+	removeCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	err := p.client.ContainerRemove(removeCtx, containerID, containertypes.RemoveOptions{Force: true})
+	if err != nil {
+		log.Printf("⚠️  Failed to remove container %s: %v", containerID[:12], err)
+	}
+
+	// Remove from pool
+	p.mutex.Lock()
+	containers := p.containers[version]
+	for i, c := range containers {
+		if c.ID == containerID {
+			p.containers[version] = append(containers[:i], containers[i+1:]...)
+			break
+		}
+	}
+	p.mutex.Unlock()
+
+	// Create replacement container
+	newContainerID, err := p.createContainer(ctx, version)
+	if err != nil {
+		log.Printf("⚠️  Failed to create replacement container for version %s: %v", version, err)
+		return
+	}
+
+	// Add to pool
+	newContainer := &PooledContainer{
+		ID:         newContainerID,
+		Version:    version,
+		InUse:      false,
+		Healthy:    true,
+		CreatedAt:  time.Now(),
+		LastUsedAt: time.Now(),
+		UseCount:   0,
+	}
+
+	p.mutex.Lock()
+	p.containers[version] = append(p.containers[version], newContainer)
+	p.mutex.Unlock()
+
+	log.Printf("✅ Recycled container for version %s: %s → %s",
+		version, containerID[:12], newContainerID[:12])
+}
+
+// ExecuteInContainer executes Ballerina code in a pooled container with performance tracking
+func (p *ContainerPool) ExecuteInContainer(ctx context.Context, container *PooledContainer, code string) (string, error) {
+	startTime := time.Now()
+
+	// Copy code to container
+	if err := p.copyToContainer(ctx, container.ID, code); err != nil {
+		return "", fmt.Errorf("failed to copy code: %w", err)
+	}
+
+	// Execute Ballerina
 	execConfig := types.ExecConfig{
-		Cmd:          []string{"bal", "run"},
-		WorkingDir:   "/home/ballerina/app",
+		User:         "ballerina",
+		Cmd:          []string{"bal", "run", "/home/ballerina/app/main.bal"},
 		AttachStdout: true,
 		AttachStderr: true,
-		User:         "ballerina", // Run as ballerina user
+		WorkingDir:   "/home/ballerina/app",
 	}
 
-	// Create exec instance
-	execResp, err := p.client.ContainerExecCreate(ctx, c.ID, execConfig)
+	execResp, err := p.client.ContainerExecCreate(ctx, container.ID, execConfig)
 	if err != nil {
-		return "", fmt.Errorf("exec create failed: %v", err)
+		return "", fmt.Errorf("exec create failed: %w", err)
 	}
 
-	// Attach to exec
 	attachResp, err := p.client.ContainerExecAttach(ctx, execResp.ID, types.ExecStartCheck{})
 	if err != nil {
-		return "", fmt.Errorf("exec attach failed: %v", err)
+		return "", fmt.Errorf("exec attach failed: %w", err)
 	}
 	defer attachResp.Close()
 
-	// Read output with timeout
 	var outputBuf bytes.Buffer
-	var stderrBuf bytes.Buffer
-
-	done := make(chan error, 1)
-	go func() {
-		_, err := stdcopy.StdCopy(&outputBuf, &stderrBuf, attachResp.Reader)
-		done <- err
-	}()
-
-	select {
-	case <-ctx.Done():
-		return "", fmt.Errorf("execution timeout")
-	case err := <-done:
-		if err != nil && err != io.EOF {
-			return "", fmt.Errorf("read output failed: %v", err)
-		}
-	}
-
-	// Check exit code
-	inspectResp, err := p.client.ContainerExecInspect(ctx, execResp.ID)
+	var errBuf bytes.Buffer
+	_, err = stdcopy.StdCopy(&outputBuf, &errBuf, attachResp.Reader)
 	if err != nil {
-		return "", fmt.Errorf("exec inspect failed: %v", err)
+		return "", fmt.Errorf("failed to read output: %w", err)
 	}
 
-	output := outputBuf.String()
-	if stderrBuf.Len() > 0 {
-		output += "\n" + stderrBuf.String()
+	execInspect, err := p.client.ContainerExecInspect(ctx, execResp.ID)
+	if err == nil && execInspect.ExitCode != 0 {
+		return outputBuf.String() + errBuf.String(), fmt.Errorf("execution failed with exit code %d", execInspect.ExitCode)
 	}
 
-	if inspectResp.ExitCode != 0 {
-		return output, fmt.Errorf("execution failed with exit code %d", inspectResp.ExitCode)
-	}
+	duration := time.Since(startTime)
 
-	return output, nil
+	// Update statistics
+	p.stats.mutex.Lock()
+	p.stats.TotalExecutions++
+	p.stats.AvgExecutionTime = time.Duration(
+		(int64(p.stats.AvgExecutionTime)*int64(p.stats.TotalExecutions-1) + int64(duration)) / int64(p.stats.TotalExecutions),
+	)
+	p.stats.mutex.Unlock()
+
+	log.Printf("⚡ Execution completed in %v using pooled container %s", duration, container.ID[:12])
+
+	return outputBuf.String() + errBuf.String(), nil
 }
 
-// copyToContainer copies files from packageDir to container
-func (p *ContainerPool) copyToContainer(ctx context.Context, containerID, packageDir string) error {
+// copyToContainer copies code to container using tar archive
+func (p *ContainerPool) copyToContainer(ctx context.Context, containerID, code string) error {
 	var buf bytes.Buffer
 	tw := tar.NewWriter(&buf)
 
-	// Walk through package directory and add files to tar
-	err := filepath.Walk(packageDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+	header := &tar.Header{
+		Name: "main.bal",
+		Mode: 0644,
+		Size: int64(len(code)),
+	}
 
-		// Get relative path
-		relPath, err := filepath.Rel(packageDir, path)
-		if err != nil {
-			return err
-		}
+	if err := tw.WriteHeader(header); err != nil {
+		return fmt.Errorf("tar header write failed: %w", err)
+	}
 
-		// Skip if it's the root directory
-		if relPath == "." {
-			return nil
-		}
-
-		// Create tar header
-		header, err := tar.FileInfoHeader(info, "")
-		if err != nil {
-			return err
-		}
-		header.Name = relPath
-
-		// Write header
-		if err := tw.WriteHeader(header); err != nil {
-			return err
-		}
-
-		// If it's a file, write content
-		if !info.IsDir() {
-			file, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
-
-			if _, err := io.Copy(tw, file); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("failed to create tar: %v", err)
+	if _, err := tw.Write([]byte(code)); err != nil {
+		return fmt.Errorf("tar write failed: %w", err)
 	}
 
 	if err := tw.Close(); err != nil {
-		return fmt.Errorf("failed to close tar writer: %v", err)
+		return fmt.Errorf("tar close failed: %w", err)
 	}
 
-	// Copy tar to container
-	return p.client.CopyToContainer(ctx, containerID, "/home/ballerina/app",
-		&buf, types.CopyToContainerOptions{})
+	return p.client.CopyToContainer(ctx, containerID, "/home/ballerina/app", &buf, types.CopyToContainerOptions{})
 }
 
-// healthMonitor periodically checks container health
+// healthMonitor performs periodic health checks
 func (p *ContainerPool) healthMonitor(ctx context.Context) {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
@@ -427,80 +535,243 @@ func (p *ContainerPool) healthMonitor(ctx context.Context) {
 	}
 }
 
-// checkHealth checks the health of all containers in the pool
+// checkHealth verifies container health and recycles if needed
 func (p *ContainerPool) checkHealth(ctx context.Context) {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+	p.mutex.RLock()
+	defer p.mutex.RUnlock()
 
 	for version, containers := range p.containers {
-		for i, c := range containers {
-			if c.InUse {
-				continue // Skip containers in use
-			}
+		for _, container := range containers {
+			container.mutex.Lock()
+			if !container.InUse && container.Healthy {
+				// Quick health check using container inspect
+				inspectCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+				containerJSON, err := p.client.ContainerInspect(inspectCtx, container.ID)
+				cancel()
 
-			// Check if container is still running
-			inspect, err := p.client.ContainerInspect(ctx, c.ID)
-			if err != nil || !inspect.State.Running {
-				log.Printf(" Unhealthy container detected: %s (version: %s)", c.ID[:12], version)
-
-				// Remove and replace
-				p.client.ContainerRemove(ctx, c.ID, container.RemoveOptions{Force: true})
-
-				newID, err := p.createContainer(ctx, version)
-				if err != nil {
-					log.Printf(" Failed to replace unhealthy container: %v", err)
+				if err != nil || !containerJSON.State.Running {
+					container.Healthy = false
+					container.mutex.Unlock()
+					log.Printf("⚠️  Unhealthy container detected: %s (version: %s)",
+						container.ID[:12], version)
+					go p.recycleContainer(context.Background(), container.ID, version)
 					continue
 				}
+			}
+			container.mutex.Unlock()
+		}
+	}
+}
 
-				p.containers[version][i] = &PooledContainer{
-					ID:          newID,
-					Version:     version,
-					InUse:       false,
-					CreatedAt:   time.Now(),
-					LastUsedAt:  time.Now(),
-					UseCount:    0,
-					MaxUseCount: MaxUseCount,
+// autoScaler adjusts pool sizes based on usage patterns
+func (p *ContainerPool) autoScaler(ctx context.Context) {
+	ticker := time.NewTicker(20 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			p.scale(ctx)
+		}
+	}
+}
+
+// scale evaluates and adjusts pool sizes
+func (p *ContainerPool) scale(ctx context.Context) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	for version, containers := range p.containers {
+		inUseCount := 0
+		totalCount := len(containers)
+
+		for _, container := range containers {
+			container.mutex.Lock()
+			if container.InUse {
+				inUseCount++
+			}
+			container.mutex.Unlock()
+		}
+
+		utilization := float64(inUseCount) / float64(totalCount)
+
+		// Scale up if utilization > 80% and below max
+		if utilization > 0.8 && totalCount < MaxPoolSizePerVer {
+			log.Printf("📈 High utilization for %s: %.1f%% (%d/%d) - scaling up",
+				version, utilization*100, inUseCount, totalCount)
+
+			p.mutex.Unlock()
+			containerID, err := p.createContainer(ctx, version)
+			p.mutex.Lock()
+
+			if err == nil {
+				newContainer := &PooledContainer{
+					ID:         containerID,
+					Version:    version,
+					InUse:      false,
+					Healthy:    true,
+					CreatedAt:  time.Now(),
+					LastUsedAt: time.Now(),
+					UseCount:   0,
 				}
+				p.containers[version] = append(p.containers[version], newContainer)
+				log.Printf("✅ Scaled up %s: %d → %d containers", version, totalCount, totalCount+1)
+			}
+		}
 
-				log.Printf(" Replaced unhealthy container: %s -> %s", c.ID[:12], newID[:12])
+		// Scale down if utilization < 20% and above minimum
+		minSize := VersionPriority[version]
+		if minSize == 0 {
+			minSize = DefaultPoolSize
+		}
+
+		if utilization < 0.2 && totalCount > minSize {
+			log.Printf("📉 Low utilization for %s: %.1f%% (%d/%d) - scaling down",
+				version, utilization*100, inUseCount, totalCount)
+
+			// Find an unused healthy container to remove
+			for i := len(containers) - 1; i >= 0; i-- {
+				container := containers[i]
+				container.mutex.Lock()
+				if !container.InUse && container.Healthy {
+					containerID := container.ID
+					container.mutex.Unlock()
+
+					// Remove from pool
+					p.containers[version] = append(containers[:i], containers[i+1:]...)
+
+					// Remove container in background
+					go func(id string) {
+						removeCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+						defer cancel()
+						p.client.ContainerRemove(removeCtx, id, containertypes.RemoveOptions{Force: true})
+						log.Printf("✅ Scaled down %s: removed container %s", version, id[:12])
+					}(containerID)
+
+					break
+				}
+				container.mutex.Unlock()
 			}
 		}
 	}
 }
 
-// printStats prints pool statistics
+// statsReporter prints pool statistics periodically
+func (p *ContainerPool) statsReporter(ctx context.Context) {
+	ticker := time.NewTicker(2 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			p.printStats()
+		}
+	}
+}
+
+// printStats displays detailed pool statistics
 func (p *ContainerPool) printStats() {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
+	p.mutex.RLock()
+	defer p.mutex.RUnlock()
 
-	log.Println(" Container Pool Statistics:")
+	totalContainers := 0
+	inUseContainers := 0
+	healthyContainers := 0
+
+	log.Println("📊 ========== Container Pool Statistics ==========")
+
 	for version, containers := range p.containers {
-		available := 0
-		inUse := 0
-		for _, c := range containers {
-			if c.InUse {
-				inUse++
-			} else {
-				available++
+		versionInUse := 0
+		versionHealthy := 0
+
+		for _, container := range containers {
+			container.mutex.Lock()
+			if container.InUse {
+				versionInUse++
+				inUseContainers++
 			}
+			if container.Healthy {
+				versionHealthy++
+				healthyContainers++
+			}
+			container.mutex.Unlock()
 		}
-		log.Printf("  Version %s: %d total (%d available, %d in use)",
-			version, len(containers), available, inUse)
+
+		totalContainers += len(containers)
+		log.Printf("  📦 %s: %d total (%d in-use, %d healthy)",
+			version, len(containers), versionInUse, versionHealthy)
 	}
+
+	p.stats.mutex.Lock()
+	hitRate := float64(0)
+	if p.stats.PoolHits+p.stats.PoolMisses > 0 {
+		hitRate = float64(p.stats.PoolHits) / float64(p.stats.PoolHits+p.stats.PoolMisses) * 100
+	}
+
+	log.Println("  📈 Performance Metrics:")
+	log.Printf("    - Total Containers: %d", totalContainers)
+	log.Printf("    - In Use: %d (%.1f%%)", inUseContainers,
+		float64(inUseContainers)/float64(totalContainers)*100)
+	log.Printf("    - Healthy: %d (%.1f%%)", healthyContainers,
+		float64(healthyContainers)/float64(totalContainers)*100)
+	log.Printf("    - Total Executions: %d", p.stats.TotalExecutions)
+	log.Printf("    - Pool Hits: %d", p.stats.PoolHits)
+	log.Printf("    - Pool Misses: %d", p.stats.PoolMisses)
+	log.Printf("    - Hit Rate: %.2f%%", hitRate)
+	log.Printf("    - Avg Execution Time: %v", p.stats.AvgExecutionTime)
+	p.stats.mutex.Unlock()
+	log.Println("================================================")
 }
 
-// Shutdown gracefully shuts down the pool
-func (p *ContainerPool) Shutdown(ctx context.Context) {
-	log.Println(" Shutting down container pool...")
+// Shutdown gracefully stops the pool and cleans up containers
+func (p *ContainerPool) Shutdown(ctx context.Context) error {
+	log.Println("🛑 Shutting down container pool...")
+
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 
+	var wg sync.WaitGroup
+	errorsChan := make(chan error, len(p.containers)*10)
+
 	for version, containers := range p.containers {
-		for _, c := range containers {
-			log.Printf("Removing container: %s (version: %s)", c.ID[:12], version)
-			p.client.ContainerRemove(ctx, c.ID, container.RemoveOptions{Force: true})
+		for _, container := range containers {
+			wg.Add(1)
+			go func(id string, ver string) {
+				defer wg.Done()
+
+				removeCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+				defer cancel()
+
+				if err := p.client.ContainerRemove(removeCtx, id, containertypes.RemoveOptions{Force: true}); err != nil {
+					errorsChan <- fmt.Errorf("failed to remove container %s (%s): %w", id[:12], ver, err)
+				} else {
+					log.Printf("✅ Removed container %s (%s)", id[:12], ver)
+				}
+			}(container.ID, version)
 		}
 	}
 
-	log.Println(" Container pool shutdown complete")
+	// Wait for all removals to complete
+	go func() {
+		wg.Wait()
+		close(errorsChan)
+	}()
+
+	// Collect errors
+	var errors []error
+	for err := range errorsChan {
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		log.Printf("⚠️  Encountered %d errors during shutdown", len(errors))
+		return fmt.Errorf("shutdown completed with %d errors", len(errors))
+	}
+
+	log.Println("✅ Container pool shutdown complete")
+	return nil
 }
