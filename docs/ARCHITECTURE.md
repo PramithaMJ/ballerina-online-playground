@@ -415,7 +415,7 @@ Backend Configuration:
 └── Docker image         → ballerina/ballerina:latest (handler/run.go)
 ```
 
-## 🚀 Deployment Architecture
+## Deployment Architecture
 
 ```
 Production Deployment Options:
@@ -462,7 +462,7 @@ Option 3: Serverless
 └─────────────────────────────────────┘
 ```
 
-## 📈 Scaling Considerations
+##  Scaling Considerations
 
 ```
 Single Server Setup (Current):

@@ -122,7 +122,7 @@ go mod tidy
 go mod download
 ```
 
-## 🚀 Adding New Features
+## Adding New Features
 
 ### Adding a New Endpoint
 

@@ -1,4 +1,4 @@
-# 🔒 Enable HTTPS on EC2 Backend
+#  Enable HTTPS on EC2 Backend
 
 ## Problem
 GitHub Pages (HTTPS) cannot connect to EC2 backend (HTTP) due to browser security (Mixed Content blocking).

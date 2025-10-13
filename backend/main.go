@@ -131,7 +131,7 @@ func chain(handler http.HandlerFunc, middlewares ...func(http.HandlerFunc) http.
 func main() {
 	// Initialize container pool in background
 	ctx := context.Background()
-	log.Println("🚀 Starting Ballerina Compiler Backend...")
+	log.Println("Starting Ballerina Compiler Backend...")
 
 	// Initialize the container pool (pre-pull images and create containers)
 	go func() {
@@ -185,8 +185,8 @@ func main() {
 		MaxHeaderBytes: 1 << 20,           // 1 MB
 	}
 
-	log.Println("🚀 Server started on port 8081")
-	log.Println("🔒 Security features enabled:")
+	log.Println("Server started on port 8081")
+	log.Println(" Security features enabled:")
 	log.Println("  - Rate limiting: 5 requests per 5 seconds")
 	log.Println("  - Code validation and sanitization")
 	log.Println("  - Docker isolation with security constraints")
