@@ -273,7 +273,7 @@ public function main() {
 
 ---
 
-## ⚠️ Known Limitations
+## Known Limitations
 
 ### 1. Ballerina Runtime Vulnerabilities
 - **Risk:** Unknown bugs in Ballerina compiler/runtime

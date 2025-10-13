@@ -124,7 +124,7 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 	if Pool != nil {
 		container, err := Pool.GetContainer(version)
 		if err != nil {
-			log.Printf("⚠️  Pool unavailable for version %s, falling back to docker run: %v", version, err)
+			log.Printf(" Pool unavailable for version %s, falling back to docker run: %v", version, err)
 		} else {
 			// Execute using pooled container
 			output, execErr := Pool.ExecuteInContainer(ctx, container, packageDir)
@@ -141,7 +141,7 @@ func RunBallerinaPackageWithContext(parentCtx context.Context, packageDir string
 	}
 
 	// Fallback to original docker run method if pool is not available
-	log.Printf("⚠️  Container pool not available, using docker run fallback")
+	log.Printf(" Container pool not available, using docker run fallback")
 
 	// Get Docker image for the version
 	dockerImage := GetBallerinaDockerImage(version)

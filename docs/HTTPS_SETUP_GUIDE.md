@@ -223,7 +223,7 @@ env:
 #### 2. Update App.jsx to Allow HTTP
 This requires adding special handling in your frontend code, but browsers will still block it by default.
 
-**⚠️ This won't work reliably due to browser security policies!**
+**This won't work reliably due to browser security policies!**
 
 ---
 

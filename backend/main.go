@@ -136,8 +136,8 @@ func main() {
 	// Initialize the container pool (pre-pull images and create containers)
 	go func() {
 		if err := utils.InitializePool(ctx); err != nil {
-			log.Printf("⚠️  Failed to initialize container pool: %v", err)
-			log.Println("⚠️  Will fallback to docker run for code execution")
+			log.Printf(" Failed to initialize container pool: %v", err)
+			log.Println(" Will fallback to docker run for code execution")
 		}
 	}()
 
