@@ -7,6 +7,7 @@
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
 const TOKEN_VALIDITY_DURATION = 3 * 60 * 1000; // 3 minutes (refresh well before 5min expiry)
 const TOKEN_WARNING_THRESHOLD = 2 * 60 * 1000; // 2 minutes - proactive refresh threshold
+const DEBUG_MODE = import.meta.env.DEV; // Only show debug logs in development
 
 class TurnstileManager {
   constructor() {
@@ -18,15 +19,24 @@ class TurnstileManager {
   }
 
   /**
+   * Log only in debug mode
+   */
+  debug(...args) {
+    if (DEBUG_MODE) {
+      console.log(...args);
+    }
+  }
+
+  /**
    * Initialize the invisible Turnstile widget
    */
   initialize() {
     if (this.isInitialized) {
-      console.log('🔧 Turnstile manager already initialized');
+      this.debug('🔧 Turnstile manager already initialized');
       return; // Already initialized
     }
 
-    console.log('🔧 Initializing Turnstile manager...');
+    this.debug('🔧 Initializing Turnstile manager...');
 
     // Create invisible container
     this.containerElement = document.createElement('div');
@@ -58,7 +68,7 @@ class TurnstileManager {
         sitekey: TURNSTILE_SITE_KEY,
         size: 'compact', // Use 'compact' instead of 'invisible' (which is not supported)
         callback: (token) => {
-          console.log('🔄 Background token refresh successful');
+          this.debug('🔄 Background token refresh successful');
           this.storeToken(token);
           this.isRefreshing = false;
           
@@ -67,24 +77,24 @@ class TurnstileManager {
           this.pendingCallbacks = [];
         },
         'error-callback': (errorCode) => {
-          console.error('❌ Background token refresh failed:', errorCode);
+          console.error('❌ Token refresh failed:', errorCode);
           this.isRefreshing = false;
           this.pendingCallbacks.forEach(cb => cb(null));
           this.pendingCallbacks = [];
         },
         'expired-callback': () => {
-          console.log('⏱️ Token expired - auto-refreshing...');
+          this.debug('⏱️ Token expired - auto-refreshing...');
           this.refreshToken();
         },
         'timeout-callback': () => {
-          console.error('⏱️ Token refresh timeout');
+          console.warn('⏱️ Token refresh timeout');
           this.isRefreshing = false;
           this.pendingCallbacks.forEach(cb => cb(null));
           this.pendingCallbacks = [];
         },
         theme: 'light',
       });
-      console.log('✅ Background widget rendered with ID:', this.widgetId);
+      this.debug('✅ Background widget rendered with ID:', this.widgetId);
     } catch (err) {
       console.error('❌ Error rendering background Turnstile widget:', err);
     }
@@ -114,20 +124,20 @@ class TurnstileManager {
       
       // Token is too old (>3 minutes) - refresh immediately
       if (age >= TOKEN_VALIDITY_DURATION) {
-        console.log(`⏱️ Token is ${ageMinutes} minutes old - refreshing...`);
+        this.debug(`⏱️ Token is ${ageMinutes} minutes old - refreshing...`);
         return this.refreshToken();
       }
       
       // Token is getting old (>2 minutes) - warn but still use it
       if (age >= TOKEN_WARNING_THRESHOLD) {
-        console.log(`⚠️ Token is ${ageMinutes} minutes old - consider refreshing soon`);
+        this.debug(`⚠️ Token is ${ageMinutes} minutes old - consider refreshing soon`);
       }
       
       return token; // Token is still fresh enough
     }
 
     // Token is missing - refresh it
-    console.log('🔄 No token found - requesting new one...');
+    this.debug('🔄 No token found - requesting new one...');
     return this.refreshToken();
   }
 
@@ -155,13 +165,13 @@ class TurnstileManager {
       }
 
       try {
-        console.log('🔄 Requesting new token...');
+        this.debug('🔄 Requesting new token...');
         window.turnstile.reset(this.widgetId);
         
         // Timeout after 10 seconds
         setTimeout(() => {
           if (this.isRefreshing) {
-            console.error('❌ Token refresh timeout');
+            console.warn('❌ Token refresh timeout');
             this.isRefreshing = false;
             this.pendingCallbacks.forEach(cb => cb(null));
             this.pendingCallbacks = [];

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import './TurnstileChallenge.css';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
+const DEBUG_MODE = import.meta.env.DEV; // Only show debug logs in development
 
 export const TurnstileChallenge = ({ onVerified }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -10,13 +11,15 @@ export const TurnstileChallenge = ({ onVerified }) => {
   const turnstileRef = useRef(null);
   const widgetIdRef = useRef(null);
 
-  // Log configuration on mount
+  // Log configuration on mount (only in dev mode)
   useEffect(() => {
-    console.log('🔧 Turnstile Configuration:', {
-      siteKey: TURNSTILE_SITE_KEY,
-      isTestKey: TURNSTILE_SITE_KEY === '1x00000000000000000000AA',
-      mode: import.meta.env.MODE,
-    });
+    if (DEBUG_MODE) {
+      console.log('🔧 Turnstile Configuration:', {
+        siteKey: TURNSTILE_SITE_KEY,
+        isTestKey: TURNSTILE_SITE_KEY === '1x00000000000000000000AA',
+        mode: import.meta.env.MODE,
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -25,18 +28,20 @@ export const TurnstileChallenge = ({ onVerified }) => {
     const token = sessionStorage.getItem('turnstile_token');
     const timestamp = sessionStorage.getItem('turnstile_timestamp');
     
-    console.log('🔍 Checking session storage:', { verified, hasToken: !!token, timestamp });
+    if (DEBUG_MODE) {
+      console.log('🔍 Checking session storage:', { verified, hasToken: !!token, timestamp });
+    }
     
     // Token expires after 5 minutes
     const isTokenValid = timestamp && (Date.now() - parseInt(timestamp)) < 5 * 60 * 1000;
     
     if (verified === 'true' && token && isTokenValid) {
-      console.log('✅ Valid token found in session, skipping verification');
+      if (DEBUG_MODE) console.log('✅ Valid token found in session');
       setIsVerified(true);
       onVerified(token);
       return;
     } else if (verified === 'true' && !isTokenValid) {
-      console.log('⏱️ Token expired, clearing session storage');
+      if (DEBUG_MODE) console.log('⏱️ Token expired, clearing session');
       // Clear expired token
       sessionStorage.removeItem('turnstile_verified');
       sessionStorage.removeItem('turnstile_token');
@@ -45,7 +50,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
 
     // Check if script already loaded
     if (window.turnstile) {
-      console.log('📝 Turnstile script already loaded');
+      if (DEBUG_MODE) console.log('📝 Turnstile script already loaded');
       setIsLoading(false);
       
       // Render widget immediately
@@ -54,7 +59,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
           widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
             sitekey: TURNSTILE_SITE_KEY,
             callback: (token) => {
-              console.log('✅ Turnstile verification successful');
+              if (DEBUG_MODE) console.log('✅ Turnstile verification successful');
               setIsVerified(true);
               sessionStorage.setItem('turnstile_verified', 'true');
               sessionStorage.setItem('turnstile_token', token);
@@ -66,7 +71,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
               setError('Verification failed. Please refresh and try again.');
             },
             'expired-callback': () => {
-              console.log('⏱️ Turnstile token expired');
+              if (DEBUG_MODE) console.log('⏱️ Turnstile token expired');
               sessionStorage.removeItem('turnstile_verified');
               sessionStorage.removeItem('turnstile_token');
               sessionStorage.removeItem('turnstile_timestamp');
@@ -78,7 +83,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
               }
             },
             'timeout-callback': () => {
-              console.log('⏱️ Turnstile timeout');
+              console.warn('⏱️ Turnstile timeout');
               setError('Verification timeout. Please try again.');
             },
             theme: 'light',
@@ -93,14 +98,14 @@ export const TurnstileChallenge = ({ onVerified }) => {
     }
 
     // Load Turnstile script
-    console.log('📥 Loading Turnstile script...');
+    if (DEBUG_MODE) console.log('📥 Loading Turnstile script...');
     const script = document.createElement('script');
     script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
     script.async = true;
     script.defer = true;
     
     script.onload = () => {
-      console.log('✅ Turnstile script loaded');
+      if (DEBUG_MODE) console.log('✅ Turnstile script loaded');
       setIsLoading(false);
       
       // Add small delay to ensure Turnstile is fully initialized
@@ -108,11 +113,11 @@ export const TurnstileChallenge = ({ onVerified }) => {
         // Render Turnstile widget
         if (window.turnstile && turnstileRef.current && !widgetIdRef.current) {
           try {
-            console.log('🎨 Rendering Turnstile widget...');
+            if (DEBUG_MODE) console.log('🎨 Rendering Turnstile widget...');
             widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
               sitekey: TURNSTILE_SITE_KEY,
               callback: (token) => {
-                console.log('✅ Turnstile verification successful');
+                if (DEBUG_MODE) console.log('✅ Turnstile widget rendered with ID:', widgetIdRef.current);
                 setIsVerified(true);
                 sessionStorage.setItem('turnstile_verified', 'true');
                 sessionStorage.setItem('turnstile_token', token);
@@ -124,7 +129,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
                 setError('Verification failed. Please refresh and try again.');
               },
               'expired-callback': () => {
-                console.log('⏱️ Turnstile token expired');
+                if (DEBUG_MODE) console.log('⏱️ Turnstile token expired');
                 sessionStorage.removeItem('turnstile_verified');
                 sessionStorage.removeItem('turnstile_token');
                 sessionStorage.removeItem('turnstile_timestamp');
@@ -136,18 +141,17 @@ export const TurnstileChallenge = ({ onVerified }) => {
                 }
               },
               'timeout-callback': () => {
-                console.log('⏱️ Turnstile timeout');
+                console.warn('⏱️ Turnstile timeout');
                 setError('Verification timeout. Please try again.');
               },
               theme: 'light',
               size: 'normal',
             });
-            console.log('✅ Turnstile widget rendered with ID:', widgetIdRef.current);
           } catch (err) {
             console.error('❌ Error rendering Turnstile:', err);
             setError('Failed to load verification. Please refresh the page.');
           }
-        } else {
+        } else if (DEBUG_MODE) {
           console.error('❌ Cannot render Turnstile:', {
             turnstileExists: !!window.turnstile,
             refExists: !!turnstileRef.current,

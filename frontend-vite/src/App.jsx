@@ -96,7 +96,9 @@ function App() {
   // Initialize background token refresh after verification
   useEffect(() => {
     if (isVerified && envConfig.enableVerification) {
-      console.log('🔧 Initializing background token manager...');
+      if (import.meta.env.DEV) {
+        console.log('🔧 Initializing background token manager...');
+      }
       turnstileManager.initialize();
       
       return () => {
@@ -107,7 +109,9 @@ function App() {
 
   // Handler functions
   const handleTurnstileVerified = (token) => {
-    console.log(' App: Turnstile verification successful');
+    if (import.meta.env.DEV) {
+      console.log('✓ App: Turnstile verification successful');
+    }
     setTurnstileToken(token);
     setIsVerified(true);
   };
