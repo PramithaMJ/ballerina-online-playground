@@ -1,0 +1,72 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1d24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2d3748;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="ballerinaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF5000;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF7A00;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+  
+  <!-- Decorative circles -->
+  <circle cx="100" cy="100" r="150" fill="#FF5000" opacity="0.1"/>
+  <circle cx="1100" cy="530" r="200" fill="#FF7A00" opacity="0.1"/>
+  
+  <!-- Ballerina Logo -->
+  <g transform="translate(500, 150)">
+    <!-- Swan-like logo representation -->
+    <path d="M 0 0 L 30 -30 L 60 0 L 30 30 Z" fill="url(#ballerinaGradient)" opacity="0.8"/>
+    <path d="M 0 40 L 60 40 L 60 80 L 0 80 Z" fill="#FF7A00"/>
+    <circle cx="30" cy="20" r="8" fill="#FFB84D"/>
+  </g>
+  
+  <!-- Main Title -->
+  <text x="600" y="280" font-family="'Segoe UI', Arial, sans-serif" font-size="72" font-weight="bold" fill="#FFFFFF" text-anchor="middle">
+    Ballerina Online Playground
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="340" font-family="'Segoe UI', Arial, sans-serif" font-size="32" fill="#A0AEC0" text-anchor="middle">
+    Write, Compile &amp; Execute Ballerina Code in Real-Time
+  </text>
+  
+  <!-- Features -->
+  <g transform="translate(100, 430)">
+    <!-- Feature 1 -->
+    <circle cx="0" cy="0" r="8" fill="#48BB78"/>
+    <text x="20" y="5" font-family="'Segoe UI', Arial, sans-serif" font-size="22" fill="#E2E8F0" font-weight="500">
+      🚀 Multiple Ballerina Versions
+    </text>
+    
+    <!-- Feature 2 -->
+    <circle cx="360" cy="0" r="8" fill="#48BB78"/>
+    <text x="380" y="5" font-family="'Segoe UI', Arial, sans-serif" font-size="22" fill="#E2E8F0" font-weight="500">
+      💻 Monaco Code Editor
+    </text>
+    
+    <!-- Feature 3 -->
+    <circle cx="680" cy="0" r="8" fill="#48BB78"/>
+    <text x="700" y="5" font-family="'Segoe UI', Arial, sans-serif" font-size="22" fill="#E2E8F0" font-weight="500">
+      ⚡ Instant Execution
+    </text>
+  </g>
+  
+  <!-- Footer -->
+  <text x="600" y="570" font-family="'Segoe UI', Arial, sans-serif" font-size="20" fill="#718096" text-anchor="middle">
+    ballerina-online-playground.pages.dev
+  </text>
+  
+  <!-- Decorative code brackets -->
+  <text x="50" y="320" font-family="monospace" font-size="100" fill="#FF5000" opacity="0.15">
+    {
+  </text>
+  <text x="1100" y="320" font-family="monospace" font-size="100" fill="#FF7A00" opacity="0.15">
+    }
+  </text>
+</svg>

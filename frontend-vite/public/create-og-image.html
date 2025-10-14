@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 1200px;
+            height: 630px;
+            background: linear-gradient(135deg, #1a1d24 0%, #2d3748 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .circle1 {
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: #FF5000;
+            opacity: 0.1;
+        }
+        .circle2 {
+            position: absolute;
+            bottom: -100px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: #FF7A00;
+            opacity: 0.1;
+        }
+        .bracket-left {
+            position: absolute;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 200px;
+            color: #FF5000;
+            opacity: 0.2;
+            font-family: monospace;
+        }
+        .bracket-right {
+            position: absolute;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 200px;
+            color: #FF7A00;
+            opacity: 0.2;
+            font-family: monospace;
+        }
+        .content {
+            text-align: center;
+            z-index: 10;
+            max-width: 900px;
+            padding: 40px;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+        .logo-shape {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #FF5000, #FF7A00);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        h1 {
+            font-size: 64px;
+            font-weight: bold;
+            color: #FFFFFF;
+            margin: 0 0 20px 0;
+            letter-spacing: -1px;
+        }
+        p {
+            font-size: 28px;
+            color: #A0AEC0;
+            margin: 0 0 40px 0;
+        }
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #E2E8F0;
+            font-size: 20px;
+        }
+        .feature::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: #48BB78;
+            border-radius: 50%;
+        }
+        .url {
+            margin-top: 40px;
+            color: #718096;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="circle1"></div>
+    <div class="circle2"></div>
+    <div class="bracket-left">{</div>
+    <div class="bracket-right">}</div>
+    
+    <div class="content">
+        <div class="logo">
+            <div class="logo-shape"></div>
+        </div>
+        <h1>Ballerina Online Playground</h1>
+        <p>Write, Compile & Execute Ballerina Code in Real-Time</p>
+        
+        <div class="features">
+            <div class="feature">🚀 Multiple Versions</div>
+            <div class="feature">💻 Monaco Editor</div>
+            <div class="feature">⚡ Instant Execution</div>
+        </div>
+        
+        <div class="url">ballerina-online-playground.pages.dev</div>
+    </div>
+</body>
+</html>
