@@ -4,7 +4,7 @@
 
 A powerful, secure, and high-performance web-based IDE for writing, compiling, and executing Ballerina code in real-time. Built with modern web technologies and optimized for developer experience.
 
-**🌐 [Try it now: https://pramithamj.github.io/ballerina-online-playground/](https://pramithamj.github.io/ballerina-online-playground/)**
+**🌐 [Try it now: [https://ballerina-online-playground.pages.dev/](https://ballerina-online-playground.pages.dev/)**
 
 Ballerina Lint Tool : [https://pramithamj.github.io/ballerina-lint/](https://pramithamj.github.io/ballerina-lint/)
 
