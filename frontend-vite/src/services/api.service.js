@@ -58,28 +58,14 @@ class ApiService {
       
       if (envConfig.enableVerification) {
         try {
-          // Check if a token is already being used/refreshed
-          const tokenUsageCount = turnstileManager.getTokenUsageCount();
-          const tokenAge = turnstileManager.getTokenAge();
-          
-          // If token has been used before OR is old, get a fresh one
-          if (tokenUsageCount > 0 || (tokenAge && parseFloat(tokenAge) > 0.5)) {
-            this.debug(`🔄 Token already used ${tokenUsageCount} times (age: ${tokenAge} min) - getting fresh token...`);
-            await turnstileManager.refreshToken();
-          }
-          
+          // Get token from pool (instant if available, otherwise generates new one)
           const token = await turnstileManager.getToken();
+          
           if (token) {
-            const age = turnstileManager.getTokenAge();
-            const usage = turnstileManager.getTokenUsageCount();
-            this.debug(`🔐 Using Turnstile token for API request (age: ${age || 'new'} min, usage: ${usage})`);
-            
-            // Mark token as being used
-            turnstileManager.incrementUsageCount();
-            
+            this.debug('🔐 Using Turnstile token for API request');
             headers['CF-Turnstile-Token'] = token;
           } else {
-            console.warn('⚠️ No Turnstile token available');
+            console.warn(' No Turnstile token available');
           }
         } catch (err) {
           console.error('❌ Failed to get Turnstile token:', err);
@@ -103,38 +89,21 @@ class ApiService {
 
       // Handle Turnstile verification failures
       if (response.status === 401) {
-        console.warn('⚠️ Verification failed - refreshing token...');
-        
-        // Clear and refresh token
-        turnstileManager.clearToken();
-        
-        try {
-          await turnstileManager.refreshToken();
-          this.debug('✅ Token refreshed successfully');
-        } catch (refreshErr) {
-          console.error('❌ Token refresh failed:', refreshErr);
-        }
+        console.warn(' Verification failed - token may have been rejected');
         
         return {
           output: '',
-          error: '🔒 Verification expired or invalid. A new verification token has been requested.\n\nPlease try running your code again in a moment.',
+          error: '🔒 Verification failed. The token may have expired or been rejected.\n\nA fresh token will be used for your next request.',
         };
       }
 
       let outputResult;
       if (response.ok) {
-        // Request successful - token was consumed by backend
-        this.debug('✅ Request successful - token was accepted');
+        // Request successful
+        this.debug(' Request successful - token was accepted');
         
-        // CRITICAL: Immediately request a new token after successful use
-        // Turnstile tokens are single-use only!
-        if (envConfig.enableVerification) {
-          this.debug('🔄 Token consumed - requesting fresh token immediately...');
-          // Don't await - let it happen in background
-          turnstileManager.refreshToken().catch(err => {
-            console.error('⚠️ Background token refresh failed:', err);
-          });
-        }
+        // Token pool will automatically refill in background
+        // No need to manually trigger refresh after each request
         
         if (result.error) {
           outputResult = {

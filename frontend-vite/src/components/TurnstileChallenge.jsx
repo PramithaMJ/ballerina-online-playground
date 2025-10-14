@@ -14,7 +14,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
   // Log configuration on mount (only in dev mode)
   useEffect(() => {
     if (DEBUG_MODE) {
-      console.log('🔧 Turnstile Configuration:', {
+      console.log(' Turnstile Configuration:', {
         siteKey: TURNSTILE_SITE_KEY,
         isTestKey: TURNSTILE_SITE_KEY === '1x00000000000000000000AA',
         mode: import.meta.env.MODE,
@@ -36,12 +36,12 @@ export const TurnstileChallenge = ({ onVerified }) => {
     const isTokenValid = timestamp && (Date.now() - parseInt(timestamp)) < 5 * 60 * 1000;
     
     if (verified === 'true' && token && isTokenValid) {
-      if (DEBUG_MODE) console.log('✅ Valid token found in session');
+      if (DEBUG_MODE) console.log(' Valid token found in session');
       setIsVerified(true);
       onVerified(token);
       return;
     } else if (verified === 'true' && !isTokenValid) {
-      if (DEBUG_MODE) console.log('⏱️ Token expired, clearing session');
+      if (DEBUG_MODE) console.log(' Token expired, clearing session');
       // Clear expired token
       sessionStorage.removeItem('turnstile_verified');
       sessionStorage.removeItem('turnstile_token');
@@ -59,7 +59,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
           widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
             sitekey: TURNSTILE_SITE_KEY,
             callback: (token) => {
-              if (DEBUG_MODE) console.log('✅ Turnstile verification successful');
+              if (DEBUG_MODE) console.log(' Turnstile verification successful');
               setIsVerified(true);
               sessionStorage.setItem('turnstile_verified', 'true');
               sessionStorage.setItem('turnstile_token', token);
@@ -71,7 +71,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
               setError('Verification failed. Please refresh and try again.');
             },
             'expired-callback': () => {
-              if (DEBUG_MODE) console.log('⏱️ Turnstile token expired');
+              if (DEBUG_MODE) console.log(' Turnstile token expired');
               sessionStorage.removeItem('turnstile_verified');
               sessionStorage.removeItem('turnstile_token');
               sessionStorage.removeItem('turnstile_timestamp');
@@ -83,7 +83,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
               }
             },
             'timeout-callback': () => {
-              console.warn('⏱️ Turnstile timeout');
+              console.warn(' Turnstile timeout');
               setError('Verification timeout. Please try again.');
             },
             theme: 'light',
@@ -105,7 +105,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
     script.defer = true;
     
     script.onload = () => {
-      if (DEBUG_MODE) console.log('✅ Turnstile script loaded');
+      if (DEBUG_MODE) console.log(' Turnstile script loaded');
       setIsLoading(false);
       
       // Add small delay to ensure Turnstile is fully initialized
@@ -117,7 +117,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
             widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
               sitekey: TURNSTILE_SITE_KEY,
               callback: (token) => {
-                if (DEBUG_MODE) console.log('✅ Turnstile widget rendered with ID:', widgetIdRef.current);
+                if (DEBUG_MODE) console.log(' Turnstile widget rendered with ID:', widgetIdRef.current);
                 setIsVerified(true);
                 sessionStorage.setItem('turnstile_verified', 'true');
                 sessionStorage.setItem('turnstile_token', token);
@@ -129,7 +129,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
                 setError('Verification failed. Please refresh and try again.');
               },
               'expired-callback': () => {
-                if (DEBUG_MODE) console.log('⏱️ Turnstile token expired');
+                if (DEBUG_MODE) console.log(' Turnstile token expired');
                 sessionStorage.removeItem('turnstile_verified');
                 sessionStorage.removeItem('turnstile_token');
                 sessionStorage.removeItem('turnstile_timestamp');
@@ -141,7 +141,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
                 }
               },
               'timeout-callback': () => {
-                console.warn('⏱️ Turnstile timeout');
+                console.warn(' Turnstile timeout');
                 setError('Verification timeout. Please try again.');
               },
               theme: 'light',

@@ -97,7 +97,7 @@ function App() {
   useEffect(() => {
     if (isVerified && envConfig.enableVerification) {
       if (import.meta.env.DEV) {
-        console.log('🔧 Initializing background token manager...');
+        console.log(' Initializing background token manager...');
       }
       turnstileManager.initialize();
       

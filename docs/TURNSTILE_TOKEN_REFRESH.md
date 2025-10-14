@@ -14,7 +14,7 @@ Cloudflare Turnstile tokens have two important limitations:
 ### What Was Happening Before
 
 ```
-User completes challenge → Token stored → User clicks "Run" → Token sent to backend ✅
+User completes challenge → Token stored → User clicks "Run" → Token sent to backend 
                                         ↓
                           Token is now consumed (used once)
                                         ↓
@@ -55,13 +55,13 @@ We implemented a **background token refresh system** that automatically gets fre
 │   - If < 4 minutes old → Returns existing token             │
 │   - If ≥ 4 minutes old → Automatically refreshes            │
 │ → Fresh token sent to backend                               │
-│ → Code executes successfully ✅                              │
+│ → Code executes successfully                               │
 │                                                              │
 │ User clicks "Run" again (token was consumed)                │
 │ → Manager detects missing/expired token                     │
 │ → Invisible widget requests new token from Cloudflare       │
 │ → New token received in <1 second                           │
-│ → User's code runs without error ✅                          │
+│ → User's code runs without error                           │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -187,7 +187,7 @@ Token Generation: 00:00
 ### Before (Problems)
 
 ```
-❌ User clicks "Run" → Code executes → ✅ Success
+❌ User clicks "Run" → Code executes →  Success
 ❌ User clicks "Run" again → ❌ Error: "timeout-or-duplicate"
 ❌ User refreshes entire page → Sees challenge again
 ❌ User frustrated, leaves site
@@ -196,10 +196,10 @@ Token Generation: 00:00
 ### After (Solved)
 
 ```
-✅ User clicks "Run" → Code executes → ✅ Success
-✅ User clicks "Run" again → Token auto-refreshes → ✅ Success
-✅ User clicks "Run" 10x times → Each time gets fresh token → ✅ All succeed
-✅ User can work for hours without seeing challenge again
+ User clicks "Run" → Code executes →  Success
+ User clicks "Run" again → Token auto-refreshes →  Success
+ User clicks "Run" 10x times → Each time gets fresh token →  All succeed
+ User can work for hours without seeing challenge again
 ```
 
 ## Performance Impact
@@ -226,7 +226,7 @@ Token Generation: 00:00
 
 **After:**
 - 1 (challenge) + 1 (widget) + 6 (refreshes) + 10 (executions) = **18 requests**
-- 0 failures, all succeed ✅
+- 0 failures, all succeed 
 
 **Tradeoff:** ~60% more requests, but **0% failure rate** and **100% better UX**
 
@@ -257,29 +257,29 @@ Token Generation: 00:00
 
 ```javascript
 // Initialization
-🔧 Initializing background token manager...
+ Initializing background token manager...
 
 // Token usage
 🔐 Using Turnstile token for API request
 
 // Refresh events
-🔄 Requesting new token...
-🔄 Background token refresh successful
+ Requesting new token...
+ Background token refresh successful
 
 // Errors
-⚠️ No Turnstile token available
+ No Turnstile token available
 ❌ Verification failed - requesting new token
-✅ Token refreshed - please try again
+ Token refreshed - please try again
 ```
 
 ### Backend Logs
 
 ```go
 // Success
-✅ Turnstile verification successful from 1.2.3.4 (hostname: ballerina-online-playground.pages.dev)
+ Turnstile verification successful from 1.2.3.4 (hostname: ballerina-online-playground.pages.dev)
 
 // Token age warning
-⏱️ Token is 4.5 minutes old
+ Token is 4.5 minutes old
 
 // Failures
 ❌ Turnstile verification failed: [timeout-or-duplicate]
@@ -330,12 +330,12 @@ const REFRESH_TIMEOUT = 10000;                  // 10 seconds
 ### Expected Console Output
 
 ```
-✅ App: Turnstile verification successful
-🔧 Initializing background token manager...
+ App: Turnstile verification successful
+ Initializing background token manager...
 🔐 Using Turnstile token for API request
 🔐 Using Turnstile token for API request
-🔄 Requesting new token...
-🔄 Background token refresh successful
+ Requesting new token...
+ Background token refresh successful
 🔐 Using Turnstile token for API request
 ```
 
@@ -353,7 +353,7 @@ const REFRESH_TIMEOUT = 10000;                  // 10 seconds
 1. Pull latest code: `git pull`
 2. Rebuild container: `docker compose -f docker-compose.prod.yml up -d --build`
 3. Verify logs: `docker compose -f docker-compose.prod.yml logs backend | grep Turnstile`
-4. Expected: `✅ Turnstile verification enabled with secret key: 1x00...AA`
+4. Expected: ` Turnstile verification enabled with secret key: 1x00...AA`
 
 ## Monitoring
 
@@ -364,7 +364,7 @@ const REFRESH_TIMEOUT = 10000;                  // 10 seconds
    - Expected: ~1 refresh per 4-5 minutes of active use
 
 2. **Verification Success Rate**
-   - Backend logs: Count `✅ Turnstile verification successful`
+   - Backend logs: Count ` Turnstile verification successful`
    - Should be >99% after fix
 
 3. **401 Errors**
@@ -388,7 +388,7 @@ Check **Turnstile Analytics**:
 ### "timeout-or-duplicate" errors still happening
 
 **Possible causes:**
-1. Token manager not initialized → Check console for "🔧 Initializing"
+1. Token manager not initialized → Check console for " Initializing"
 2. Token manager script blocked → Check network tab
 3. Using wrong secret key → Verify `backend/.env`
 4. Backend not restarted → Run `docker compose restart`
@@ -427,13 +427,13 @@ Check **Turnstile Analytics**:
 ### Potential Concerns
 
 ❓ **"Can bots use the invisible widget?"**
-✅ No. Bots can't pass Cloudflare's challenges. The invisible widget still uses Cloudflare's verification system.
+ No. Bots can't pass Cloudflare's challenges. The invisible widget still uses Cloudflare's verification system.
 
 ❓ **"Does this make verification weaker?"**
-✅ No. Initial verification is still required. This only refreshes already-verified sessions.
+ No. Initial verification is still required. This only refreshes already-verified sessions.
 
 ❓ **"Can someone steal tokens?"**
-✅ Tokens are:
+ Tokens are:
    - Single-use (can't be replayed)
    - Time-limited (expire after 5min)
    - Domain-locked (validated by backend)
@@ -483,6 +483,6 @@ If you encounter issues:
 
 ---
 
-**Status:** ✅ Implemented and Ready for Production
+**Status:**  Implemented and Ready for Production
 **Last Updated:** October 14, 2025
 **Version:** 1.0.0

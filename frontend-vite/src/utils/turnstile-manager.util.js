@@ -1,12 +1,14 @@
 /**
  * Turnstile Token Manager
- * Handles automatic token refresh and background verification
- * Ensures tokens are always fresh and available
+ * Manages token pool with pre-generated tokens for instant availability
+ * Implements smart caching and background refresh
  */
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
-const TOKEN_VALIDITY_DURATION = 3 * 60 * 1000; // 3 minutes (refresh well before 5min expiry)
-const TOKEN_WARNING_THRESHOLD = 2 * 60 * 1000; // 2 minutes - proactive refresh threshold
+const TOKEN_VALIDITY_DURATION = 4 * 60 * 1000; // 4 minutes (tokens valid for 5 min, use 4 for safety)
+const TOKEN_POOL_SIZE = 3; // Keep 3 pre-generated tokens ready
+const REFRESH_INTERVAL = 3 * 60 * 1000; // 3 minutes - periodic cleanup and refill
+const TOKEN_GENERATION_DELAY = 1500; // 1.5 seconds between token generations
 const DEBUG_MODE = import.meta.env.DEV; // Only show debug logs in development
 
 class TurnstileManager {
@@ -14,8 +16,11 @@ class TurnstileManager {
     this.widgetId = null;
     this.containerElement = null;
     this.isRefreshing = false;
-    this.pendingCallbacks = [];
+    this.pendingResolve = null;
     this.isInitialized = false;
+    this.tokenPool = []; // Pool of pre-generated tokens
+    this.refreshInterval = null;
+    this.isGenerating = false;
   }
 
   /**
@@ -28,15 +33,15 @@ class TurnstileManager {
   }
 
   /**
-   * Initialize the invisible Turnstile widget
+   * Initialize the background Turnstile widget and token pool
    */
-  initialize() {
+  async initialize() {
     if (this.isInitialized) {
-      this.debug('🔧 Turnstile manager already initialized');
-      return; // Already initialized
+      this.debug(' Turnstile manager already initialized');
+      return;
     }
 
-    this.debug('🔧 Initializing Turnstile manager...');
+    this.debug(' Initializing Turnstile manager with token pool...');
 
     // Create invisible container
     this.containerElement = document.createElement('div');
@@ -45,13 +50,33 @@ class TurnstileManager {
     document.body.appendChild(this.containerElement);
 
     // Wait for Turnstile script to load
-    const checkTurnstile = setInterval(() => {
-      if (window.turnstile) {
-        clearInterval(checkTurnstile);
-        this.renderWidget();
-        this.isInitialized = true;
-      }
-    }, 100);
+    await this.waitForTurnstile();
+    
+    // Render widget
+    this.renderWidget();
+    
+    // Pre-generate initial token pool
+    await this.preGenerateTokens();
+    
+    // Start periodic cleanup and refill
+    this.startPeriodicMaintenance();
+    
+    this.isInitialized = true;
+    this.debug(' Token manager initialized with pool size:', TOKEN_POOL_SIZE);
+  }
+
+  /**
+   * Wait for Turnstile script to load
+   */
+  async waitForTurnstile() {
+    return new Promise((resolve) => {
+      const checkTurnstile = setInterval(() => {
+        if (window.turnstile) {
+          clearInterval(checkTurnstile);
+          resolve();
+        }
+      }, 100);
+    });
   }
 
   /**
@@ -66,205 +91,301 @@ class TurnstileManager {
     try {
       this.widgetId = window.turnstile.render(this.containerElement, {
         sitekey: TURNSTILE_SITE_KEY,
-        size: 'compact', // Use 'compact' instead of 'invisible' (which is not supported)
-        callback: (token) => {
-          this.debug('🔄 Background token refresh successful');
-          this.storeToken(token);
-          this.isRefreshing = false;
-          
-          // Execute pending callbacks
-          this.pendingCallbacks.forEach(cb => cb(token));
-          this.pendingCallbacks = [];
-        },
-        'error-callback': (errorCode) => {
-          console.error('❌ Token refresh failed:', errorCode);
-          this.isRefreshing = false;
-          this.pendingCallbacks.forEach(cb => cb(null));
-          this.pendingCallbacks = [];
-        },
-        'expired-callback': () => {
-          this.debug('⏱️ Token expired - auto-refreshing...');
-          this.refreshToken();
-        },
-        'timeout-callback': () => {
-          console.warn('⏱️ Token refresh timeout');
-          this.isRefreshing = false;
-          this.pendingCallbacks.forEach(cb => cb(null));
-          this.pendingCallbacks = [];
-        },
+        size: 'compact',
+        callback: (token) => this.handleTokenReceived(token),
+        'error-callback': (errorCode) => this.handleTokenError(errorCode),
+        'expired-callback': () => this.handleTokenExpired(),
+        'timeout-callback': () => this.handleTokenTimeout(),
         theme: 'light',
+        action: 'pool-refresh',
+        retry: 'auto',
+        'retry-interval': 2000,
       });
-      this.debug('✅ Background widget rendered with ID:', this.widgetId);
+      this.debug(' Background widget rendered with ID:', this.widgetId);
     } catch (err) {
       console.error('❌ Error rendering background Turnstile widget:', err);
     }
   }
 
   /**
-   * Store token in session storage
+   * Handle token received from widget
    */
-  storeToken(token) {
-    sessionStorage.setItem('turnstile_token', token);
-    sessionStorage.setItem('turnstile_timestamp', Date.now().toString());
-    sessionStorage.setItem('turnstile_verified', 'true');
-    sessionStorage.setItem('turnstile_usage_count', '0'); // Reset usage count for new token
-  }
-
-  /**
-   * Get current token (refresh if needed)
-   */
-  async getToken() {
-    const token = sessionStorage.getItem('turnstile_token');
-    const timestamp = sessionStorage.getItem('turnstile_timestamp');
+  handleTokenReceived(token) {
+    this.debug(' Token generated for pool');
     
-    // Check if token exists and is valid
-    if (token && timestamp) {
-      const age = Date.now() - parseInt(timestamp);
-      const ageMinutes = (age / 1000 / 60).toFixed(1);
-      
-      // Token is too old (>3 minutes) - refresh immediately
-      if (age >= TOKEN_VALIDITY_DURATION) {
-        this.debug(`⏱️ Token is ${ageMinutes} minutes old - refreshing...`);
-        return this.refreshToken();
-      }
-      
-      // Token is getting old (>2 minutes) - warn but still use it
-      if (age >= TOKEN_WARNING_THRESHOLD) {
-        this.debug(`⚠️ Token is ${ageMinutes} minutes old - consider refreshing soon`);
-      }
-      
-      return token; // Token is still fresh enough
+    const tokenData = {
+      token,
+      timestamp: Date.now(),
+      used: false,
+    };
+
+    // Add to pool if not full
+    if (this.tokenPool.length < TOKEN_POOL_SIZE) {
+      this.tokenPool.push(tokenData);
+      this.debug(`📦 Token added to pool (${this.tokenPool.length}/${TOKEN_POOL_SIZE})`);
     }
 
-    // Token is missing - refresh it
-    this.debug('🔄 No token found - requesting new one...');
-    return this.refreshToken();
+    this.isRefreshing = false;
+    this.isGenerating = false;
+
+    // Resolve pending promise
+    if (this.pendingResolve) {
+      this.pendingResolve(token);
+      this.pendingResolve = null;
+    }
   }
 
   /**
-   * Refresh the token
+   * Handle token error
    */
-  refreshToken() {
-    return new Promise((resolve, reject) => {
-      if (this.isRefreshing) {
-        // Already refreshing - queue this callback
-        this.pendingCallbacks.push(resolve);
-        return;
-      }
+  handleTokenError(errorCode) {
+    console.warn(' Token generation error:', errorCode);
+    this.isRefreshing = false;
+    this.isGenerating = false;
+    
+    if (this.pendingResolve) {
+      this.pendingResolve(null);
+      this.pendingResolve = null;
+    }
+  }
 
-      this.isRefreshing = true;
-      this.pendingCallbacks.push(resolve);
+  /**
+   * Handle token expired
+   */
+  handleTokenExpired() {
+    this.debug(' Token expired - cleaning pool');
+    this.cleanupExpiredTokens();
+  }
 
-      if (!this.widgetId || !window.turnstile) {
-        console.error('❌ Turnstile widget not initialized');
-        this.isRefreshing = false;
-        this.pendingCallbacks.forEach(cb => cb(null));
-        this.pendingCallbacks = [];
-        reject(new Error('Turnstile not initialized'));
-        return;
+  /**
+   * Handle token timeout
+   */
+  handleTokenTimeout() {
+    console.warn(' Token generation timeout');
+    this.isRefreshing = false;
+    this.isGenerating = false;
+    
+    if (this.pendingResolve) {
+      this.pendingResolve(null);
+      this.pendingResolve = null;
+    }
+  }
+
+  /**
+   * Pre-generate tokens to fill the pool
+   */
+  async preGenerateTokens() {
+    const tokensNeeded = TOKEN_POOL_SIZE - this.getAvailableTokenCount();
+    
+    this.debug(` Pre-generating ${tokensNeeded} tokens...`);
+    
+    for (let i = 0; i < tokensNeeded; i++) {
+      await this.generateSingleToken();
+      
+      // Small delay between generations to avoid rate limiting
+      if (i < tokensNeeded - 1) {
+        await new Promise(resolve => setTimeout(resolve, TOKEN_GENERATION_DELAY));
       }
+    }
+    
+    this.debug(` Token pool filled: ${this.getAvailableTokenCount()} available`);
+  }
+
+  /**
+   * Generate a single token
+   */
+  async generateSingleToken() {
+    if (this.isGenerating || !this.widgetId || !window.turnstile) {
+      return null;
+    }
+
+    return new Promise((resolve) => {
+      this.isGenerating = true;
+      this.pendingResolve = resolve;
 
       try {
-        this.debug('🔄 Requesting new token...');
         window.turnstile.reset(this.widgetId);
         
-        // Timeout after 10 seconds
+        // Timeout after 15 seconds (increased from 10)
         setTimeout(() => {
-          if (this.isRefreshing) {
-            console.warn('❌ Token refresh timeout');
-            this.isRefreshing = false;
-            this.pendingCallbacks.forEach(cb => cb(null));
-            this.pendingCallbacks = [];
-            reject(new Error('Token refresh timeout'));
+          if (this.isGenerating) {
+            console.warn(' Token generation timeout');
+            this.isGenerating = false;
+            if (this.pendingResolve) {
+              this.pendingResolve(null);
+              this.pendingResolve = null;
+            }
           }
-        }, 10000);
+        }, 15000);
       } catch (err) {
-        console.error('Error refreshing token:', err);
-        this.isRefreshing = false;
-        this.pendingCallbacks.forEach(cb => cb(null));
-        this.pendingCallbacks = [];
-        reject(err);
+        console.error('❌ Error generating token:', err);
+        this.isGenerating = false;
+        resolve(null);
       }
     });
   }
 
   /**
-   * Check if token is valid
+   * Get a token for use (instant if available in pool)
    */
-  isTokenValid() {
-    const token = sessionStorage.getItem('turnstile_token');
-    const timestamp = sessionStorage.getItem('turnstile_timestamp');
+  async getToken() {
+    // Clean up expired tokens first
+    this.cleanupExpiredTokens();
+
+    // Try to get fresh unused token from pool
+    const freshToken = this.tokenPool.find(t => !t.used && this.isTokenValid(t));
     
-    if (!token || !timestamp) {
-      return false;
+    if (freshToken) {
+      freshToken.used = true;
+      this.debug(`🎯 Using pooled token (${this.getAvailableTokenCount()} remaining)`);
+      
+      // Trigger background refill if running low
+      if (this.getAvailableTokenCount() < 1) {
+        this.refillPoolInBackground();
+      }
+      
+      return freshToken.token;
     }
 
-    const age = Date.now() - parseInt(timestamp);
+    // No cached token available, generate one now
+    this.debug(' No pooled token available, generating new one...');
+    const token = await this.generateSingleToken();
+    
+    // Trigger background refill
+    this.refillPoolInBackground();
+    
+    return token;
+  }
+
+  /**
+   * Refill token pool in background (non-blocking)
+   */
+  refillPoolInBackground() {
+    if (this.isGenerating) return;
+
+    const tokensNeeded = TOKEN_POOL_SIZE - this.getAvailableTokenCount();
+
+    if (tokensNeeded > 0) {
+      this.debug(` Background refill: generating ${tokensNeeded} tokens`);
+      
+      // Generate tokens in background without blocking
+      setTimeout(async () => {
+        for (let i = 0; i < tokensNeeded; i++) {
+          await this.generateSingleToken();
+          await new Promise(resolve => setTimeout(resolve, TOKEN_GENERATION_DELAY));
+        }
+      }, 0);
+    }
+  }
+
+  /**
+   * Start periodic maintenance (cleanup and refill)
+   */
+  startPeriodicMaintenance() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+
+    this.refreshInterval = setInterval(() => {
+      this.debug(' Periodic maintenance: cleaning and refilling pool');
+      this.cleanupAndRefill();
+    }, REFRESH_INTERVAL);
+  }
+
+  /**
+   * Cleanup expired/used tokens and refill pool
+   */
+  async cleanupAndRefill() {
+    // Remove expired or used tokens
+    const beforeCount = this.tokenPool.length;
+    this.tokenPool = this.tokenPool.filter(t => !t.used && this.isTokenValid(t));
+    const removedCount = beforeCount - this.tokenPool.length;
+    
+    if (removedCount > 0) {
+      this.debug(`🧹 Cleaned ${removedCount} tokens from pool`);
+    }
+
+    // Refill to maintain pool size
+    await this.preGenerateTokens();
+  }
+
+  /**
+   * Clean up expired tokens
+   */
+  cleanupExpiredTokens() {
+    const beforeCount = this.tokenPool.length;
+    this.tokenPool = this.tokenPool.filter(t => this.isTokenValid(t));
+    const removedCount = beforeCount - this.tokenPool.length;
+    
+    if (removedCount > 0) {
+      this.debug(`🧹 Removed ${removedCount} expired tokens`);
+    }
+  }
+
+  /**
+   * Check if token is still valid
+   */
+  isTokenValid(tokenData) {
+    const age = Date.now() - tokenData.timestamp;
     return age < TOKEN_VALIDITY_DURATION;
   }
 
   /**
-   * Clear token
+   * Get count of available (unused and valid) tokens
    */
-  clearToken() {
-    sessionStorage.removeItem('turnstile_token');
-    sessionStorage.removeItem('turnstile_timestamp');
-    sessionStorage.removeItem('turnstile_verified');
+  getAvailableTokenCount() {
+    return this.tokenPool.filter(t => !t.used && this.isTokenValid(t)).length;
+  }
+
+  /**
+   * Get token pool statistics
+   */
+  getPoolStats() {
+    const available = this.getAvailableTokenCount();
+    const used = this.tokenPool.filter(t => t.used).length;
+    const expired = this.tokenPool.filter(t => !this.isTokenValid(t)).length;
+    
+    return {
+      total: this.tokenPool.length,
+      available,
+      used,
+      expired,
+      maxSize: TOKEN_POOL_SIZE,
+    };
   }
 
   /**
    * Cleanup
    */
   destroy() {
+    // Clear refresh interval
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      this.refreshInterval = null;
+    }
+
+    // Remove widget
     if (this.widgetId && window.turnstile) {
       try {
         window.turnstile.remove(this.widgetId);
       } catch (err) {
-        console.error('Error removing Turnstile widget:', err);
+        // Ignore errors during cleanup
       }
     }
     
+    // Remove container
     if (this.containerElement && document.body.contains(this.containerElement)) {
       document.body.removeChild(this.containerElement);
     }
     
+    // Clear state
     this.widgetId = null;
     this.containerElement = null;
     this.isInitialized = false;
-  }
-  
-  /**
-   * Get token age in minutes
-   */
-  getTokenAge() {
-    const timestamp = sessionStorage.getItem('turnstile_timestamp');
-    if (!timestamp) return null;
-    
-    const age = Date.now() - parseInt(timestamp);
-    return (age / 1000 / 60).toFixed(1); // Return age in minutes
-  }
-
-  /**
-   * Get token usage count
-   */
-  getTokenUsageCount() {
-    const count = sessionStorage.getItem('turnstile_usage_count');
-    return count ? parseInt(count) : 0;
-  }
-
-  /**
-   * Increment token usage count
-   */
-  incrementUsageCount() {
-    const count = this.getTokenUsageCount();
-    sessionStorage.setItem('turnstile_usage_count', (count + 1).toString());
-  }
-
-  /**
-   * Reset token usage count
-   */
-  resetUsageCount() {
-    sessionStorage.setItem('turnstile_usage_count', '0');
+    this.tokenPool = [];
+    this.isRefreshing = false;
+    this.isGenerating = false;
+    this.pendingResolve = null;
   }
 }
 

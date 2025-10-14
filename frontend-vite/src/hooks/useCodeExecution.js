@@ -93,7 +93,7 @@ export const useCodeExecution = () => {
       
       // Check if it's a verification error - handle gracefully
       if (result.error && result.error.includes('Verification')) {
-        console.log('⚠️ Verification error detected');
+        console.log(' Verification error detected');
         setError(result.error);
         setOutput('');
         setIsRunning(false);
