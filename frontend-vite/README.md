@@ -2,7 +2,7 @@
 
 A modern, professional React + Vite frontend for the Ballerina Online Playground.
 
-## ✨ Features
+##  Features
 
 - 🎨 Modern, professional UI with teal theme
 - 💻 Monaco Editor integration (VS Code editor)

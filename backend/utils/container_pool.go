@@ -31,7 +31,7 @@ var SupportedVersions = []string{
 
 // Priority-based pool sizing for optimal resource usage (4GB RAM system)
 var VersionPriority = map[string]int{
-	"2201.12.0": 3, 
+	"2201.12.0": 3,
 	"2201.11.0": 2,
 	"2201.10.5": 2,
 	"2201.10.0": 2,
@@ -258,7 +258,7 @@ public function main() {
 	go Pool.statsReporter(ctx)
 
 	totalTime := time.Since(startTime)
-	log.Printf("🎉 Container pool initialization complete in %v!", totalTime)
+	log.Printf(" Container pool initialization complete in %v!", totalTime)
 	Pool.printStats()
 
 	return nil
