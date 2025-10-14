@@ -166,7 +166,7 @@ A powerful, secure, and high-performance web-based IDE for writing, compiling, a
 - **Node.js**: Version 18+ and npm/yarn (for frontend development)
 - **4GB+ RAM**: Required for running container pools efficiently
 
-```#### Frontend Development
+```####
 
 ```bash
 cd frontend-vite
@@ -180,16 +180,17 @@ echo "VITE_API_URL=http://localhost:8081" > .env
 # Start development server
 npm run dev
 ```
+
 The frontend will be available at `http://localhost:5173`
 
 ## 📦 Supported Ballerina Versions
 
 The playground supports 26 Ballerina versions:
 
-- **Latest**: 2201.12.0 (6 containers)
-- **Recent**: 2201.11.0, 2201.10.x (3-4 containers each)
-- **Stable**: 2201.9.x, 2201.8.x (2-3 containers each)
-- **Legacy**: 2201.7.x to 2201.3.0 (2 containers each)
+- **Latest**: 2201.12.0
+- **Recent**: 2201.11.0, 2201.10.x
+- **Stable**: 2201.9.x, 2201.8.x
+- **Legacy**: 2201.7.x to 2201.3.0
 
 Container allocation is optimized based on version popularity and usage patterns.
 
