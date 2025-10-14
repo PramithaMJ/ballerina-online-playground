@@ -16,6 +16,7 @@ import { TurnstileChallenge } from './components';
 import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress, useBallerinaVersion } from './hooks';
 import { DEFAULT_SAMPLE_CODE } from './constants/app.constants';
 import { isFirstVisit, markAsVisited } from './utils';
+import { turnstileManager } from './utils/turnstile-manager.util';
 import { envConfig } from './config';
 import './App.css';
 
@@ -91,6 +92,18 @@ function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isRunning, code, ballerinaVersion]);
+
+  // Initialize background token refresh after verification
+  useEffect(() => {
+    if (isVerified && envConfig.enableVerification) {
+      console.log('🔧 Initializing background token manager...');
+      turnstileManager.initialize();
+      
+      return () => {
+        turnstileManager.destroy();
+      };
+    }
+  }, [isVerified]);
 
   // Handler functions
   const handleTurnstileVerified = (token) => {

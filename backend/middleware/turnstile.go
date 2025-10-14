@@ -78,8 +78,24 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 			}
 
 			if !isValid {
+				errorMsg := "Verification failed"
+				if len(resp.ErrorCodes) > 0 {
+					switch resp.ErrorCodes[0] {
+					case "timeout-or-duplicate":
+						errorMsg = "Token expired or already used. Please try again."
+					case "invalid-input-response":
+						errorMsg = "Invalid verification token. Please refresh the page."
+					case "bad-request":
+						errorMsg = "Invalid request. Please try again."
+					case "internal-error":
+						errorMsg = "Verification service error. Please try again later."
+					default:
+						errorMsg = fmt.Sprintf("Verification failed: %v", resp.ErrorCodes)
+					}
+				}
+
 				log.Printf(" Turnstile verification failed: %v\n", resp.ErrorCodes)
-				http.Error(w, fmt.Sprintf("Verification failed: %v", resp.ErrorCodes), http.StatusUnauthorized)
+				http.Error(w, errorMsg, http.StatusUnauthorized)
 				return
 			}
 

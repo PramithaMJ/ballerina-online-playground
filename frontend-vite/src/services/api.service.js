@@ -6,6 +6,7 @@
 
 import { envConfig } from '../config/env.config';
 import { API_ENDPOINTS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants/app.constants';
+import { turnstileManager } from '../utils/turnstile-manager.util';
 
 class ApiService {
   constructor(baseUrl) {
@@ -41,11 +42,25 @@ class ApiService {
       // Use the provided signal or the timeout controller
       const finalSignal = signal || controller.signal;
 
-      // Get Turnstile token from session storage
+      // Get fresh Turnstile token (auto-refreshes if needed)
       const headers = { 'Content-Type': 'application/json' };
-      const turnstileToken = sessionStorage.getItem('turnstile_token');
-      if (turnstileToken) {
-        headers['CF-Turnstile-Token'] = turnstileToken;
+      
+      if (envConfig.enableVerification) {
+        try {
+          const token = await turnstileManager.getToken();
+          if (token) {
+            headers['CF-Turnstile-Token'] = token;
+            console.log('🔐 Using Turnstile token for API request');
+          } else {
+            console.warn('⚠️ No Turnstile token available');
+          }
+        } catch (err) {
+          console.error('❌ Failed to get Turnstile token:', err);
+          return {
+            output: '',
+            error: '🔒 Verification failed. Please refresh the page.',
+          };
+        }
       }
 
       const response = await fetch(`${this.baseUrl}${API_ENDPOINTS.EXECUTE}`, {
@@ -59,8 +74,31 @@ class ApiService {
 
       const result = await response.json();
 
+      // Handle Turnstile verification failures
+      if (response.status === 401) {
+        console.error('❌ Verification failed - requesting new token');
+        
+        // Clear and refresh token
+        turnstileManager.clearToken();
+        
+        try {
+          await turnstileManager.refreshToken();
+          console.log('✅ Token refreshed - please try again');
+        } catch (refreshErr) {
+          console.error('❌ Token refresh failed:', refreshErr);
+        }
+        
+        return {
+          output: '',
+          error: '🔒 Verification expired. Please try running your code again.',
+        };
+      }
+
       let outputResult;
       if (response.ok) {
+        // Request successful - token was consumed
+        // Background refresh will happen automatically via token manager
+        
         if (result.error) {
           outputResult = {
             output: result.output || '',
