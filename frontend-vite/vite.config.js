@@ -4,8 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // Base path for GitHub Pages deployment
-  base: process.env.NODE_ENV === 'production' ? '/ballerina-online-playground/' : '/',
+  // Base path - '/' for Cloudflare Pages, '/ballerina-online-playground/' for GitHub Pages
+  base: '/',
   server: {
     port: 3000,
     open: true,
