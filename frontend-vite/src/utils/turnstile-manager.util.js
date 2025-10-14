@@ -6,9 +6,10 @@
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
 const TOKEN_VALIDITY_DURATION = 4 * 60 * 1000; // 4 minutes (tokens valid for 5 min, use 4 for safety)
-const TOKEN_POOL_SIZE = 3; // Keep 3 pre-generated tokens ready
+const TOKEN_POOL_SIZE = 2; // Keep 2 pre-generated tokens ready (reduced for faster initial load)
 const REFRESH_INTERVAL = 3 * 60 * 1000; // 3 minutes - periodic cleanup and refill
-const TOKEN_GENERATION_DELAY = 1500; // 1.5 seconds between token generations
+const TOKEN_GENERATION_DELAY = 500; // 500ms between token generations (reduced for faster startup)
+const TOKEN_GENERATION_TIMEOUT = 15000; // 15 seconds timeout for token generation
 const DEBUG_MODE = import.meta.env.DEV; // Only show debug logs in development
 
 class TurnstileManager {
@@ -194,33 +195,45 @@ class TurnstileManager {
   /**
    * Generate a single token
    */
-  async generateSingleToken() {
-    if (this.isGenerating || !this.widgetId || !window.turnstile) {
-      return null;
-    }
+  generateToken() {
+    return new Promise((resolve, reject) => {
+      if (this.isGenerating) {
+        this.debug('⏳ Token generation already in progress...');
+        // Queue this request
+        setTimeout(() => {
+          this.generateToken().then(resolve).catch(reject);
+        }, 500);
+        return;
+      }
 
-    return new Promise((resolve) => {
       this.isGenerating = true;
       this.pendingResolve = resolve;
 
+      if (!this.widgetId || !window.turnstile) {
+        console.error('❌ Turnstile widget not initialized');
+        this.isGenerating = false;
+        reject(new Error('Turnstile not initialized'));
+        return;
+      }
+
       try {
+        this.debug('🔄 Generating new token...');
         window.turnstile.reset(this.widgetId);
         
-        // Timeout after 15 seconds (increased from 10)
+        // Timeout after 15 seconds (increased from 5)
         setTimeout(() => {
-          if (this.isGenerating) {
-            console.warn(' Token generation timeout');
+          if (this.isGenerating && this.pendingResolve === resolve) {
+            console.warn('⏱️ Token generation timeout');
             this.isGenerating = false;
-            if (this.pendingResolve) {
-              this.pendingResolve(null);
-              this.pendingResolve = null;
-            }
+            this.pendingResolve = null;
+            reject(new Error('Token generation timeout'));
           }
-        }, 15000);
+        }, TOKEN_GENERATION_TIMEOUT);
       } catch (err) {
-        console.error(' Error generating token:', err);
+        console.error('Error generating token:', err);
         this.isGenerating = false;
-        resolve(null);
+        this.pendingResolve = null;
+        reject(err);
       }
     });
   }
@@ -247,14 +260,33 @@ class TurnstileManager {
       return freshToken.token;
     }
 
-    // No cached token available, generate one now
-    this.debug(' No pooled token available, generating new one...');
-    const token = await this.generateSingleToken();
+    // No cached token available - generate one now with better error handling
+    this.debug('⚠️ No pooled token available, generating new one...');
     
-    // Trigger background refill
-    this.refillPoolInBackground();
-    
-    return token;
+    try {
+      const token = await this.generateSingleToken();
+      
+      // Trigger background refill
+      this.refillPoolInBackground();
+      
+      return token;
+    } catch (error) {
+      console.error('❌ Token generation failed:', error);
+      
+      // Try to use any available token as fallback (even if old)
+      const anyToken = this.tokenPool.find(t => !t.used);
+      if (anyToken) {
+        console.warn('⚠️ Using older token as fallback');
+        anyToken.used = true;
+        // Trigger background refill
+        this.refillPoolInBackground();
+        return anyToken.token;
+      }
+      
+      // No tokens available at all
+      console.error('❌ No tokens available at all');
+      return null;
+    }
   }
 
   /**

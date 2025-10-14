@@ -65,13 +65,18 @@ class ApiService {
             this.debug('🔐 Using Turnstile token for API request');
             headers['CF-Turnstile-Token'] = token;
           } else {
-            console.warn(' No Turnstile token available');
+            // No token available - show user-friendly message
+            console.warn('⚠️ Verification token not ready yet');
+            return {
+              output: '',
+              error: '🔒 Security verification is initializing...\n\nPlease wait a moment and try again.',
+            };
           }
         } catch (err) {
-          console.error(' Failed to get Turnstile token:', err);
+          console.error('❌ Failed to get Turnstile token:', err);
           return {
             output: '',
-            error: '🔒 Verification failed. Please refresh the page.',
+            error: '🔒 Verification temporarily unavailable.\n\nPlease wait a moment and try again, or refresh the page if the issue persists.',
           };
         }
       }
