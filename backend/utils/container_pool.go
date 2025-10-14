@@ -31,17 +31,17 @@ var SupportedVersions = []string{
 
 // Priority-based pool sizing for optimal resource usage (4GB RAM system)
 var VersionPriority = map[string]int{
-	"2201.12.0": 6, // Latest - 6 containers
-	"2201.11.0": 4, // Popular - 4 containers
-	"2201.10.5": 4,
-	"2201.10.0": 3,
-	"2201.9.0":  3,
+	"2201.12.0": 3, 
+	"2201.11.0": 2,
+	"2201.10.5": 2,
+	"2201.10.0": 2,
+	"2201.9.0":  2,
 	"2201.8.0":  2,
-	// Others: 2 containers (default)
+	// Others: 1 container (default)
 }
 
 const (
-	DefaultPoolSize     = 2  // Default containers per version
+	DefaultPoolSize     = 1  // Default containers per version
 	MaxPoolSizePerVer   = 10 // Max containers per version
 	MaxUseCount         = 30 // Recycle after 30 uses
 	HealthCheckInterval = 30 * time.Second
@@ -103,7 +103,7 @@ func InitializePool(ctx context.Context) error {
 	}
 
 	log.Printf(" System: 4GB RAM, optimizing for %d Ballerina versions", len(SupportedVersions))
-	log.Printf("📥 Phase 1/2: Pre-pulling Docker images (this may take 2-3 minutes)...")
+	log.Printf("Phase 1/2: Pre-pulling Docker images (this may take 2-3 minutes)...")
 
 	// Phase 1: Pre-pull all images with parallel downloads (rate limited)
 	var pullWg sync.WaitGroup
@@ -490,7 +490,7 @@ func (p *ContainerPool) ExecuteInContainer(ctx context.Context, container *Poole
 	if err := p.copyToContainer(ctx, container.ID, code); err != nil {
 		return "", fmt.Errorf("failed to copy code: %w", err)
 	}
-	log.Printf("📁 File copy took: %v", time.Since(copyStart))
+	log.Printf(" File copy took: %v", time.Since(copyStart))
 
 	// Step 2: Compile Ballerina package (bal build --offline)
 	compileStart := time.Now()
