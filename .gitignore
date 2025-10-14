@@ -1,1 +1,10 @@
 .DS_Store
+backend/bin/
+backend/.env
+frontend-vite/node_modules/
+frontend-vite/dist/
+frontend-vite/.env
+.idea/
+.vscode/
+*.log
+npm-debug.log*
