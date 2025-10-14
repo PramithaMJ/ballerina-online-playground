@@ -6,6 +6,8 @@ A powerful, secure, and high-performance web-based IDE for writing, compiling, a
 
 **🌐 [Try it now: https://pramithamj.github.io/ballerina-online-playground/](https://pramithamj.github.io/ballerina-online-playground/)**
 
+Ballerina Lint Tool : [https://pramithamj.github.io/ballerina-lint/](https://pramithamj.github.io/ballerina-lint/)
+
 ## ✨ Features
 
 ### Core Features
@@ -268,7 +270,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **Live Demo**: https://pramithamj.github.io/ballerina-online-playground/
+- **Live App**: [https://pramithamj.github.io/ballerina-online-playground/](https://pramithamj.github.io/ballerina-online-playground/)
+- **Ballerina Lint Tool**: [https://pramithamj.github.io/ballerina-lint/](https://pramithamj.github.io/ballerina-lint/)
 - **Documentation**: [docs/](docs/)
 - **Issue Tracker**: [GitHub Issues](https://github.com/PramithaMJ/ballerina-online-playground/issues)
 - **Ballerina Documentation**: https://ballerina.io/learn/
