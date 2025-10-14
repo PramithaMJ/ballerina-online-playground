@@ -67,7 +67,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
               onVerified(token);
             },
             'error-callback': (errorCode) => {
-              console.error('❌ Turnstile verification failed:', errorCode);
+              console.error(' Turnstile verification failed:', errorCode);
               setError('Verification failed. Please refresh and try again.');
             },
             'expired-callback': () => {
@@ -125,7 +125,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
                 onVerified(token);
               },
               'error-callback': (errorCode) => {
-                console.error('❌ Turnstile verification failed:', errorCode);
+                console.error(' Turnstile verification failed:', errorCode);
                 setError('Verification failed. Please refresh and try again.');
               },
               'expired-callback': () => {
@@ -148,11 +148,11 @@ export const TurnstileChallenge = ({ onVerified }) => {
               size: 'normal',
             });
           } catch (err) {
-            console.error('❌ Error rendering Turnstile:', err);
+            console.error(' Error rendering Turnstile:', err);
             setError('Failed to load verification. Please refresh the page.');
           }
         } else if (DEBUG_MODE) {
-          console.error('❌ Cannot render Turnstile:', {
+          console.error(' Cannot render Turnstile:', {
             turnstileExists: !!window.turnstile,
             refExists: !!turnstileRef.current,
             widgetAlreadyRendered: !!widgetIdRef.current
@@ -162,7 +162,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
     };
 
     script.onerror = () => {
-      console.error('❌ Failed to load Turnstile script');
+      console.error(' Failed to load Turnstile script');
       setIsLoading(false);
       setError('Failed to load verification service. Please check your internet connection.');
     };

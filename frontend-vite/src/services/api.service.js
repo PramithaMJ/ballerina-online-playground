@@ -68,7 +68,7 @@ class ApiService {
             console.warn(' No Turnstile token available');
           }
         } catch (err) {
-          console.error('❌ Failed to get Turnstile token:', err);
+          console.error(' Failed to get Turnstile token:', err);
           return {
             output: '',
             error: '🔒 Verification failed. Please refresh the page.',

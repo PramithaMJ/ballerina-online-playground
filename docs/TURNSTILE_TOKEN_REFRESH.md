@@ -18,7 +18,7 @@ User completes challenge → Token stored → User clicks "Run" → Token sent t
                                         ↓
                           Token is now consumed (used once)
                                         ↓
-                          User clicks "Run" again → SAME token sent → ❌ timeout-or-duplicate error
+                          User clicks "Run" again → SAME token sent →  timeout-or-duplicate error
 ```
 
 ## The Solution
@@ -187,10 +187,10 @@ Token Generation: 00:00
 ### Before (Problems)
 
 ```
-❌ User clicks "Run" → Code executes →  Success
-❌ User clicks "Run" again → ❌ Error: "timeout-or-duplicate"
-❌ User refreshes entire page → Sees challenge again
-❌ User frustrated, leaves site
+ User clicks "Run" → Code executes →  Success
+ User clicks "Run" again →  Error: "timeout-or-duplicate"
+ User refreshes entire page → Sees challenge again
+ User frustrated, leaves site
 ```
 
 ### After (Solved)
@@ -268,7 +268,7 @@ Token Generation: 00:00
 
 // Errors
  No Turnstile token available
-❌ Verification failed - requesting new token
+ Verification failed - requesting new token
  Token refreshed - please try again
 ```
 
@@ -282,9 +282,9 @@ Token Generation: 00:00
  Token is 4.5 minutes old
 
 // Failures
-❌ Turnstile verification failed: [timeout-or-duplicate]
-❌ Hostname mismatch: expected [ballerina-online-playground.pages.dev], got example.com
-❌ Missing Turnstile token
+ Turnstile verification failed: [timeout-or-duplicate]
+ Hostname mismatch: expected [ballerina-online-playground.pages.dev], got example.com
+ Missing Turnstile token
 ```
 
 ## Configuration
@@ -368,7 +368,7 @@ const REFRESH_TIMEOUT = 10000;                  // 10 seconds
    - Should be >99% after fix
 
 3. **401 Errors**
-   - Backend logs: Count `❌ Turnstile verification failed`
+   - Backend logs: Count ` Turnstile verification failed`
    - Should drop to near 0% after fix
 
 4. **User Session Duration**

@@ -84,7 +84,7 @@ class TurnstileManager {
    */
   renderWidget() {
     if (!window.turnstile || !this.containerElement) {
-      console.error('❌ Cannot render Turnstile widget');
+      console.error(' Cannot render Turnstile widget');
       return;
     }
 
@@ -103,7 +103,7 @@ class TurnstileManager {
       });
       this.debug(' Background widget rendered with ID:', this.widgetId);
     } catch (err) {
-      console.error('❌ Error rendering background Turnstile widget:', err);
+      console.error(' Error rendering background Turnstile widget:', err);
     }
   }
 
@@ -218,7 +218,7 @@ class TurnstileManager {
           }
         }, 15000);
       } catch (err) {
-        console.error('❌ Error generating token:', err);
+        console.error(' Error generating token:', err);
         this.isGenerating = false;
         resolve(null);
       }
