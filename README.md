@@ -270,7 +270,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **Live App**: [https://pramithamj.github.io/ballerina-online-playground/](https://pramithamj.github.io/ballerina-online-playground/)
+- **Live App**: [https://ballerina-online-playground.pages.dev/](https://ballerina-online-playground.pages.dev/)
 - **Ballerina Lint Tool**: [https://pramithamj.github.io/ballerina-lint/](https://pramithamj.github.io/ballerina-lint/)
 - **Documentation**: [docs/](docs/)
 - **Issue Tracker**: [GitHub Issues](https://github.com/PramithaMJ/ballerina-online-playground/issues)
