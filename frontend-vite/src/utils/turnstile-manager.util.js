@@ -56,7 +56,7 @@ class TurnstileManager {
     try {
       this.widgetId = window.turnstile.render(this.containerElement, {
         sitekey: TURNSTILE_SITE_KEY,
-        size: 'invisible',
+        size: 'compact', // Use 'compact' instead of 'invisible' (which is not supported)
         callback: (token) => {
           console.log('🔄 Background token refresh successful');
           this.storeToken(token);
@@ -69,16 +69,24 @@ class TurnstileManager {
         'error-callback': (errorCode) => {
           console.error('❌ Background token refresh failed:', errorCode);
           this.isRefreshing = false;
+          this.pendingCallbacks.forEach(cb => cb(null));
           this.pendingCallbacks = [];
         },
         'expired-callback': () => {
           console.log('⏱️ Token expired - auto-refreshing...');
           this.refreshToken();
         },
+        'timeout-callback': () => {
+          console.error('⏱️ Token refresh timeout');
+          this.isRefreshing = false;
+          this.pendingCallbacks.forEach(cb => cb(null));
+          this.pendingCallbacks = [];
+        },
         theme: 'light',
       });
+      console.log('✅ Background widget rendered with ID:', this.widgetId);
     } catch (err) {
-      console.error('Error rendering background Turnstile widget:', err);
+      console.error('❌ Error rendering background Turnstile widget:', err);
     }
   }
 
