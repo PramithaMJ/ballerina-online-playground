@@ -4,10 +4,10 @@
  */
 
 // Main components
-export { default as CodeEditor } from './CodeEditor.refactored';
-export { default as OutputPanel } from './OutputPanel.refactored';
-export { default as ResizablePanels } from './ResizablePanels.refactored';
-export { default as Header } from './Header.refactored';
+export { default as CodeEditor } from './CodeEditor';
+export { default as OutputPanel } from './OutputPanel';
+export { default as ResizablePanels } from './ResizablePanels';
+export { default as Header } from './Header';
 
 // UI components
 export { default as EditorToolbar } from './EditorToolbar';
@@ -19,3 +19,4 @@ export { default as ConfirmDialog } from './ConfirmDialog';
 export { default as ErrorNotification } from './ErrorNotification';
 export { default as UserGuide } from './UserGuide';
 export { default as VersionSelector } from './VersionSelector';
+export { TurnstileChallenge } from './TurnstileChallenge';
