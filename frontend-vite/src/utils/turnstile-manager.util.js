@@ -176,20 +176,24 @@ class TurnstileManager {
    * Pre-generate tokens to fill the pool
    */
   async preGenerateTokens() {
-    const tokensNeeded = TOKEN_POOL_SIZE - this.getAvailableTokenCount();
+    const tokensToGenerate = TOKEN_POOL_SIZE - this.tokenPool.length;
     
-    this.debug(` Pre-generating ${tokensNeeded} tokens...`);
+    this.debug(` Pre-generating ${tokensToGenerate} tokens...`);
     
-    for (let i = 0; i < tokensNeeded; i++) {
-      await this.generateSingleToken();
-      
-      // Small delay between generations to avoid rate limiting
-      if (i < tokensNeeded - 1) {
-        await new Promise(resolve => setTimeout(resolve, TOKEN_GENERATION_DELAY));
+    for (let i = 0; i < tokensToGenerate; i++) {
+      try {
+        await this.generateToken();
+        // Small delay between generations to avoid rate limiting
+        if (i < tokensToGenerate - 1) {
+          await new Promise(resolve => setTimeout(resolve, TOKEN_GENERATION_DELAY));
+        }
+      } catch (error) {
+        console.warn(` Failed to pre-generate token ${i + 1}:`, error);
+        // Continue trying to generate remaining tokens
       }
     }
     
-    this.debug(` Token pool filled: ${this.getAvailableTokenCount()} available`);
+    this.debug(`✅ Token pool initialized with ${this.tokenPool.length} tokens`);
   }
 
   /**
@@ -210,7 +214,7 @@ class TurnstileManager {
       this.pendingResolve = resolve;
 
       if (!this.widgetId || !window.turnstile) {
-        console.error('❌ Turnstile widget not initialized');
+        console.error(' Turnstile widget not initialized');
         this.isGenerating = false;
         reject(new Error('Turnstile not initialized'));
         return;
@@ -261,22 +265,22 @@ class TurnstileManager {
     }
 
     // No cached token available - generate one now with better error handling
-    this.debug('⚠️ No pooled token available, generating new one...');
+    this.debug(' No pooled token available, generating new one...');
     
     try {
-      const token = await this.generateSingleToken();
+      const token = await this.generateToken();
       
       // Trigger background refill
       this.refillPoolInBackground();
       
       return token;
     } catch (error) {
-      console.error('❌ Token generation failed:', error);
+      console.error(' Token generation failed:', error);
       
       // Try to use any available token as fallback (even if old)
       const anyToken = this.tokenPool.find(t => !t.used);
       if (anyToken) {
-        console.warn('⚠️ Using older token as fallback');
+        console.warn(' Using older token as fallback');
         anyToken.used = true;
         // Trigger background refill
         this.refillPoolInBackground();
@@ -284,7 +288,7 @@ class TurnstileManager {
       }
       
       // No tokens available at all
-      console.error('❌ No tokens available at all');
+      console.error(' No tokens available at all');
       return null;
     }
   }
@@ -303,8 +307,12 @@ class TurnstileManager {
       // Generate tokens in background without blocking
       setTimeout(async () => {
         for (let i = 0; i < tokensNeeded; i++) {
-          await this.generateSingleToken();
-          await new Promise(resolve => setTimeout(resolve, TOKEN_GENERATION_DELAY));
+          try {
+            await this.generateToken();
+            await new Promise(resolve => setTimeout(resolve, TOKEN_GENERATION_DELAY));
+          } catch (error) {
+            console.warn(` Background token generation ${i + 1} failed:`, error);
+          }
         }
       }, 0);
     }
