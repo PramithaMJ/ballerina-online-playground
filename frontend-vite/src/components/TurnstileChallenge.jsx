@@ -10,42 +10,51 @@ export const TurnstileChallenge = ({ onVerified }) => {
   const turnstileRef = useRef(null);
   const widgetIdRef = useRef(null);
 
+  // Log configuration on mount
+  useEffect(() => {
+    console.log('🔧 Turnstile Configuration:', {
+      siteKey: TURNSTILE_SITE_KEY,
+      isTestKey: TURNSTILE_SITE_KEY === '1x00000000000000000000AA',
+      mode: import.meta.env.MODE,
+    });
+  }, []);
+
   useEffect(() => {
     // Check if already verified in session
     const verified = sessionStorage.getItem('turnstile_verified');
     const token = sessionStorage.getItem('turnstile_token');
     const timestamp = sessionStorage.getItem('turnstile_timestamp');
     
+    console.log('🔍 Checking session storage:', { verified, hasToken: !!token, timestamp });
+    
     // Token expires after 5 minutes
     const isTokenValid = timestamp && (Date.now() - parseInt(timestamp)) < 5 * 60 * 1000;
     
     if (verified === 'true' && token && isTokenValid) {
+      console.log('✅ Valid token found in session, skipping verification');
       setIsVerified(true);
       onVerified(token);
       return;
     } else if (verified === 'true' && !isTokenValid) {
+      console.log('⏱️ Token expired, clearing session storage');
       // Clear expired token
       sessionStorage.removeItem('turnstile_verified');
       sessionStorage.removeItem('turnstile_token');
       sessionStorage.removeItem('turnstile_timestamp');
     }
 
-    // Load Turnstile script
-    const script = document.createElement('script');
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-    script.async = true;
-    script.defer = true;
-    
-    script.onload = () => {
+    // Check if script already loaded
+    if (window.turnstile) {
+      console.log('📝 Turnstile script already loaded');
       setIsLoading(false);
       
-      // Render Turnstile widget
-      if (window.turnstile && turnstileRef.current && !widgetIdRef.current) {
+      // Render widget immediately
+      if (turnstileRef.current && !widgetIdRef.current) {
         try {
           widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
             sitekey: TURNSTILE_SITE_KEY,
             callback: (token) => {
-              console.log(' Turnstile verification successful');
+              console.log('✅ Turnstile verification successful');
               setIsVerified(true);
               sessionStorage.setItem('turnstile_verified', 'true');
               sessionStorage.setItem('turnstile_token', token);
@@ -53,7 +62,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
               onVerified(token);
             },
             'error-callback': (errorCode) => {
-              console.error(' Turnstile verification failed:', errorCode);
+              console.error('❌ Turnstile verification failed:', errorCode);
               setError('Verification failed. Please refresh and try again.');
             },
             'expired-callback': () => {
@@ -80,9 +89,76 @@ export const TurnstileChallenge = ({ onVerified }) => {
           setError('Failed to load verification. Please refresh the page.');
         }
       }
+      return;
+    }
+
+    // Load Turnstile script
+    console.log('📥 Loading Turnstile script...');
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    script.async = true;
+    script.defer = true;
+    
+    script.onload = () => {
+      console.log('✅ Turnstile script loaded');
+      setIsLoading(false);
+      
+      // Add small delay to ensure Turnstile is fully initialized
+      setTimeout(() => {
+        // Render Turnstile widget
+        if (window.turnstile && turnstileRef.current && !widgetIdRef.current) {
+          try {
+            console.log('🎨 Rendering Turnstile widget...');
+            widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
+              sitekey: TURNSTILE_SITE_KEY,
+              callback: (token) => {
+                console.log('✅ Turnstile verification successful');
+                setIsVerified(true);
+                sessionStorage.setItem('turnstile_verified', 'true');
+                sessionStorage.setItem('turnstile_token', token);
+                sessionStorage.setItem('turnstile_timestamp', Date.now().toString());
+                onVerified(token);
+              },
+              'error-callback': (errorCode) => {
+                console.error('❌ Turnstile verification failed:', errorCode);
+                setError('Verification failed. Please refresh and try again.');
+              },
+              'expired-callback': () => {
+                console.log('⏱️ Turnstile token expired');
+                sessionStorage.removeItem('turnstile_verified');
+                sessionStorage.removeItem('turnstile_token');
+                sessionStorage.removeItem('turnstile_timestamp');
+                setIsVerified(false);
+                
+                // Reset the widget
+                if (widgetIdRef.current && window.turnstile) {
+                  window.turnstile.reset(widgetIdRef.current);
+                }
+              },
+              'timeout-callback': () => {
+                console.log('⏱️ Turnstile timeout');
+                setError('Verification timeout. Please try again.');
+              },
+              theme: 'light',
+              size: 'normal',
+            });
+            console.log('✅ Turnstile widget rendered with ID:', widgetIdRef.current);
+          } catch (err) {
+            console.error('❌ Error rendering Turnstile:', err);
+            setError('Failed to load verification. Please refresh the page.');
+          }
+        } else {
+          console.error('❌ Cannot render Turnstile:', {
+            turnstileExists: !!window.turnstile,
+            refExists: !!turnstileRef.current,
+            widgetAlreadyRendered: !!widgetIdRef.current
+          });
+        }
+      }, 100);
     };
 
     script.onerror = () => {
+      console.error('❌ Failed to load Turnstile script');
       setIsLoading(false);
       setError('Failed to load verification service. Please check your internet connection.');
     };
