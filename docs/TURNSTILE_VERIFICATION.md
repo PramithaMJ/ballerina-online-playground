@@ -115,7 +115,7 @@ All execution endpoints are protected:
 -  `POST /execute` - Run Ballerina code
 -  `POST /run` - Run Ballerina code (alias)
 -  `POST /compile` - Compile Ballerina code
-- ❌ `GET /health` - Not protected (health check)
+-  `GET /health` - Not protected (health check)
 
 ## Error Handling
 
@@ -137,10 +137,10 @@ All execution endpoints are protected:
  Turnstile verification successful from 192.168.1.1 (hostname: example.com)
 
 # Failed verification
-❌ Turnstile verification failed: [timeout-or-duplicate]
+ Turnstile verification failed: [timeout-or-duplicate]
 
 # Warning for old tokens
-⚠️ Token is 4.3 minutes old
+ Token is 4.3 minutes old
 ```
 
 ## Testing
@@ -183,7 +183,7 @@ These keys always pass validation.
 6. **Validate hostname** - Check token came from your domain
 7. **Check token age** - Warn on tokens approaching expiry
 
-### ❌ DON'T:
+###  DON'T:
 
 1. **Never expose secret key** in client-side code
 2. **Don't skip verification** in production

@@ -168,12 +168,12 @@ func main() {
 	turnstileConfig := middleware.NewTurnstileConfig()
 	if turnstileConfig.Enabled {
 		if turnstileConfig.SecretKey == "" {
-			log.Println("⚠️  Turnstile enabled but no secret key configured")
+			log.Println("  Turnstile enabled but no secret key configured")
 		} else {
 			log.Println(" Turnstile verification enabled")
 		}
 	} else {
-		log.Println("⚠️  Turnstile verification is DISABLED - tokens will not be validated!")
+		log.Println("  Turnstile verification is DISABLED - tokens will not be validated!")
 	}
 
 	// Initialize the container pool (pre-pull images and create containers)

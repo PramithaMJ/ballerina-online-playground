@@ -86,7 +86,7 @@ npm run preview
    - Empty state design
    - Scrollable content
 
-## 🔧 Configuration
+## Configuration
 
 ### Change Backend URL
 

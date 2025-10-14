@@ -122,7 +122,7 @@ func InitializePool(ctx context.Context) error {
 
 			reader, err := cli.ImagePull(ctx, image, imagetypes.PullOptions{})
 			if err != nil {
-				log.Printf("  ❌ Failed to pull %s: %v", ver, err)
+				log.Printf("   Failed to pull %s: %v", ver, err)
 				return
 			}
 			defer reader.Close()
@@ -144,7 +144,7 @@ func InitializePool(ctx context.Context) error {
 		pulledCount, len(SupportedVersions), time.Since(pullStart))
 
 	// Phase 2: Create container pools in parallel
-	log.Printf("🔧 Phase 2/2: Creating container pools...")
+	log.Printf("Phase 2/2: Creating container pools...")
 	createStart := time.Now()
 
 	var createWg sync.WaitGroup
@@ -176,7 +176,7 @@ func InitializePool(ctx context.Context) error {
 			for i := 0; i < size; i++ {
 				containerID, err := Pool.createContainer(ctx, ver)
 				if err != nil {
-					log.Printf("  ❌ Failed to create container for %s: %v", ver, err)
+					log.Printf("   Failed to create container for %s: %v", ver, err)
 					continue
 				}
 

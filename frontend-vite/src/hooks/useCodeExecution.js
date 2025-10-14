@@ -109,7 +109,7 @@ export const useCodeExecution = () => {
         throw err;
       } else {
         setOutput('');
-        setError(`❌ Unexpected error: ${err.message}`);
+        setError(` Unexpected error: ${err.message}`);
       }
     } finally {
       setIsRunning(false);

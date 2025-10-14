@@ -41,14 +41,14 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 
 			// Skip if Turnstile is disabled
 			if !config.Enabled {
-				log.Println("⚠️ Turnstile verification is disabled")
+				log.Println(" Turnstile verification is disabled")
 				next.ServeHTTP(w, r)
 				return
 			}
 
 			// Skip if no secret key configured (development mode)
 			if config.SecretKey == "" {
-				log.Println("⚠️ No Turnstile secret key configured - skipping verification")
+				log.Println(" No Turnstile secret key configured - skipping verification")
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -61,7 +61,7 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 			}
 
 			if token == "" {
-				log.Println("❌ Missing Turnstile token")
+				log.Println(" Missing Turnstile token")
 				http.Error(w, "Missing verification token", http.StatusUnauthorized)
 				return
 			}
@@ -72,13 +72,13 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 			// Verify token with Cloudflare
 			isValid, resp, err := verifyToken(token, remoteIP, config)
 			if err != nil {
-				log.Printf("❌ Turnstile verification error: %v\n", err)
+				log.Printf(" Turnstile verification error: %v\n", err)
 				http.Error(w, "Verification service unavailable", http.StatusServiceUnavailable)
 				return
 			}
 
 			if !isValid {
-				log.Printf("❌ Turnstile verification failed: %v\n", resp.ErrorCodes)
+				log.Printf(" Turnstile verification failed: %v\n", resp.ErrorCodes)
 				http.Error(w, fmt.Sprintf("Verification failed: %v", resp.ErrorCodes), http.StatusUnauthorized)
 				return
 			}
@@ -94,7 +94,7 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 				}
 
 				if !hostnameValid {
-					log.Printf("❌ Hostname mismatch: expected %v, got %s\n", config.ExpectedHostnames, resp.Hostname)
+					log.Printf(" Hostname mismatch: expected %v, got %s\n", config.ExpectedHostnames, resp.Hostname)
 					http.Error(w, "Invalid request origin", http.StatusUnauthorized)
 					return
 				}
@@ -106,7 +106,7 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 				if err == nil {
 					age := time.Since(challengeTime)
 					if age > 4*time.Minute {
-						log.Printf("⚠️ Token is %.1f minutes old\n", age.Minutes())
+						log.Printf(" Token is %.1f minutes old\n", age.Minutes())
 					}
 				}
 			}

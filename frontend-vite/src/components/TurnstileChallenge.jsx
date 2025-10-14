@@ -53,7 +53,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
               onVerified(token);
             },
             'error-callback': (errorCode) => {
-              console.error('❌ Turnstile verification failed:', errorCode);
+              console.error(' Turnstile verification failed:', errorCode);
               setError('Verification failed. Please refresh and try again.');
             },
             'expired-callback': () => {
@@ -114,7 +114,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
             </svg>
           </div>
           
-          <h1>🔒 Human Verification Required</h1>
+          <h1> Human Verification Required</h1>
           <p>Please verify you're human to access the Ballerina Online Playground</p>
           
           {isLoading ? (
@@ -129,7 +129,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
                 onClick={() => window.location.reload()} 
                 className="retry-button"
               >
-                🔄 Refresh Page
+                 Refresh Page
               </button>
             </div>
           ) : (
