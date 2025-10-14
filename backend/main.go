@@ -46,16 +46,47 @@ func (w *corsResponseWriter) Write(b []byte) (int, error) {
 // CORS middleware with response writer wrapper
 func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Get allowed origin from environment or use default
-		allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
-		if allowedOrigin == "" {
-			// Allow GitHub Pages and other common origins
-			origin := r.Header.Get("Origin")
-			if origin != "" {
+		// Get origin from request
+		origin := r.Header.Get("Origin")
+
+		// Define allowed origins
+		allowedOrigins := []string{
+			"https://pramithamj.github.io",
+			"https://ballerina-online-playground.pages.dev",
+			"https://77a3215d.ballerina-online-playground.pages.dev",
+			"http://localhost:3000",
+			"http://localhost:5173",
+		}
+
+		// Check from environment variable first
+		envOrigin := os.Getenv("ALLOWED_ORIGIN")
+		if envOrigin != "" {
+			allowedOrigins = append(allowedOrigins, envOrigin)
+		}
+
+		// Determine which origin to allow
+		allowedOrigin := ""
+		for _, allowed := range allowedOrigins {
+			if origin == allowed || (len(origin) > 0 && (origin[:8] == "https://" || origin[:7] == "http://") &&
+				(len(origin) > 20 && origin[len(origin)-20:] == ".pages.dev")) {
 				allowedOrigin = origin
-			} else {
-				allowedOrigin = "*"
+				break
 			}
+		}
+
+		// If no match and origin is a Cloudflare Pages preview URL, allow it
+		if allowedOrigin == "" && origin != "" {
+			// Allow all *.pages.dev domains (Cloudflare Pages)
+			if len(origin) > 10 && origin[len(origin)-10:] == ".pages.dev" {
+				allowedOrigin = origin
+			} else if origin == "http://localhost:3000" || origin == "http://localhost:5173" {
+				allowedOrigin = origin
+			}
+		}
+
+		// Fallback to wildcard for development
+		if allowedOrigin == "" {
+			allowedOrigin = "*"
 		}
 
 		// Handle preflight request immediately
