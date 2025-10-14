@@ -10,6 +10,11 @@ services:
       - ./data:/app/data # Optional: mount local data directory to persist data
     environment:
       - BAL_COMPILER_URL=http://ballerina:8080 # URL of the Ballerina service
+      # Cloudflare Turnstile (use test keys for development)
+      - TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+      - ENABLE_TURNSTILE_VERIFICATION=true
+      # For production, replace with actual secret key:
+      # - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY}
     depends_on:
       - ballerina
 
