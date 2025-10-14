@@ -51,7 +51,7 @@ export const useCodeExecution = () => {
       { time: 1000, progress: 25, message: '🔨 Compiling Ballerina code...' },
       { time: 3000, progress: 50, message: '⚙️ Executing in secure container...' },
       { time: 8000, progress: 75, message: ' Processing output...' },
-      { time: 12000, progress: 85, message: '✨ Finalizing execution...' }
+      { time: 12000, progress: 85, message: ' Finalizing execution...' }
     ];
 
     // Start progress simulation

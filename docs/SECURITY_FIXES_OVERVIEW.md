@@ -296,7 +296,7 @@ done
 
 ---
 
-## 🎉 Summary
+##  Summary
 
 ### What You Now Have:
 
@@ -328,7 +328,7 @@ done
 
 ## 🏆 Security Achievement
 
-**Congratulations!** 🎉
+**Congratulations!** 
 
 Your Ballerina Online Playground has been upgraded from:
 
