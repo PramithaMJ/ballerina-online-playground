@@ -5,7 +5,8 @@
  */
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
-const TOKEN_VALIDITY_DURATION = 4 * 60 * 1000; // 4 minutes (refresh before 5min expiry)
+const TOKEN_VALIDITY_DURATION = 3 * 60 * 1000; // 3 minutes (refresh well before 5min expiry)
+const TOKEN_WARNING_THRESHOLD = 2 * 60 * 1000; // 2 minutes - proactive refresh threshold
 
 class TurnstileManager {
   constructor() {
@@ -13,15 +14,19 @@ class TurnstileManager {
     this.containerElement = null;
     this.isRefreshing = false;
     this.pendingCallbacks = [];
+    this.isInitialized = false;
   }
 
   /**
    * Initialize the invisible Turnstile widget
    */
   initialize() {
-    if (this.containerElement) {
+    if (this.isInitialized) {
+      console.log('🔧 Turnstile manager already initialized');
       return; // Already initialized
     }
+
+    console.log('🔧 Initializing Turnstile manager...');
 
     // Create invisible container
     this.containerElement = document.createElement('div');
@@ -34,6 +39,7 @@ class TurnstileManager {
       if (window.turnstile) {
         clearInterval(checkTurnstile);
         this.renderWidget();
+        this.isInitialized = true;
       }
     }, 100);
   }
@@ -95,13 +101,24 @@ class TurnstileManager {
     // Check if token exists and is valid
     if (token && timestamp) {
       const age = Date.now() - parseInt(timestamp);
+      const ageMinutes = (age / 1000 / 60).toFixed(1);
       
-      if (age < TOKEN_VALIDITY_DURATION) {
-        return token; // Token is still fresh
+      // Token is too old (>3 minutes) - refresh immediately
+      if (age >= TOKEN_VALIDITY_DURATION) {
+        console.log(`⏱️ Token is ${ageMinutes} minutes old - refreshing...`);
+        return this.refreshToken();
       }
+      
+      // Token is getting old (>2 minutes) - warn but still use it
+      if (age >= TOKEN_WARNING_THRESHOLD) {
+        console.log(`⚠️ Token is ${ageMinutes} minutes old - consider refreshing soon`);
+      }
+      
+      return token; // Token is still fresh enough
     }
 
-    // Token is missing or old - refresh it
+    // Token is missing - refresh it
+    console.log('🔄 No token found - requesting new one...');
     return this.refreshToken();
   }
 
@@ -194,6 +211,18 @@ class TurnstileManager {
     
     this.widgetId = null;
     this.containerElement = null;
+    this.isInitialized = false;
+  }
+  
+  /**
+   * Get token age in minutes
+   */
+  getTokenAge() {
+    const timestamp = sessionStorage.getItem('turnstile_timestamp');
+    if (!timestamp) return null;
+    
+    const age = Date.now() - parseInt(timestamp);
+    return (age / 1000 / 60).toFixed(1); // Return age in minutes
   }
 }
 

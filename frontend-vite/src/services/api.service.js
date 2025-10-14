@@ -47,10 +47,19 @@ class ApiService {
       
       if (envConfig.enableVerification) {
         try {
+          // Check token age before making request
+          const tokenAge = turnstileManager.getTokenAge();
+          
+          if (tokenAge && parseFloat(tokenAge) > 2.5) {
+            console.log(`⏱️ Token is ${tokenAge} minutes old - refreshing proactively...`);
+            await turnstileManager.refreshToken();
+          }
+          
           const token = await turnstileManager.getToken();
           if (token) {
+            const age = turnstileManager.getTokenAge();
+            console.log(`🔐 Using Turnstile token for API request (age: ${age || 'new'} min)`);
             headers['CF-Turnstile-Token'] = token;
-            console.log('🔐 Using Turnstile token for API request');
           } else {
             console.warn('⚠️ No Turnstile token available');
           }
@@ -76,28 +85,30 @@ class ApiService {
 
       // Handle Turnstile verification failures
       if (response.status === 401) {
-        console.error('❌ Verification failed - requesting new token');
+        console.error('❌ Verification failed (401) - token was rejected by server');
         
         // Clear and refresh token
         turnstileManager.clearToken();
         
         try {
+          console.log('🔄 Attempting to refresh token...');
           await turnstileManager.refreshToken();
-          console.log('✅ Token refreshed - please try again');
+          console.log('✅ Token refreshed successfully');
         } catch (refreshErr) {
           console.error('❌ Token refresh failed:', refreshErr);
         }
         
         return {
           output: '',
-          error: '🔒 Verification expired. Please try running your code again.',
+          error: '🔒 Verification expired or invalid. A new verification token has been requested.\n\nPlease try running your code again in a moment.',
         };
       }
 
       let outputResult;
       if (response.ok) {
-        // Request successful - token was consumed
-        // Background refresh will happen automatically via token manager
+        // Request successful - token was consumed by backend
+        // The token manager will handle getting a fresh one on next request
+        console.log('✅ Request successful - token was accepted');
         
         if (result.error) {
           outputResult = {
