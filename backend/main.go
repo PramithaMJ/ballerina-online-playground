@@ -158,21 +158,21 @@ func main() {
 		middleware.RateLimitMiddleware(rateLimiter),
 		performanceMiddleware,
 		loggingMiddleware,
-		enableCORS, // Apply CORS last (first in execution) to ensure headers are set
+		enableCORS,
 	))
 	http.HandleFunc("/compile", chain(
 		handler.CompileCode,
 		middleware.RateLimitMiddleware(rateLimiter),
 		performanceMiddleware,
 		loggingMiddleware,
-		enableCORS, // Apply CORS last (first in execution) to ensure headers are set
+		enableCORS,
 	))
 	http.HandleFunc("/execute", chain(
 		handler.RunCode,
 		middleware.RateLimitMiddleware(rateLimiter),
 		performanceMiddleware,
 		loggingMiddleware,
-		enableCORS, // Apply CORS last (first in execution) to ensure headers are set
+		enableCORS,
 	))
 
 	// Configure server with security optimizations

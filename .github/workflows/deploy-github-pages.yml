@@ -43,7 +43,7 @@ jobs:
         working-directory: ./frontend-vite
         env:
           # Replace with your EC2 backend URL
-          VITE_API_URL: ${{ secrets.VITE_API_URL || 'http://your-ec2-ip:8081' }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: npm run build
         
       - name: Setup Pages
