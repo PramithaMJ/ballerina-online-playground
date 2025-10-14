@@ -47,18 +47,25 @@ class ApiService {
       
       if (envConfig.enableVerification) {
         try {
-          // Check token age before making request
+          // Check if a token is already being used/refreshed
+          const tokenUsageCount = turnstileManager.getTokenUsageCount();
           const tokenAge = turnstileManager.getTokenAge();
           
-          if (tokenAge && parseFloat(tokenAge) > 2.5) {
-            console.log(`⏱️ Token is ${tokenAge} minutes old - refreshing proactively...`);
+          // If token has been used before OR is old, get a fresh one
+          if (tokenUsageCount > 0 || (tokenAge && parseFloat(tokenAge) > 0.5)) {
+            console.log(`🔄 Token already used ${tokenUsageCount} times (age: ${tokenAge} min) - getting fresh token...`);
             await turnstileManager.refreshToken();
           }
           
           const token = await turnstileManager.getToken();
           if (token) {
             const age = turnstileManager.getTokenAge();
-            console.log(`🔐 Using Turnstile token for API request (age: ${age || 'new'} min)`);
+            const usage = turnstileManager.getTokenUsageCount();
+            console.log(`🔐 Using Turnstile token for API request (age: ${age || 'new'} min, usage: ${usage})`);
+            
+            // Mark token as being used
+            turnstileManager.incrementUsageCount();
+            
             headers['CF-Turnstile-Token'] = token;
           } else {
             console.warn('⚠️ No Turnstile token available');
@@ -107,8 +114,17 @@ class ApiService {
       let outputResult;
       if (response.ok) {
         // Request successful - token was consumed by backend
-        // The token manager will handle getting a fresh one on next request
         console.log('✅ Request successful - token was accepted');
+        
+        // CRITICAL: Immediately request a new token after successful use
+        // Turnstile tokens are single-use only!
+        if (envConfig.enableVerification) {
+          console.log('🔄 Token consumed - requesting fresh token immediately...');
+          // Don't await - let it happen in background
+          turnstileManager.refreshToken().catch(err => {
+            console.error('⚠️ Background token refresh failed:', err);
+          });
+        }
         
         if (result.error) {
           outputResult = {

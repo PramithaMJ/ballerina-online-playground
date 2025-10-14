@@ -97,6 +97,7 @@ class TurnstileManager {
     sessionStorage.setItem('turnstile_token', token);
     sessionStorage.setItem('turnstile_timestamp', Date.now().toString());
     sessionStorage.setItem('turnstile_verified', 'true');
+    sessionStorage.setItem('turnstile_usage_count', '0'); // Reset usage count for new token
   }
 
   /**
@@ -231,6 +232,29 @@ class TurnstileManager {
     
     const age = Date.now() - parseInt(timestamp);
     return (age / 1000 / 60).toFixed(1); // Return age in minutes
+  }
+
+  /**
+   * Get token usage count
+   */
+  getTokenUsageCount() {
+    const count = sessionStorage.getItem('turnstile_usage_count');
+    return count ? parseInt(count) : 0;
+  }
+
+  /**
+   * Increment token usage count
+   */
+  incrementUsageCount() {
+    const count = this.getTokenUsageCount();
+    sessionStorage.setItem('turnstile_usage_count', (count + 1).toString());
+  }
+
+  /**
+   * Reset token usage count
+   */
+  resetUsageCount() {
+    sessionStorage.setItem('turnstile_usage_count', '0');
   }
 }
 
