@@ -241,7 +241,7 @@ Backend receives request
 │ {                                                          │
 │   "output": "",                                            │
 │   "error": "Invalid Ballerina version. Supported versions: │
-│             2201.10.2, 2201.9.0, 2201.8.0, swan-lake"     │
+│             2201.10.2, 2201.9.0, 2201.8.0, swan-lake"      │
 │ }                                                          │
 └────────────┬───────────────────────────────────────────────┘
              │
