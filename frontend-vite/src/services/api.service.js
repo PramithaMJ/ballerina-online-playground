@@ -41,9 +41,16 @@ class ApiService {
       // Use the provided signal or the timeout controller
       const finalSignal = signal || controller.signal;
 
+      // Get Turnstile token from session storage
+      const headers = { 'Content-Type': 'application/json' };
+      const turnstileToken = sessionStorage.getItem('turnstile_token');
+      if (turnstileToken) {
+        headers['CF-Turnstile-Token'] = turnstileToken;
+      }
+
       const response = await fetch(`${this.baseUrl}${API_ENDPOINTS.EXECUTE}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ code, version }),
         signal: finalSignal,
       });

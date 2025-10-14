@@ -94,7 +94,7 @@ function App() {
 
   // Handler functions
   const handleTurnstileVerified = (token) => {
-    console.log('✅ App: Turnstile verification successful');
+    console.log(' App: Turnstile verification successful');
     setTurnstileToken(token);
     setIsVerified(true);
   };

@@ -25,7 +25,7 @@ func (w *corsResponseWriter) WriteHeader(statusCode int) {
 		// Set CORS headers before writing status
 		w.Header().Set("Access-Control-Allow-Origin", w.origin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, HEAD")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, CF-Turnstile-Token")
 		w.Header().Set("Access-Control-Expose-Headers", "Content-Length, Content-Type")
 		w.Header().Set("Access-Control-Max-Age", "86400")
 		w.Header().Add("Vary", "Origin")
@@ -93,7 +93,7 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 		if r.Method == "OPTIONS" {
 			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
 			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, HEAD")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, CF-Turnstile-Token")
 			w.Header().Set("Access-Control-Expose-Headers", "Content-Length, Content-Type")
 			w.Header().Set("Access-Control-Max-Age", "86400")
 			w.Header().Add("Vary", "Origin")
@@ -164,6 +164,18 @@ func main() {
 	ctx := context.Background()
 	log.Println("Starting Ballerina Compiler Backend...")
 
+	// Initialize Turnstile configuration
+	turnstileConfig := middleware.NewTurnstileConfig()
+	if turnstileConfig.Enabled {
+		if turnstileConfig.SecretKey == "" {
+			log.Println("⚠️  Turnstile enabled but no secret key configured")
+		} else {
+			log.Println(" Turnstile verification enabled")
+		}
+	} else {
+		log.Println("⚠️  Turnstile verification is DISABLED - tokens will not be validated!")
+	}
+
 	// Initialize the container pool (pre-pull images and create containers)
 	go func() {
 		if err := utils.InitializePool(ctx); err != nil {
@@ -184,27 +196,24 @@ func main() {
 
 	// Apply middleware chain to handlers with rate limiting
 	// Order matters: rightmost middleware is applied first
-	http.HandleFunc("/run", chain(
-		handler.RunCode,
-		middleware.RateLimitMiddleware(rateLimiter),
-		performanceMiddleware,
-		loggingMiddleware,
-		enableCORS,
-	))
-	http.HandleFunc("/compile", chain(
-		handler.CompileCode,
-		middleware.RateLimitMiddleware(rateLimiter),
-		performanceMiddleware,
-		loggingMiddleware,
-		enableCORS,
-	))
-	http.HandleFunc("/execute", chain(
-		handler.RunCode,
-		middleware.RateLimitMiddleware(rateLimiter),
-		performanceMiddleware,
-		loggingMiddleware,
-		enableCORS,
-	))
+
+	// Create a middleware chain for protected endpoints
+	protectedChain := func(h http.HandlerFunc) http.HandlerFunc {
+		return chain(
+			h,
+			middleware.RateLimitMiddleware(rateLimiter),
+			func(next http.HandlerFunc) http.HandlerFunc {
+				return middleware.VerifyTurnstile(turnstileConfig)(http.HandlerFunc(next)).ServeHTTP
+			},
+			performanceMiddleware,
+			loggingMiddleware,
+			enableCORS,
+		)
+	}
+
+	http.HandleFunc("/run", protectedChain(handler.RunCode))
+	http.HandleFunc("/compile", protectedChain(handler.CompileCode))
+	http.HandleFunc("/execute", protectedChain(handler.RunCode))
 
 	// Configure server with security optimizations
 	server := &http.Server{
@@ -225,6 +234,9 @@ func main() {
 	log.Println("  - Resource limits enforced")
 	log.Println("  - Execution timeout: 60 seconds")
 	log.Println("  - Container pooling for performance")
+	if turnstileConfig.Enabled {
+		log.Println("  - Cloudflare Turnstile bot protection")
+	}
 
 	// Setup graceful shutdown
 	stop := make(chan os.Signal, 1)

@@ -45,7 +45,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
           widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
             sitekey: TURNSTILE_SITE_KEY,
             callback: (token) => {
-              console.log('✅ Turnstile verification successful');
+              console.log(' Turnstile verification successful');
               setIsVerified(true);
               sessionStorage.setItem('turnstile_verified', 'true');
               sessionStorage.setItem('turnstile_token', token);
