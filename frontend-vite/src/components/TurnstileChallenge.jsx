@@ -3,7 +3,7 @@ import './TurnstileChallenge.css';
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
 const DEBUG_MODE = import.meta.env.DEV;
-const VERIFICATION_VALIDITY_MS = 4 * 60 * 1000; // 4 minutes (5 min tokens - 1 min safety margin)
+const VERIFICATION_VALIDITY_MS = 24 * 60 * 60 * 1000; // 24 hours (initial verification lasts for session)
 const SCRIPT_LOAD_TIMEOUT = 10000; // 10 seconds timeout for script loading
 
 export const TurnstileChallenge = ({ onVerified }) => {
@@ -363,10 +363,20 @@ export const TurnstileChallenge = ({ onVerified }) => {
           )}
           
           {/* Widget Container with modern styling */}
-          {!error && (
+          {!error && !isLoading && (
             <div 
               ref={turnstileRef} 
               className="turnstile-widget"
+              role="region"
+              aria-label="Cloudflare Turnstile verification widget"
+            />
+          )}
+          
+          {/* Hidden container for initial render */}
+          {!error && isLoading && (
+            <div 
+              ref={turnstileRef} 
+              className="turnstile-widget-hidden"
               role="region"
               aria-label="Cloudflare Turnstile verification widget"
             />
