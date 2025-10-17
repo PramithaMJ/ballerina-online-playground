@@ -35,10 +35,10 @@ class ApiService {
   }
 
   /**
-   * Get a fresh Turnstile token for API request
+   * Get a fresh Turnstile token for API request with retry logic
    * @returns {Promise<string|null>} Fresh token or null if verification not enabled
    */
-  async getTurnstileToken() {
+  async getTurnstileToken(retryCount = 0, maxRetries = 2) {
     if (!envConfig.enableVerification) {
       return null;
     }
@@ -54,12 +54,22 @@ class ApiService {
 
     try {
       // Generate fresh token on-demand
-      this.debug('🎫 Generating fresh Turnstile token...');
+      this.debug(`🎫 Generating fresh Turnstile token (attempt ${retryCount + 1}/${maxRetries + 1})...`);
       const token = await turnstileTokenGenerator.generateToken();
       this.debug('✅ Fresh token generated', { tokenLength: token.length });
       return token;
     } catch (error) {
-      console.error('❌ Failed to generate token:', error);
+      console.error(`❌ Failed to generate token (attempt ${retryCount + 1}):`, error);
+      
+      // Retry with exponential backoff
+      if (retryCount < maxRetries) {
+        const backoffDelay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s...
+        this.debug(`⏳ Retrying in ${backoffDelay}ms...`);
+        
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+        return this.getTurnstileToken(retryCount + 1, maxRetries);
+      }
+      
       throw new Error('TOKEN_GENERATION_FAILED');
     }
   }

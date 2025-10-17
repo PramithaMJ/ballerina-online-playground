@@ -121,11 +121,15 @@ function App() {
     if (import.meta.env.DEV) {
       console.log('✓ App: Turnstile verification successful');
     }
+    
+    // Only initialize token generator for new verifications, not session-valid
+    const shouldInitTokenGenerator = token !== 'session-valid';
+    
     setTurnstileToken(token);
     setIsVerified(true);
 
     // Initialize on-demand token generator after initial verification
-    if (envConfig.enableVerification) {
+    if (shouldInitTokenGenerator && envConfig.enableVerification) {
       if (import.meta.env.DEV) {
         console.log('🚀 Initializing on-demand token generator...');
       }
@@ -136,6 +140,16 @@ function App() {
       }).catch(error => {
         console.error('❌ Failed to initialize token generator:', error);
       });
+    } else if (token === 'session-valid' && envConfig.enableVerification) {
+      // For session-valid, still ensure token generator is ready
+      if (import.meta.env.DEV) {
+        console.log('🔄 Session valid - ensuring token generator is ready...');
+      }
+      if (!turnstileTokenGenerator.isReady()) {
+        turnstileTokenGenerator.initialize().catch(error => {
+          console.error('❌ Failed to initialize token generator:', error);
+        });
+      }
     }
   };
 

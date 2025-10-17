@@ -59,14 +59,15 @@ class TurnstileTokenGenerator {
         sitekey: TURNSTILE_SITE_KEY,
         size: 'invisible',
         theme: 'light',
-        execution: 'execute', // Don't auto-execute
-        appearance: 'execute', // Show only during execution
+        execution: 'execute', // Manual execution only
+        appearance: 'interaction-only', // Show only during user interaction
         callback: (token) => this.handleTokenGenerated(token),
         'error-callback': (error) => this.handleTokenError(error),
         'expired-callback': () => this.handleTokenExpired(),
         'timeout-callback': () => this.handleTokenTimeout(),
+        'refresh-expired': 'never', // We generate fresh tokens, don't auto-refresh
         retry: 'auto',
-        'retry-interval': 3000,
+        'retry-interval': 8000, // Longer interval to avoid PAT rate limits
       });
 
       this.isInitialized = true;
@@ -156,15 +157,9 @@ class TurnstileTokenGenerator {
       try {
         this.debug('🔄 Executing Turnstile challenge...');
         
-        // Reset widget first to clear any stale state
-        window.turnstile.reset(this.widgetId);
-        
-        // Small delay before executing to ensure reset is complete
-        setTimeout(() => {
-          if (this.isGenerating) {
-            window.turnstile.execute(this.containerElement);
-          }
-        }, 100);
+        // Execute immediately without reset to avoid PAT challenge failures
+        // Reset is only needed after errors, not before every execution
+        window.turnstile.execute(this.containerElement);
       } catch (error) {
         this.currentRequest.reject(error);
       }
@@ -211,6 +206,16 @@ class TurnstileTokenGenerator {
   handleTokenError(errorCode) {
     console.error('❌ Token generation error:', errorCode);
 
+    // Reset widget on error for next attempt
+    if (this.widgetId && window.turnstile) {
+      try {
+        window.turnstile.reset(this.widgetId);
+        this.debug('🔄 Widget reset after error');
+      } catch (err) {
+        // Ignore reset errors
+      }
+    }
+
     const error = new Error(`Turnstile error: ${errorCode}`);
     
     if (this.currentRequest) {
@@ -232,6 +237,16 @@ class TurnstileTokenGenerator {
    */
   handleTokenTimeout() {
     console.warn('⏱️ Token generation timeout');
+    
+    // Reset widget on timeout for next attempt
+    if (this.widgetId && window.turnstile) {
+      try {
+        window.turnstile.reset(this.widgetId);
+        this.debug('🔄 Widget reset after timeout');
+      } catch (err) {
+        // Ignore reset errors
+      }
+    }
     
     const error = new Error('Token generation timeout');
     
