@@ -25,26 +25,24 @@ export const TurnstileChallenge = ({ onVerified }) => {
   useEffect(() => {
     // Check if already verified in session
     const verified = sessionStorage.getItem('turnstile_verified');
-    const token = sessionStorage.getItem('turnstile_token');
     const timestamp = sessionStorage.getItem('turnstile_timestamp');
     
     if (DEBUG_MODE) {
-      console.log('🔍 Checking session storage:', { verified, hasToken: !!token, timestamp });
+      console.log('🔍 Checking session storage:', { verified, timestamp });
     }
     
-    // Token expires after 4 minutes (use 4 instead of 5 for safety margin)
-    const isTokenValid = timestamp && (Date.now() - parseInt(timestamp)) < 4 * 60 * 1000;
+    // Verification expires after 4 minutes (use 4 instead of 5 for safety margin)
+    const isVerificationValid = timestamp && (Date.now() - parseInt(timestamp)) < 4 * 60 * 1000;
     
-    if (verified === 'true' && token && isTokenValid) {
-      if (DEBUG_MODE) console.log('✅ Valid token found in session');
+    if (verified === 'true' && isVerificationValid) {
+      if (DEBUG_MODE) console.log('✅ Valid verification found in session');
       setIsVerified(true);
-      onVerified(token);
+      onVerified(); // User is already verified
       return;
-    } else if (verified === 'true' && !isTokenValid) {
-      if (DEBUG_MODE) console.log('⏰ Token expired, clearing session');
-      // Clear expired token
+    } else if (verified === 'true' && !isVerificationValid) {
+      if (DEBUG_MODE) console.log('⏰ Verification expired, clearing session');
+      // Clear expired verification
       sessionStorage.removeItem('turnstile_verified');
-      sessionStorage.removeItem('turnstile_token');
       sessionStorage.removeItem('turnstile_timestamp');
     }
 
@@ -59,21 +57,25 @@ export const TurnstileChallenge = ({ onVerified }) => {
           widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
             sitekey: TURNSTILE_SITE_KEY,
             callback: (token) => {
-              if (DEBUG_MODE) console.log(' Turnstile verification successful');
+              if (DEBUG_MODE) console.log('✅ Initial verification successful');
               setIsVerified(true);
+              
+              // Mark user as verified (we'll generate fresh tokens for each API request)
               sessionStorage.setItem('turnstile_verified', 'true');
-              sessionStorage.setItem('turnstile_token', token);
               sessionStorage.setItem('turnstile_timestamp', Date.now().toString());
+              
+              // Don't store the token - we'll generate fresh ones for each request
+              // (Turnstile tokens are single-use and cannot be reused)
+              
               onVerified(token);
             },
             'error-callback': (errorCode) => {
               console.error(' Turnstile verification failed:', errorCode);
               setError('Verification failed. Please refresh and try again.');
             },
-                          'expired-callback': () => {
-                if (DEBUG_MODE) console.log('⏰ Turnstile token expired');
+              'expired-callback': () => {
+                if (DEBUG_MODE) console.log('⏰ Verification expired');
                 sessionStorage.removeItem('turnstile_verified');
-                sessionStorage.removeItem('turnstile_token');
                 sessionStorage.removeItem('turnstile_timestamp');
                 setIsVerified(false);
                 
@@ -115,11 +117,16 @@ export const TurnstileChallenge = ({ onVerified }) => {
             widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
               sitekey: TURNSTILE_SITE_KEY,
               callback: (token) => {
-                if (DEBUG_MODE) console.log(' Turnstile widget rendered with ID:', widgetIdRef.current);
+                if (DEBUG_MODE) console.log('✅ Initial verification successful (widget ID:', widgetIdRef.current, ')');
                 setIsVerified(true);
+                
+                // Mark user as verified (we'll generate fresh tokens for each API request)
                 sessionStorage.setItem('turnstile_verified', 'true');
-                sessionStorage.setItem('turnstile_token', token);
                 sessionStorage.setItem('turnstile_timestamp', Date.now().toString());
+                
+                // Don't store the token - we'll generate fresh ones for each request
+                // (Turnstile tokens are single-use and cannot be reused)
+                
                 onVerified(token);
               },
               'error-callback': (errorCode) => {
@@ -127,9 +134,8 @@ export const TurnstileChallenge = ({ onVerified }) => {
                 setError('Verification failed. Please refresh and try again.');
               },
               'expired-callback': () => {
-                if (DEBUG_MODE) console.log('⏰ Turnstile token expired');
+                if (DEBUG_MODE) console.log('⏰ Verification expired');
                 sessionStorage.removeItem('turnstile_verified');
-                sessionStorage.removeItem('turnstile_token');
                 sessionStorage.removeItem('turnstile_timestamp');
                 setIsVerified(false);
                 

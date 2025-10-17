@@ -49,13 +49,12 @@ function App() {
     if (!envConfig.enableVerification) return;
 
     const verified = sessionStorage.getItem('turnstile_verified');
-    const token = sessionStorage.getItem('turnstile_token');
     const timestamp = sessionStorage.getItem('turnstile_timestamp');
-    const isTokenValid = timestamp && (Date.now() - parseInt(timestamp)) < 5 * 60 * 1000;
+    const isVerificationValid = timestamp && (Date.now() - parseInt(timestamp)) < 4 * 60 * 1000;
     
-    if (verified === 'true' && token && isTokenValid) {
+    if (verified === 'true' && isVerificationValid) {
       setIsVerified(true);
-      setTurnstileToken(token);
+      setTurnstileToken('verified'); // Just a flag, actual tokens generated per-request
     }
   }, []);
 
