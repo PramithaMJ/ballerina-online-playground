@@ -375,7 +375,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
           {/* Information Footer with trust indicators */}
           <div className="turnstile-info">
             <p className="info-text">
-              <span>🔒</span>
+              <span></span>
               <span>Enterprise-grade security powered by Cloudflare</span>
             </p>
             <p className="privacy-text">
