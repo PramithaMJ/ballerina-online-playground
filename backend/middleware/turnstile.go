@@ -85,6 +85,9 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 						errorMsg = "Token expired or already used. Please try again."
 					case "invalid-input-response":
 						errorMsg = "Invalid verification token. Please refresh the page."
+					case "invalid-input-secret":
+						errorMsg = "Server configuration error: Invalid secret key. Please contact administrator."
+						log.Printf(" CONFIGURATION ERROR: Invalid Turnstile secret key! Check TURNSTILE_SECRET_KEY environment variable.\n")
 					case "bad-request":
 						errorMsg = "Invalid request. Please try again."
 					case "internal-error":
@@ -94,7 +97,7 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 					}
 				}
 
-				log.Printf(" Turnstile verification failed: %v\n", resp.ErrorCodes)
+				log.Printf(" Turnstile verification failed: %v (token prefix: %s...)\n", resp.ErrorCodes, token[:min(10, len(token))])
 				http.Error(w, errorMsg, http.StatusUnauthorized)
 				return
 			}

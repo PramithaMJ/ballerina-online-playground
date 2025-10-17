@@ -6,10 +6,10 @@
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
 const TOKEN_VALIDITY_DURATION = 4 * 60 * 1000; // 4 minutes (tokens valid for 5 min, use 4 for safety)
-const TOKEN_POOL_SIZE = 2; // Keep 2 pre-generated tokens ready (reduced for faster initial load)
-const REFRESH_INTERVAL = 3 * 60 * 1000; // 3 minutes - periodic cleanup and refill
-const TOKEN_GENERATION_DELAY = 500; // 500ms between token generations (reduced for faster startup)
-const TOKEN_GENERATION_TIMEOUT = 15000; // 15 seconds timeout for token generation
+const TOKEN_POOL_SIZE = 1; // Keep only 1 pre-generated token (avoid rate limiting)
+const REFRESH_INTERVAL = 4 * 60 * 1000; // 4 minutes - periodic cleanup and refill
+const TOKEN_GENERATION_DELAY = 2000; // 2 seconds between token generations (avoid rate limiting)
+const TOKEN_GENERATION_TIMEOUT = 30000; // 30 seconds timeout for token generation (increased)
 const DEBUG_MODE = import.meta.env.DEV; // Only show debug logs in development
 
 class TurnstileManager {

@@ -32,16 +32,16 @@ export const TurnstileChallenge = ({ onVerified }) => {
       console.log('🔍 Checking session storage:', { verified, hasToken: !!token, timestamp });
     }
     
-    // Token expires after 5 minutes
-    const isTokenValid = timestamp && (Date.now() - parseInt(timestamp)) < 5 * 60 * 1000;
+    // Token expires after 4 minutes (use 4 instead of 5 for safety margin)
+    const isTokenValid = timestamp && (Date.now() - parseInt(timestamp)) < 4 * 60 * 1000;
     
     if (verified === 'true' && token && isTokenValid) {
-      if (DEBUG_MODE) console.log(' Valid token found in session');
+      if (DEBUG_MODE) console.log('✅ Valid token found in session');
       setIsVerified(true);
       onVerified(token);
       return;
     } else if (verified === 'true' && !isTokenValid) {
-      if (DEBUG_MODE) console.log(' Token expired, clearing session');
+      if (DEBUG_MODE) console.log('⏰ Token expired, clearing session');
       // Clear expired token
       sessionStorage.removeItem('turnstile_verified');
       sessionStorage.removeItem('turnstile_token');
