@@ -26,11 +26,11 @@ class SimpleTurnstileManager {
 
   async initialize() {
     if (this.isInitialized) {
-      this.debug('✅ Turnstile manager already initialized');
+      this.debug(' Turnstile manager already initialized');
       return;
     }
 
-    this.debug('🔄 Initializing Turnstile manager...');
+    this.debug(' Initializing Turnstile manager...');
 
     // Create invisible container
     this.containerElement = document.createElement('div');
@@ -42,7 +42,7 @@ class SimpleTurnstileManager {
     await this.waitForTurnstile();
     
     this.isInitialized = true;
-    this.debug('✅ Turnstile manager initialized');
+    this.debug(' Turnstile manager initialized');
   }
 
   async waitForTurnstile() {
@@ -62,7 +62,7 @@ class SimpleTurnstileManager {
       // Timeout after 30 seconds
       setTimeout(() => {
         clearInterval(checkTurnstile);
-        console.error('❌ Turnstile script failed to load');
+        console.error(' Turnstile script failed to load');
         resolve(); // Resolve anyway to avoid hanging
       }, 30000);
     });
@@ -83,7 +83,7 @@ class SimpleTurnstileManager {
     }
 
     // Generate new token
-    this.debug('🔄 Generating new token...');
+    this.debug(' Generating new token...');
     return this.generateToken();
   }
 
@@ -106,7 +106,7 @@ class SimpleTurnstileManager {
           callback: (token) => {
             this.currentToken = token;
             this.currentTokenTimestamp = Date.now();
-            this.debug('✅ Token generated successfully');
+            this.debug(' Token generated successfully');
             
             // Clean up widget
             if (this.widgetId && window.turnstile) {
@@ -121,7 +121,7 @@ class SimpleTurnstileManager {
             resolve(token);
           },
           'error-callback': (errorCode) => {
-            console.error('❌ Token generation error:', errorCode);
+            console.error(' Token generation error:', errorCode);
             
             // Clean up widget
             if (this.widgetId && window.turnstile) {
@@ -136,12 +136,12 @@ class SimpleTurnstileManager {
             reject(new Error(`Token generation failed: ${errorCode}`));
           },
           'expired-callback': () => {
-            this.debug('⏰ Token expired');
+            this.debug(' Token expired');
             this.currentToken = null;
             this.currentTokenTimestamp = null;
           },
           'timeout-callback': () => {
-            console.warn('⏱️ Token generation timeout');
+            console.warn(' Token generation timeout');
             
             // Clean up widget
             if (this.widgetId && window.turnstile) {
@@ -162,7 +162,7 @@ class SimpleTurnstileManager {
         // Set timeout
         setTimeout(() => {
           if (this.widgetId) {
-            console.error('⏱️ Token generation timeout (30s)');
+            console.error(' Token generation timeout (30s)');
             
             // Clean up
             if (window.turnstile) {
@@ -179,7 +179,7 @@ class SimpleTurnstileManager {
         }, 30000);
 
       } catch (err) {
-        console.error('❌ Error rendering widget:', err);
+        console.error(' Error rendering widget:', err);
         reject(err);
       }
     });

@@ -132,7 +132,7 @@ func handleVerificationFailure(w http.ResponseWriter, resp *TurnstileResponse, t
 			errorMsg = "Invalid verification token. Please refresh the page."
 		case "invalid-input-secret":
 			errorMsg = "Server configuration error. Please contact administrator."
-			log.Printf("❌ CONFIGURATION ERROR: Invalid Turnstile secret key! Check TURNSTILE_SECRET_KEY environment variable.\n")
+			log.Printf(" CONFIGURATION ERROR: Invalid Turnstile secret key! Check TURNSTILE_SECRET_KEY environment variable.\n")
 		case "bad-request":
 			errorMsg = "Invalid request format. Please try again."
 			statusCode = http.StatusBadRequest
@@ -143,13 +143,13 @@ func handleVerificationFailure(w http.ResponseWriter, resp *TurnstileResponse, t
 			errorMsg = "Missing verification token."
 		case "missing-input-secret":
 			errorMsg = "Server configuration error. Please contact administrator."
-			log.Printf("❌ CONFIGURATION ERROR: Missing Turnstile secret key!\n")
+			log.Printf(" CONFIGURATION ERROR: Missing Turnstile secret key!\n")
 		default:
 			errorMsg = fmt.Sprintf("Verification failed: %v", resp.ErrorCodes[0])
 		}
 	}
 
-	log.Printf("❌ Turnstile verification failed: %v (token prefix: %s...)\n", resp.ErrorCodes, token[:min(10, len(token))])
+	log.Printf(" Turnstile verification failed: %v (token prefix: %s...)\n", resp.ErrorCodes, token[:min(10, len(token))])
 	respondWithError(w, statusCode, errorMsg, map[string]interface{}{
 		"error_codes": resp.ErrorCodes,
 	})
@@ -187,7 +187,7 @@ func verifyTokenWithRetry(token, remoteIP string, config TurnstileConfig) (bool,
 		}
 
 		// Log retry attempt
-		log.Printf("⚠️ Verification attempt %d/%d failed: %v. Retrying in %v...\n", attempt, maxRetries, err, retryDelay)
+		log.Printf(" Verification attempt %d/%d failed: %v. Retrying in %v...\n", attempt, maxRetries, err, retryDelay)
 
 		// Wait before retrying (exponential backoff)
 		time.Sleep(retryDelay * time.Duration(attempt))
@@ -209,14 +209,14 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 
 			// Skip if Turnstile is disabled
 			if !config.Enabled {
-				log.Println("⚠️ Turnstile verification is disabled")
+				log.Println(" Turnstile verification is disabled")
 				next.ServeHTTP(w, r)
 				return
 			}
 
 			// Skip if no secret key configured (development mode)
 			if config.SecretKey == "" {
-				log.Println("⚠️ No Turnstile secret key configured - skipping verification")
+				log.Println(" No Turnstile secret key configured - skipping verification")
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -229,21 +229,21 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 			}
 
 			if token == "" {
-				log.Println("❌ Missing Turnstile token")
+				log.Println(" Missing Turnstile token")
 				respondWithError(w, http.StatusUnauthorized, "Missing verification token", nil)
 				return
 			}
 
 			// Validate token format
 			if len(token) > 2048 {
-				log.Println("❌ Token too long")
+				log.Println(" Token too long")
 				respondWithError(w, http.StatusBadRequest, "Invalid token format", nil)
 				return
 			}
 
 			// Check if token was already used (prevent replay attacks)
 			if cache.isUsed(token) {
-				log.Printf("❌ Token already used: %s...\n", token[:min(10, len(token))])
+				log.Printf(" Token already used: %s...\n", token[:min(10, len(token))])
 				respondWithError(w, http.StatusUnauthorized, "Token already used. Please generate a new token.", nil)
 				return
 			}
@@ -254,7 +254,7 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 			// Verify token with Cloudflare (with retry logic)
 			isValid, resp, err := verifyTokenWithRetry(token, remoteIP, config)
 			if err != nil {
-				log.Printf("❌ Turnstile verification error: %v\n", err)
+				log.Printf(" Turnstile verification error: %v\n", err)
 				respondWithError(w, http.StatusServiceUnavailable, "Verification service unavailable. Please try again.", nil)
 				return
 			}
@@ -278,7 +278,7 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 				}
 
 				if !hostnameValid {
-					log.Printf("❌ Hostname mismatch: expected %v, got %s\n", config.ExpectedHostnames, resp.Hostname)
+					log.Printf(" Hostname mismatch: expected %v, got %s\n", config.ExpectedHostnames, resp.Hostname)
 					respondWithError(w, http.StatusUnauthorized, "Invalid request origin", nil)
 					return
 				}
@@ -290,17 +290,17 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 				if err == nil {
 					age := time.Since(challengeTime)
 					if age > 4*time.Minute {
-						log.Printf("⚠️ Token is %.1f minutes old\n", age.Minutes())
+						log.Printf(" Token is %.1f minutes old\n", age.Minutes())
 					}
 					if age > 5*time.Minute {
-						log.Printf("❌ Token expired: %.1f minutes old\n", age.Minutes())
+						log.Printf(" Token expired: %.1f minutes old\n", age.Minutes())
 						respondWithError(w, http.StatusUnauthorized, "Token expired. Please generate a new token.", nil)
 						return
 					}
 				}
 			}
 
-			log.Printf("✅ Turnstile verification successful from %s (hostname: %s)\n", remoteIP, resp.Hostname)
+			log.Printf(" Turnstile verification successful from %s (hostname: %s)\n", remoteIP, resp.Hostname)
 
 			// Verification successful - proceed to next handler
 			next.ServeHTTP(w, r)

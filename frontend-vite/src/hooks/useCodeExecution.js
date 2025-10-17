@@ -38,7 +38,7 @@ export const useCodeExecution = () => {
 
     setIsRunning(true);
     setProgress(0);
-    setOutput('⏳ Preparing execution environment...');
+    setOutput(' Preparing execution environment...');
     setError('');
 
     // Create new AbortController for this execution

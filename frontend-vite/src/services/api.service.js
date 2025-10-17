@@ -56,15 +56,15 @@ class ApiService {
       // Generate fresh token on-demand
       this.debug(`🎫 Generating fresh Turnstile token (attempt ${retryCount + 1}/${maxRetries + 1})...`);
       const token = await turnstileTokenGenerator.generateToken();
-      this.debug('✅ Fresh token generated', { tokenLength: token.length });
+      this.debug(' Fresh token generated', { tokenLength: token.length });
       return token;
     } catch (error) {
-      console.error(`❌ Failed to generate token (attempt ${retryCount + 1}):`, error);
+      console.error(` Failed to generate token (attempt ${retryCount + 1}):`, error);
       
       // Retry with exponential backoff
       if (retryCount < maxRetries) {
         const backoffDelay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s...
-        this.debug(`⏳ Retrying in ${backoffDelay}ms...`);
+        this.debug(` Retrying in ${backoffDelay}ms...`);
         
         await new Promise(resolve => setTimeout(resolve, backoffDelay));
         return this.getTurnstileToken(retryCount + 1, maxRetries);
@@ -99,7 +99,7 @@ class ApiService {
     // Increment request counter
     this.requestCount++;
     const requestId = this.requestCount;
-    this.debug(`📤 API Request #${requestId} starting...`);
+    this.debug(` API Request #${requestId} starting...`);
 
     try {
       // Setup request timeout
@@ -128,14 +128,14 @@ class ApiService {
           if (error.message === 'VERIFICATION_REQUIRED') {
             return {
               output: '',
-              error: '🔒 Verification expired. Please refresh the page to verify again.',
+              error: ' Verification expired. Please refresh the page to verify again.',
             };
           }
           
           if (error.message === 'TOKEN_GENERATION_FAILED') {
             return {
               output: '',
-              error: '⚠️ Failed to generate verification token. Please try again or refresh the page.',
+              error: ' Failed to generate verification token. Please try again or refresh the page.',
             };
           }
           
@@ -158,7 +158,7 @@ class ApiService {
 
       // Check for verification errors
       if (response.status === 401) {
-        console.warn(`❌ Request #${requestId}: Verification failed`);
+        console.warn(` Request #${requestId}: Verification failed`);
         
         // Clear verification status
         sessionStorage.removeItem('turnstile_verified');
@@ -166,22 +166,22 @@ class ApiService {
         
         return {
           output: '',
-          error: '🔒 Verification failed. Please refresh the page to verify again.\n\n' +
+          error: ' Verification failed. Please refresh the page to verify again.\n\n' +
                  (result.error || 'Token was rejected by the server.'),
         };
       }
 
       if (response.status === 429) {
-        console.warn(`⚠️ Request #${requestId}: Rate limit exceeded`);
+        console.warn(` Request #${requestId}: Rate limit exceeded`);
         return {
           output: '',
-          error: '⏱️ Too many requests. Please wait a moment and try again.\n\n' +
+          error: ' Too many requests. Please wait a moment and try again.\n\n' +
                  'Rate limit: 5 requests per 5 seconds',
         };
       }
 
       if (response.status === 503) {
-        console.warn(`⚠️ Request #${requestId}: Service unavailable`);
+        console.warn(` Request #${requestId}: Service unavailable`);
         return {
           output: '',
           error: '🔧 Service temporarily unavailable. Please try again in a moment.\n\n' +
@@ -191,7 +191,7 @@ class ApiService {
 
       // Success response
       if (response.ok) {
-        this.debug(`✅ Request #${requestId} completed successfully`);
+        this.debug(` Request #${requestId} completed successfully`);
         
         const outputResult = {
           output: result.output || SUCCESS_MESSAGES.NO_OUTPUT,
@@ -222,7 +222,7 @@ class ApiService {
         throw err; // Re-throw to be handled by caller
       }
 
-      console.error(`❌ Request #${requestId} failed:`, err);
+      console.error(` Request #${requestId} failed:`, err);
       return {
         output: '',
         error: `${ERROR_MESSAGES.CONNECTION_ERROR}: ${err.message}\n\n` +

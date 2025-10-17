@@ -131,23 +131,23 @@ function App() {
     // Initialize on-demand token generator after initial verification
     if (shouldInitTokenGenerator && envConfig.enableVerification) {
       if (import.meta.env.DEV) {
-        console.log('🚀 Initializing on-demand token generator...');
+        console.log(' Initializing on-demand token generator...');
       }
       turnstileTokenGenerator.initialize().then(() => {
         if (import.meta.env.DEV) {
-          console.log('✅ Token generator ready');
+          console.log(' Token generator ready');
         }
       }).catch(error => {
-        console.error('❌ Failed to initialize token generator:', error);
+        console.error(' Failed to initialize token generator:', error);
       });
     } else if (token === 'session-valid' && envConfig.enableVerification) {
       // For session-valid, still ensure token generator is ready
       if (import.meta.env.DEV) {
-        console.log('🔄 Session valid - ensuring token generator is ready...');
+        console.log(' Session valid - ensuring token generator is ready...');
       }
       if (!turnstileTokenGenerator.isReady()) {
         turnstileTokenGenerator.initialize().catch(error => {
-          console.error('❌ Failed to initialize token generator:', error);
+          console.error(' Failed to initialize token generator:', error);
         });
       }
     }

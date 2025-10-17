@@ -46,7 +46,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
     if (!mountedRef.current) return;
 
     if (DEBUG_MODE) {
-      console.log('✅ Turnstile verification successful', {
+      console.log(' Turnstile verification successful', {
         tokenLength: token.length,
         timestamp: new Date().toISOString()
       });
@@ -65,7 +65,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
   const handleError = useCallback((errorCode) => {
     if (!mountedRef.current) return;
 
-    console.error('❌ Turnstile verification error:', errorCode);
+    console.error(' Turnstile verification error:', errorCode);
     
     const errorMessages = {
       'network-error': 'Network connection failed. Please check your internet connection and try again.',
@@ -84,7 +84,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
   const handleExpired = useCallback(() => {
     if (!mountedRef.current) return;
 
-    if (DEBUG_MODE) console.log('⏰ Turnstile token expired');
+    if (DEBUG_MODE) console.log(' Turnstile token expired');
     clearVerification();
     setIsVerified(false);
     setError('Your verification has expired. Please verify again.');
@@ -94,7 +94,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
   const handleTimeout = useCallback(() => {
     if (!mountedRef.current) return;
 
-    console.warn('⏱️ Turnstile challenge timeout');
+    console.warn(' Turnstile challenge timeout');
     setError('Verification took too long. Please try again.');
     setIsLoading(false);
   }, []);
@@ -117,14 +117,14 @@ export const TurnstileChallenge = ({ onVerified }) => {
         'expired-callback': handleExpired,
         'timeout-callback': handleTimeout,
         'before-interactive-callback': () => {
-          if (DEBUG_MODE) console.log('🔄 Turnstile widget becoming interactive...');
+          if (DEBUG_MODE) console.log(' Turnstile widget becoming interactive...');
         },
         'after-interactive-callback': () => {
           if (DEBUG_MODE) console.log('✓ Turnstile widget is interactive');
           setIsLoading(false);
         },
         'unsupported-callback': () => {
-          console.error('❌ Turnstile is not supported in this browser');
+          console.error(' Turnstile is not supported in this browser');
           setError('Your browser does not support the verification system. Please use a modern browser.');
           setIsLoading(false);
         },
@@ -143,7 +143,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
         });
       }
     } catch (err) {
-      console.error('❌ Error rendering Turnstile widget:', err);
+      console.error(' Error rendering Turnstile widget:', err);
       setError('Failed to initialize verification. Please refresh the page.');
       setIsLoading(false);
     }
@@ -155,13 +155,13 @@ export const TurnstileChallenge = ({ onVerified }) => {
     const verified = sessionStorage.getItem('turnstile_verified');
     
     if (verified === 'true' && isVerificationValid()) {
-      if (DEBUG_MODE) console.log('✅ Valid verification found in session');
+      if (DEBUG_MODE) console.log(' Valid verification found in session');
       setIsVerified(true);
       setIsLoading(false);
       onVerified('session-valid');
       return;
     } else if (verified === 'true') {
-      if (DEBUG_MODE) console.log('⏰ Verification expired, clearing session');
+      if (DEBUG_MODE) console.log(' Verification expired, clearing session');
       clearVerification();
     }
 
@@ -184,7 +184,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
     // Set timeout for script loading
     scriptLoadTimeoutRef.current = setTimeout(() => {
       if (!window.turnstile && mountedRef.current) {
-        console.error('❌ Turnstile script loading timeout');
+        console.error(' Turnstile script loading timeout');
         setError('Verification service is taking too long to load. Please check your connection and refresh.');
         setIsLoading(false);
       }
@@ -197,7 +197,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
         clearTimeout(scriptLoadTimeoutRef.current);
       }
 
-      if (DEBUG_MODE) console.log('✅ Turnstile API loaded successfully');
+      if (DEBUG_MODE) console.log(' Turnstile API loaded successfully');
 
       // Small delay to ensure Turnstile is fully initialized
       setTimeout(() => {
@@ -214,7 +214,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
         clearTimeout(scriptLoadTimeoutRef.current);
       }
 
-      console.error('❌ Failed to load Turnstile script:', e);
+      console.error(' Failed to load Turnstile script:', e);
       setError('Failed to load verification service. Please check your internet connection and refresh.');
       setIsLoading(false);
     };
@@ -244,7 +244,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
 
   // Handle manual retry
   const handleRetry = useCallback(() => {
-    if (DEBUG_MODE) console.log('🔄 Manual retry requested');
+    if (DEBUG_MODE) console.log(' Manual retry requested');
     setError(null);
     setIsLoading(true);
     setRetryCount(prev => prev + 1);
@@ -260,7 +260,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
           widgetIdRef.current = null;
           setTimeout(renderWidget, 100);
         } catch (removeErr) {
-          console.error('❌ Failed to reset widget:', removeErr);
+          console.error(' Failed to reset widget:', removeErr);
           window.location.reload();
         }
       }
@@ -281,57 +281,88 @@ export const TurnstileChallenge = ({ onVerified }) => {
     <div className="turnstile-overlay" role="dialog" aria-labelledby="verification-title" aria-live="polite">
       <div className="turnstile-container">
         <div className="turnstile-content">
-          {/* Logo */}
+          {/* Modern Logo with gradient */}
           <div className="turnstile-logo" aria-hidden="true">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#FF5000" opacity="0.8"/>
-              <path d="M2 17L12 22L22 17V12L12 17L2 12V17Z" fill="#FF7A00"/>
+            <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Shield background */}
+              <path 
+                d="M36 6L10 18V34C10 48.5 20.5 61.5 36 66C51.5 61.5 62 48.5 62 34V18L36 6Z" 
+                fill="url(#shield-gradient)" 
+                stroke="url(#shield-stroke)" 
+                strokeWidth="2"
+              />
+              {/* Check mark */}
+              <path 
+                d="M28 36L33 41L44 30" 
+                stroke="white" 
+                strokeWidth="4" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                opacity="0.9"
+              />
+              {/* Decorative dots */}
+              <circle cx="36" cy="20" r="2" fill="white" opacity="0.6"/>
+              <circle cx="20" cy="32" r="2" fill="white" opacity="0.6"/>
+              <circle cx="52" cy="32" r="2" fill="white" opacity="0.6"/>
+              
+              <defs>
+                <linearGradient id="shield-gradient" x1="36" y1="6" x2="36" y2="66" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FF5000"/>
+                  <stop offset="100%" stopColor="#FF7A00"/>
+                </linearGradient>
+                <linearGradient id="shield-stroke" x1="36" y1="6" x2="36" y2="66" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#FF8A33"/>
+                  <stop offset="100%" stopColor="#FF5000"/>
+                </linearGradient>
+              </defs>
             </svg>
           </div>
           
-          {/* Title */}
+          {/* Title with security badge */}
           <h1 id="verification-title" className="turnstile-title">
-            🔒 Human Verification Required
+            🛡️ Security Verification
           </h1>
           
           {/* Description */}
           <p className="turnstile-description">
-            Please verify you're human to access the Ballerina Online Playground
+            We need to verify you're human to protect the playground from automated abuse
           </p>
           
-          {/* Loading State */}
+          {/* Loading State with modern spinner */}
           {isLoading && !error && (
             <div className="turnstile-loading" role="status" aria-live="polite">
               <div className="spinner" aria-hidden="true"></div>
-              <p>Loading verification challenge...</p>
+              <p>Establishing secure connection...</p>
             </div>
           )}
           
-          {/* Error State */}
+          {/* Error State with better UX */}
           {error && (
             <div className="turnstile-error" role="alert">
               <div className="error-icon" aria-hidden="true">⚠️</div>
               <p className="error-message">{error}</p>
-              <button 
-                onClick={handleRetry}
-                className="retry-button"
-                aria-label="Retry verification"
-              >
-                🔄 Retry Verification
-              </button>
-              {retryCount > 2 && (
+              <div>
                 <button 
-                  onClick={() => window.location.reload()}
-                  className="refresh-button"
-                  aria-label="Refresh page"
+                  onClick={handleRetry}
+                  className="retry-button"
+                  aria-label="Retry verification"
                 >
-                  🔃 Refresh Page
+                  🔄 Try Again
                 </button>
-              )}
+                {retryCount > 2 && (
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="refresh-button"
+                    aria-label="Refresh page"
+                  >
+                    🔃 Refresh Page
+                  </button>
+                )}
+              </div>
             </div>
           )}
           
-          {/* Widget Container */}
+          {/* Widget Container with modern styling */}
           {!error && (
             <div 
               ref={turnstileRef} 
@@ -341,18 +372,19 @@ export const TurnstileChallenge = ({ onVerified }) => {
             />
           )}
           
-          {/* Information Footer */}
+          {/* Information Footer with trust indicators */}
           <div className="turnstile-info">
             <p className="info-text">
-              ✓ This verification helps protect the playground from automated abuse
+              <span>🔒</span>
+              <span>Enterprise-grade security powered by Cloudflare</span>
             </p>
             <p className="privacy-text">
-              Protected by <strong>Cloudflare Turnstile</strong> · Privacy-first · No tracking
+              Privacy-first verification · No personal data collected · <strong>GDPR Compliant</strong>
             </p>
             {DEBUG_MODE && (
               <p className="debug-info">
-                Site Key: {TURNSTILE_SITE_KEY.substring(0, 20)}...
-                {TURNSTILE_SITE_KEY === '1x00000000000000000000AA' && ' (Test Mode)'}
+                🔧 Debug Mode · Site Key: {TURNSTILE_SITE_KEY.substring(0, 20)}...
+                {TURNSTILE_SITE_KEY === '1x00000000000000000000AA' && ' · ⚠️ Test Environment'}
               </p>
             )}
           </div>
