@@ -53,30 +53,41 @@ class ApiService {
       // Use the provided signal or the timeout controller
       const finalSignal = signal || controller.signal;
 
-      // Get fresh Turnstile token (auto-refreshes if needed)
+      // Get Turnstile token from session storage (set during initial verification)
       const headers = { 'Content-Type': 'application/json' };
       
       if (envConfig.enableVerification) {
         try {
-          // Get token from pool (instant if available, otherwise generates new one)
-          const token = await turnstileManager.getToken();
+          // First, try to get token from session storage (from initial TurnstileChallenge verification)
+          let token = sessionStorage.getItem('turnstile_token');
+          const timestamp = sessionStorage.getItem('turnstile_timestamp');
           
-          if (token) {
-            this.debug('🔐 Using Turnstile token for API request');
-            headers['CF-Turnstile-Token'] = token;
-          } else {
-            // No token available - show user-friendly message
-            console.warn(' Verification token not ready yet');
+          // Check if token is still valid (less than 4 minutes old)
+          const isTokenValid = timestamp && (Date.now() - parseInt(timestamp)) < 4 * 60 * 1000;
+          
+          if (!token || !isTokenValid) {
+            // Token expired or missing - need fresh verification
+            this.debug('🔄 Token expired or missing, showing verification dialog');
+            
+            // Clear expired token
+            sessionStorage.removeItem('turnstile_verified');
+            sessionStorage.removeItem('turnstile_token');
+            sessionStorage.removeItem('turnstile_timestamp');
+            
             return {
               output: '',
-              error: '🔒 Security verification is initializing...\n\nPlease wait a moment and try again.',
+              error: '🔒 Security verification expired.\n\nPlease refresh the page to verify again.',
             };
           }
+          
+          this.debug('🔐 Using Turnstile token from session');
+          headers['CF-Turnstile-Token'] = token;
+          
         } catch (err) {
-          console.error(' Failed to get Turnstile token:', err);
+          console.error('❌ Failed to get Turnstile token:', err);
           return {
             output: '',
-            error: '🔒 Verification temporarily unavailable.\n\nPlease wait a moment and try again, or refresh the page if the issue persists.',
+            error: '🔒 Verification error.\n\nPlease refresh the page and try again.',
           };
         }
       }
@@ -94,21 +105,26 @@ class ApiService {
 
       // Handle Turnstile verification failures
       if (response.status === 401) {
-        console.warn(' Verification failed - token may have been rejected');
+        console.warn('❌ Verification failed - token rejected or expired');
+        
+        // Clear invalid token
+        sessionStorage.removeItem('turnstile_verified');
+        sessionStorage.removeItem('turnstile_token');
+        sessionStorage.removeItem('turnstile_timestamp');
         
         return {
           output: '',
-          error: '🔒 Verification failed. The token may have expired or been rejected.\n\nA fresh token will be used for your next request.',
+          error: '🔒 Verification token expired or rejected.\n\nPlease refresh the page to verify again.',
         };
       }
 
       let outputResult;
       if (response.ok) {
-        // Request successful
-        this.debug(' Request successful - token was accepted');
+        // Request successful - token was accepted
+        this.debug('✅ Request successful - token was accepted');
         
-        // Token pool will automatically refill in background
-        // No need to manually trigger refresh after each request
+        // Note: Token is single-use and now consumed
+        // User will need to refresh page if token expires (after 4 minutes)
         
         if (result.error) {
           outputResult = {

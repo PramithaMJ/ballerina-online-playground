@@ -93,19 +93,20 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isRunning, code, ballerinaVersion]);
 
-  // Initialize background token refresh after verification
-  useEffect(() => {
-    if (isVerified && envConfig.enableVerification) {
-      if (import.meta.env.DEV) {
-        console.log(' Initializing background token manager...');
-      }
-      turnstileManager.initialize();
-      
-      return () => {
-        turnstileManager.destroy();
-      };
-    }
-  }, [isVerified]);
+  // DISABLED: Background token manager causes PAT challenge failures
+  // Tokens will be generated on-demand when needed instead
+  // useEffect(() => {
+  //   if (isVerified && envConfig.enableVerification) {
+  //     if (import.meta.env.DEV) {
+  //       console.log(' Initializing background token manager...');
+  //     }
+  //     turnstileManager.initialize();
+  //     
+  //     return () => {
+  //       turnstileManager.destroy();
+  //     };
+  //   }
+  // }, [isVerified]);
 
   // Handler functions
   const handleTurnstileVerified = (token) => {

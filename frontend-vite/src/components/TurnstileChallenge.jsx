@@ -70,18 +70,16 @@ export const TurnstileChallenge = ({ onVerified }) => {
               console.error(' Turnstile verification failed:', errorCode);
               setError('Verification failed. Please refresh and try again.');
             },
-            'expired-callback': () => {
-              if (DEBUG_MODE) console.log(' Turnstile token expired');
-              sessionStorage.removeItem('turnstile_verified');
-              sessionStorage.removeItem('turnstile_token');
-              sessionStorage.removeItem('turnstile_timestamp');
-              setIsVerified(false);
-              
-              // Reset the widget
-              if (widgetIdRef.current && window.turnstile) {
-                window.turnstile.reset(widgetIdRef.current);
-              }
-            },
+                          'expired-callback': () => {
+                if (DEBUG_MODE) console.log('⏰ Turnstile token expired');
+                sessionStorage.removeItem('turnstile_verified');
+                sessionStorage.removeItem('turnstile_token');
+                sessionStorage.removeItem('turnstile_timestamp');
+                setIsVerified(false);
+                
+                // Show message to user
+                setError('Your verification has expired. Please refresh the page to verify again.');
+              },
             'timeout-callback': () => {
               console.warn(' Turnstile timeout');
               setError('Verification timeout. Please try again.');
@@ -129,16 +127,14 @@ export const TurnstileChallenge = ({ onVerified }) => {
                 setError('Verification failed. Please refresh and try again.');
               },
               'expired-callback': () => {
-                if (DEBUG_MODE) console.log(' Turnstile token expired');
+                if (DEBUG_MODE) console.log('⏰ Turnstile token expired');
                 sessionStorage.removeItem('turnstile_verified');
                 sessionStorage.removeItem('turnstile_token');
                 sessionStorage.removeItem('turnstile_timestamp');
                 setIsVerified(false);
                 
-                // Reset the widget
-                if (widgetIdRef.current && window.turnstile) {
-                  window.turnstile.reset(widgetIdRef.current);
-                }
+                // Show message to user
+                setError('Your verification has expired. Please refresh the page to verify again.');
               },
               'timeout-callback': () => {
                 console.warn(' Turnstile timeout');
