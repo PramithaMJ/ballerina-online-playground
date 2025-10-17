@@ -8,7 +8,6 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { apiService } from '../services/api.service';
 import { SUCCESS_MESSAGES } from '../constants/app.constants';
 import { validateCodeSecurity } from '../utils/ballerina-validator.util';
-import { turnstileManager } from '../utils/turnstile-manager.util';
 
 export const useCodeExecution = () => {
   const [output, setOutput] = useState('');

@@ -188,7 +188,7 @@ Only shows critical errors:
 ### For Users:
 - 🚀 **Instant response** - No waiting for verification
 - 🎯 **Reliable** - No timeout errors
-- 🧹 **Clean console** - No confusing warnings
+-  **Clean console** - No confusing warnings
 - 💨 **Fast execution** - Seamless experience
 
 ### For Developers:
@@ -313,7 +313,7 @@ TOKEN_GENERATION_DELAY = 1.5s    // Delay between generations
 
 ### Issue: Token refresh timeout
 
-**Symptom:** `⏱️ Token generation timeout`
+**Symptom:** ` Token generation timeout`
 
 **Causes:**
 1. Slow network connection
@@ -328,7 +328,7 @@ TOKEN_GENERATION_DELAY = 1.5s    // Delay between generations
 
 ### Issue: All tokens expired
 
-**Symptom:** `🧹 Removed X expired tokens`
+**Symptom:** ` Removed X expired tokens`
 
 **Causes:**
 1. User inactive for >4 minutes

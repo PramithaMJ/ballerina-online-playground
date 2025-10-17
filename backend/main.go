@@ -13,7 +13,6 @@ import (
 	"time"
 )
 
-// ResponseWriter wrapper to ensure CORS headers are always set
 type corsResponseWriter struct {
 	http.ResponseWriter
 	wroteHeader bool
@@ -22,7 +21,6 @@ type corsResponseWriter struct {
 
 func (w *corsResponseWriter) WriteHeader(statusCode int) {
 	if !w.wroteHeader {
-		// Set CORS headers before writing status
 		w.Header().Set("Access-Control-Allow-Origin", w.origin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, HEAD")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, CF-Turnstile-Token")
@@ -43,13 +41,10 @@ func (w *corsResponseWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-// CORS middleware with response writer wrapper
 func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Get origin from request
 		origin := r.Header.Get("Origin")
 
-		// Define allowed origins
 		allowedOrigins := []string{
 			"https://pramithamj.github.io",
 			"https://ballerina-online-playground.pages.dev",
@@ -58,13 +53,11 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 			"http://localhost:5173",
 		}
 
-		// Check from environment variable first
 		envOrigin := os.Getenv("ALLOWED_ORIGIN")
 		if envOrigin != "" {
 			allowedOrigins = append(allowedOrigins, envOrigin)
 		}
 
-		// Determine which origin to allow
 		allowedOrigin := ""
 		for _, allowed := range allowedOrigins {
 			if origin == allowed || (len(origin) > 0 && (origin[:8] == "https://" || origin[:7] == "http://") &&
@@ -74,7 +67,6 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 			}
 		}
 
-		// If no match and origin is a Cloudflare Pages preview URL, allow it
 		if allowedOrigin == "" && origin != "" {
 			// Allow all *.pages.dev domains (Cloudflare Pages)
 			if len(origin) > 10 && origin[len(origin)-10:] == ".pages.dev" {
@@ -84,7 +76,6 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 			}
 		}
 
-		// Fallback to wildcard for development
 		if allowedOrigin == "" {
 			allowedOrigin = "*"
 		}
@@ -113,7 +104,6 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// Performance middleware with timeout and security headers
 func performanceMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get context

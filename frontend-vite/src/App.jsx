@@ -101,44 +101,6 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isRunning, code, ballerinaVersion]);
 
-  // DISABLED: Background token manager causes PAT challenge failures
-  // Tokens will be generated on-demand when needed instead
-  // useEffect(() => {
-  //   if (isVerified && envConfig.enableVerification) {
-  //     if (import.meta.env.DEV) {
-  //       console.log(' Initializing background token manager...');
-  //     }
-  //     turnstileManager.initialize();
-  //     
-  //     return () => {
-  //       turnstileManager.destroy();
-  //     };
-  //   }
-  // }, [isVerified]);
-
-  // Handler functions
-  const handleTurnstileVerified = (token) => {
-    if (import.meta.env.DEV) {
-      console.log('✓ App: Turnstile verification successful');
-    }
-    setTurnstileToken(token);
-    setIsVerified(true);
-
-    // Initialize on-demand token generator after initial verification
-    if (envConfig.enableVerification) {
-      if (import.meta.env.DEV) {
-        console.log('🚀 Initializing on-demand token generator...');
-      }
-      turnstileTokenGenerator.initialize().then(() => {
-        if (import.meta.env.DEV) {
-          console.log('✅ Token generator ready');
-        }
-      }).catch(error => {
-        console.error('❌ Failed to initialize token generator:', error);
-      });
-    }
-  };
-
   // Show Turnstile verification page if not verified
   if (!isVerified && envConfig.enableVerification) {
     return <TurnstileChallenge onVerified={handleTurnstileVerified} />;

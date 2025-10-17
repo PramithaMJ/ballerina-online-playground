@@ -1,12 +1,10 @@
 /**
  * Turnstile On-Demand Token Generator
  * Production-ready implementation for generating fresh tokens per request
- * Industry-standard approach with proper error handling and retry logic
  */
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
 const TOKEN_GENERATION_TIMEOUT = 15000; // 15 seconds
-const DEBUG_MODE = import.meta.env.DEV;
 
 class TurnstileTokenGenerator {
   constructor() {
@@ -18,20 +16,10 @@ class TurnstileTokenGenerator {
   }
 
   /**
-   * Debug logging
-   */
-  debug(...args) {
-    if (DEBUG_MODE) {
-      console.log('[TurnstileToken]', ...args);
-    }
-  }
-
-  /**
    * Initialize the invisible widget
    */
   async initialize() {
     if (this.isInitialized) {
-      this.debug('Already initialized');
       return true;
     }
 
@@ -59,8 +47,8 @@ class TurnstileTokenGenerator {
         sitekey: TURNSTILE_SITE_KEY,
         size: 'invisible',
         theme: 'light',
-        execution: 'execute', // Don't auto-execute
-        appearance: 'execute', // Show only during execution
+        execution: 'execute',
+        appearance: 'execute',
         callback: (token) => this.handleTokenGenerated(token),
         'error-callback': (error) => this.handleTokenError(error),
         'expired-callback': () => this.handleTokenExpired(),
@@ -70,10 +58,9 @@ class TurnstileTokenGenerator {
       });
 
       this.isInitialized = true;
-      this.debug('✅ Token generator initialized', { widgetId: this.widgetId });
       return true;
     } catch (error) {
-      console.error('❌ Failed to initialize token generator:', error);
+      console.error('Failed to initialize token generator:', error);
       return false;
     }
   }
@@ -103,7 +90,6 @@ class TurnstileTokenGenerator {
 
   /**
    * Generate a fresh token on-demand
-   * Returns a Promise that resolves with the token
    */
   async generateToken() {
     // Ensure initialized
@@ -121,7 +107,6 @@ class TurnstileTokenGenerator {
 
     // If already generating, queue this request
     if (this.isGenerating) {
-      this.debug('⏳ Token generation in progress, queueing request...');
       return new Promise((resolve, reject) => {
         this.generationQueue.push({ resolve, reject });
       });
@@ -154,8 +139,6 @@ class TurnstileTokenGenerator {
       };
 
       try {
-        this.debug('🔄 Executing Turnstile challenge...');
-        
         // Reset widget first to clear any stale state
         window.turnstile.reset(this.widgetId);
         
@@ -177,8 +160,6 @@ class TurnstileTokenGenerator {
   processQueue(token, error) {
     if (this.generationQueue.length === 0) return;
 
-    this.debug(`📤 Processing ${this.generationQueue.length} queued requests`);
-
     // Process all queued requests with the same token/error
     while (this.generationQueue.length > 0) {
       const request = this.generationQueue.shift();
@@ -194,11 +175,6 @@ class TurnstileTokenGenerator {
    * Handle successful token generation
    */
   handleTokenGenerated(token) {
-    this.debug('✅ Token generated successfully', {
-      tokenLength: token.length,
-      queueSize: this.generationQueue.length
-    });
-
     if (this.currentRequest) {
       this.currentRequest.resolve(token);
       this.currentRequest = null;
@@ -209,7 +185,7 @@ class TurnstileTokenGenerator {
    * Handle token generation error
    */
   handleTokenError(errorCode) {
-    console.error('❌ Token generation error:', errorCode);
+    console.error('Token generation error:', errorCode);
 
     const error = new Error(`Turnstile error: ${errorCode}`);
     
@@ -223,7 +199,6 @@ class TurnstileTokenGenerator {
    * Handle token expiration
    */
   handleTokenExpired() {
-    this.debug('⏰ Token expired');
     // Tokens are single-use, so expiration is expected after use
   }
 
@@ -231,7 +206,7 @@ class TurnstileTokenGenerator {
    * Handle token timeout
    */
   handleTokenTimeout() {
-    console.warn('⏱️ Token generation timeout');
+    console.warn('Token generation timeout');
     
     const error = new Error('Token generation timeout');
     
@@ -252,8 +227,6 @@ class TurnstileTokenGenerator {
    * Clean up resources
    */
   destroy() {
-    this.debug('🧹 Cleaning up token generator');
-
     if (this.widgetId && window.turnstile) {
       try {
         window.turnstile.remove(this.widgetId);
