@@ -3,14 +3,12 @@
  * Handles all HTTP communication with the backend
  * Single Responsibility: API calls and response handling
  * 
- * IMPORTANT: Turnstile tokens are SINGLE-USE!
- * Each token can only be validated ONCE by Cloudflare.
- * We generate a fresh token for EACH API request.
+ * NOTE: Backend Turnstile verification should be DISABLED
+ * Cloudflare Managed mode handles bot protection at CDN level
  */
 
 import { envConfig } from '../config/env.config';
 import { API_ENDPOINTS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants/app.constants';
-import { turnstileOnDemand } from '../utils/turnstile-on-demand.util';
 
 const DEBUG_MODE = import.meta.env.DEV; // Only show debug logs in development
 
