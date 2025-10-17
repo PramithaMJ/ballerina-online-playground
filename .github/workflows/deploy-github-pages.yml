@@ -42,8 +42,11 @@ jobs:
       - name: Build application
         working-directory: ./frontend-vite
         env:
-          # Replace with your EC2 backend URL
+          # Backend API URL (Cloudflare Tunnel)
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          # Cloudflare Turnstile configuration
+          VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
+          VITE_ENABLE_VERIFICATION: ${{ secrets.VITE_ENABLE_VERIFICATION }}
         run: npm run build
         
       - name: Setup Pages
