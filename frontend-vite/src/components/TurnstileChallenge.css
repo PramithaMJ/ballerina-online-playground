@@ -136,24 +136,29 @@
   width: 64px;
   height: 64px;
   margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .spinner::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 64px;
   height: 64px;
-  border: 4px solid rgba(255, 122, 0, 0.15);
+  border: 4px solid rgba(100, 116, 139, 0.2);
   border-radius: 50%;
 }
 
 .spinner::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 64px;
   height: 64px;
   border: 4px solid transparent;
@@ -161,7 +166,7 @@
   border-right-color: #FF6A00;
   border-bottom-color: #FF7A00;
   border-radius: 50%;
-  animation: spinGlow 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+  animation: spinGlow 0.8s linear infinite;
   filter: drop-shadow(0 0 12px rgba(255, 80, 0, 0.6)) 
           drop-shadow(0 0 20px rgba(255, 122, 0, 0.4));
 }
@@ -341,7 +346,7 @@
 
 @keyframes spinGlow {
   0% { 
-    transform: rotate(0deg);
+    transform: translate(-50%, -50%) rotate(0deg);
     filter: drop-shadow(0 0 12px rgba(255, 80, 0, 0.6)) 
             drop-shadow(0 0 20px rgba(255, 122, 0, 0.4));
   }
@@ -350,7 +355,7 @@
             drop-shadow(0 0 24px rgba(255, 122, 0, 0.5));
   }
   100% { 
-    transform: rotate(360deg);
+    transform: translate(-50%, -50%) rotate(360deg);
     filter: drop-shadow(0 0 12px rgba(255, 80, 0, 0.6)) 
             drop-shadow(0 0 20px rgba(255, 122, 0, 0.4));
   }
