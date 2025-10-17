@@ -128,7 +128,7 @@ class TurnstileOnDemandGenerator {
             this.cleanup();
             reject(new Error('Token generation timeout'));
           },
-          size: 'compact', // CHANGED: compact instead of invisible
+          size: 'compact', 
           theme: 'light',
           action: 'api-request',
           cData: `request-${Date.now()}`,

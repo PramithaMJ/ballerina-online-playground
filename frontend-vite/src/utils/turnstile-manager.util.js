@@ -10,7 +10,6 @@ const TOKEN_POOL_SIZE = 1; // Keep only 1 pre-generated token (avoid rate limiti
 const REFRESH_INTERVAL = 4 * 60 * 1000; // 4 minutes - periodic cleanup and refill
 const TOKEN_GENERATION_DELAY = 2000; // 2 seconds between token generations (avoid rate limiting)
 const TOKEN_GENERATION_TIMEOUT = 30000; // 30 seconds timeout for token generation (increased)
-const DEBUG_MODE = import.meta.env.DEV; // Only show debug logs in development
 
 class TurnstileManager {
   constructor() {
@@ -19,7 +18,7 @@ class TurnstileManager {
     this.isRefreshing = false;
     this.pendingResolve = null;
     this.isInitialized = false;
-    this.tokenPool = []; // Pool of pre-generated tokens
+    this.tokenPool = [];
     this.refreshInterval = null;
     this.isGenerating = false;
   }

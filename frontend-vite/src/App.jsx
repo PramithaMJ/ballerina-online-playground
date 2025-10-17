@@ -16,7 +16,7 @@ import { TurnstileChallenge } from './components';
 import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress, useBallerinaVersion } from './hooks';
 import { DEFAULT_SAMPLE_CODE } from './constants/app.constants';
 import { isFirstVisit, markAsVisited } from './utils';
-import { turnstileManager } from './utils/turnstile-manager.util';
+import { turnstileTokenGenerator } from './utils/turnstile-token-generator.util';
 import { envConfig } from './config';
 import './App.css';
 
@@ -72,6 +72,15 @@ function App() {
     }
   }, []);
 
+  // Cleanup token generator on unmount
+  useEffect(() => {
+    return () => {
+      if (isVerified && envConfig.enableVerification) {
+        turnstileTokenGenerator.destroy();
+      }
+    };
+  }, [isVerified]);
+
   // Keyboard shortcut handler (Ctrl+Shift+Q to stop)
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -114,6 +123,20 @@ function App() {
     }
     setTurnstileToken(token);
     setIsVerified(true);
+
+    // Initialize on-demand token generator after initial verification
+    if (envConfig.enableVerification) {
+      if (import.meta.env.DEV) {
+        console.log('🚀 Initializing on-demand token generator...');
+      }
+      turnstileTokenGenerator.initialize().then(() => {
+        if (import.meta.env.DEV) {
+          console.log('✅ Token generator ready');
+        }
+      }).catch(error => {
+        console.error('❌ Failed to initialize token generator:', error);
+      });
+    }
   };
 
   // Show Turnstile verification page if not verified
