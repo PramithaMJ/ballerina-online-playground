@@ -68,7 +68,7 @@ class TurnstileOnDemandGenerator {
         this.log('🔄 Generating fresh token...');
 
         this.widgetId = window.turnstile.render(this.containerElement, {
-          sitekey: envConfig.turnstile.siteKey,
+          sitekey: envConfig.turnstileSiteKey, // Fixed: was envConfig.turnstile.siteKey
           callback: (token) => {
             clearTimeout(timeout);
             this.log('✅ Fresh token generated');
