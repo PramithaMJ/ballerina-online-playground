@@ -205,7 +205,7 @@ Gradient slate button (shows after 3+ retries)
 
 **Primary Text**:
 ```
-🔒 Enterprise-grade security powered by Cloudflare
+ Enterprise-grade security powered by Cloudflare
 ```
 - Display: Flex with gap
 - Font size: 14px

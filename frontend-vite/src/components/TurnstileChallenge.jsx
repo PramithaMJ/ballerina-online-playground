@@ -363,10 +363,20 @@ export const TurnstileChallenge = ({ onVerified }) => {
           )}
           
           {/* Widget Container with modern styling */}
-          {!error && (
+          {!error && !isLoading && (
             <div 
               ref={turnstileRef} 
               className="turnstile-widget"
+              role="region"
+              aria-label="Cloudflare Turnstile verification widget"
+            />
+          )}
+          
+          {/* Hidden container for initial render */}
+          {!error && isLoading && (
+            <div 
+              ref={turnstileRef} 
+              className="turnstile-widget-hidden"
               role="region"
               aria-label="Cloudflare Turnstile verification widget"
             />
