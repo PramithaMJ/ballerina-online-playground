@@ -1,29 +1,66 @@
 /**
  * API Service
  * Handles all HTTP communication with the backend
- * Single Responsibility: API calls and response handling
+ * Industry-standard implementation with proper Turnstile token handling
  * 
- * NOTE: Backend Turnstile verification should be DISABLED
- * Cloudflare Managed mode handles bot protection at CDN level
+ * Flow:
+ * 1. User completes initial Turnstile verification on page load
+ * 2. For each API request, generate a fresh token on-demand
+ * 3. Send token in CF-Turnstile-Token header
+ * 4. Backend validates token server-side
+ * 5. Token is single-use and expires after 5 minutes
  */
 
 import { envConfig } from '../config/env.config';
 import { API_ENDPOINTS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../constants/app.constants';
+import { turnstileTokenGenerator } from '../utils/turnstile-token-generator.util';
 
-const DEBUG_MODE = import.meta.env.DEV; // Only show debug logs in development
+const DEBUG_MODE = import.meta.env.DEV;
+const REQUEST_TIMEOUT = 120000; // 2 minutes for compilation + execution
 
 class ApiService {
   constructor(baseUrl) {
     this.baseUrl = baseUrl;
     this.cache = new Map();
+    this.requestCount = 0;
   }
 
   /**
-   * Log only in debug mode
+   * Debug logging
    */
   debug(...args) {
     if (DEBUG_MODE) {
-      console.log(...args);
+      console.log('[ApiService]', ...args);
+    }
+  }
+
+  /**
+   * Get a fresh Turnstile token for API request
+   * @returns {Promise<string|null>} Fresh token or null if verification not enabled
+   */
+  async getTurnstileToken() {
+    if (!envConfig.enableVerification) {
+      return null;
+    }
+
+    // Check if user has completed initial verification
+    const isVerified = sessionStorage.getItem('turnstile_verified') === 'true';
+    const timestamp = sessionStorage.getItem('turnstile_timestamp');
+    const isVerificationValid = timestamp && (Date.now() - parseInt(timestamp)) < 4 * 60 * 1000;
+
+    if (!isVerified || !isVerificationValid) {
+      throw new Error('VERIFICATION_REQUIRED');
+    }
+
+    try {
+      // Generate fresh token on-demand
+      this.debug('🎫 Generating fresh Turnstile token...');
+      const token = await turnstileTokenGenerator.generateToken();
+      this.debug('✅ Fresh token generated', { tokenLength: token.length });
+      return token;
+    } catch (error) {
+      console.error('❌ Failed to generate token:', error);
+      throw new Error('TOKEN_GENERATION_FAILED');
     }
   }
 
@@ -42,37 +79,61 @@ class ApiService {
       };
     }
 
-    // Generate cache key
+    // Check cache first
     const cacheKey = `${code}-${version}`;
     if (this.cache.has(cacheKey)) {
+      this.debug('💾 Returning cached result');
       return this.cache.get(cacheKey);
     }
 
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    // Increment request counter
+    this.requestCount++;
+    const requestId = this.requestCount;
+    this.debug(`📤 API Request #${requestId} starting...`);
 
-      // Use the provided signal or the timeout controller
+    try {
+      // Setup request timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+      // Use provided signal or timeout controller
       const finalSignal = signal || controller.signal;
 
-      // Simple approach: Don't send token, rely on Cloudflare infrastructure protection
-      const headers = { 'Content-Type': 'application/json' };
-      
+      // Prepare headers
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      // Get fresh Turnstile token if verification is enabled
       if (envConfig.enableVerification) {
-        // Check if user has completed initial verification (for UX only)
-        const isVerified = sessionStorage.getItem('turnstile_verified') === 'true';
-        
-        if (!isVerified) {
-          this.debug('❌ User not verified yet');
-          return {
-            output: '',
-            error: '🔒 Please complete verification first.\n\nRefresh the page if you don\'t see the verification widget.',
-          };
+        try {
+          const token = await this.getTurnstileToken();
+          if (token) {
+            headers['CF-Turnstile-Token'] = token;
+            this.debug(`🎫 Token attached to request #${requestId}`);
+          }
+        } catch (error) {
+          clearTimeout(timeoutId);
+          
+          if (error.message === 'VERIFICATION_REQUIRED') {
+            return {
+              output: '',
+              error: '🔒 Verification expired. Please refresh the page to verify again.',
+            };
+          }
+          
+          if (error.message === 'TOKEN_GENERATION_FAILED') {
+            return {
+              output: '',
+              error: '⚠️ Failed to generate verification token. Please try again or refresh the page.',
+            };
+          }
+          
+          throw error;
         }
-        
-        this.debug('✅ User verified, making API request (no token needed)');
       }
 
+      // Make API request
       const response = await fetch(`${this.baseUrl}${API_ENDPOINTS.EXECUTE}`, {
         method: 'POST',
         headers,
@@ -82,65 +143,91 @@ class ApiService {
 
       clearTimeout(timeoutId);
 
+      // Handle response
       const result = await response.json();
 
-      // Handle Turnstile verification failures
+      // Check for verification errors
       if (response.status === 401) {
-        console.warn('❌ Verification failed - token rejected or expired');
+        console.warn(`❌ Request #${requestId}: Verification failed`);
         
-        // Clear invalid token
+        // Clear verification status
         sessionStorage.removeItem('turnstile_verified');
-        sessionStorage.removeItem('turnstile_token');
         sessionStorage.removeItem('turnstile_timestamp');
         
         return {
           output: '',
-          error: '🔒 Verification token expired or rejected.\n\nPlease refresh the page to verify again.',
+          error: '🔒 Verification failed. Please refresh the page to verify again.\n\n' +
+                 (result.error || 'Token was rejected by the server.'),
         };
       }
 
-      let outputResult;
+      if (response.status === 429) {
+        console.warn(`⚠️ Request #${requestId}: Rate limit exceeded`);
+        return {
+          output: '',
+          error: '⏱️ Too many requests. Please wait a moment and try again.\n\n' +
+                 'Rate limit: 5 requests per 5 seconds',
+        };
+      }
+
+      if (response.status === 503) {
+        console.warn(`⚠️ Request #${requestId}: Service unavailable`);
+        return {
+          output: '',
+          error: '🔧 Service temporarily unavailable. Please try again in a moment.\n\n' +
+                 (result.error || 'The backend service may be restarting.'),
+        };
+      }
+
+      // Success response
       if (response.ok) {
-        // Request successful - token was accepted
-        this.debug('✅ Request successful - token was accepted');
+        this.debug(`✅ Request #${requestId} completed successfully`);
         
-        // Note: Token is single-use and now consumed
-        // User will need to refresh page if token expires (after 4 minutes)
-        
-        if (result.error) {
-          outputResult = {
-            output: result.output || '',
-            error: result.error,
-          };
-        } else {
-          outputResult = {
-            output: result.output || SUCCESS_MESSAGES.NO_OUTPUT,
-            error: '',
-          };
-        }
+        const outputResult = {
+          output: result.output || SUCCESS_MESSAGES.NO_OUTPUT,
+          error: result.error || '',
+        };
+
         // Cache successful results
         this.cache.set(cacheKey, outputResult);
+        
         // Limit cache size
         if (this.cache.size > 50) {
           const oldestKey = this.cache.keys().next().value;
           this.cache.delete(oldestKey);
         }
+
         return outputResult;
       }
 
+      // Other error responses
       return {
         output: '',
         error: result.error || ERROR_MESSAGES.SERVER_ERROR,
       };
+
     } catch (err) {
       if (err.name === 'AbortError') {
-        throw err; // Re-throw AbortError to be handled by the caller
+        this.debug(`⏹️ Request #${requestId} aborted by user`);
+        throw err; // Re-throw to be handled by caller
       }
+
+      console.error(`❌ Request #${requestId} failed:`, err);
       return {
         output: '',
-        error: `${ERROR_MESSAGES.CONNECTION_ERROR}: ${err.message}\n\nMake sure the backend server is running on ${this.baseUrl}`,
+        error: `${ERROR_MESSAGES.CONNECTION_ERROR}: ${err.message}\n\n` +
+               `Backend: ${this.baseUrl}\n` +
+               'Please ensure the backend server is running and accessible.',
       };
     }
+  }
+
+  /**
+   * Clear the result cache
+   */
+  clearCache() {
+    this.cache.clear();
+    this.debug('🧹 Cache cleared');
   }
 }
 
