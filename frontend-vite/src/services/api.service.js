@@ -57,36 +57,22 @@ class ApiService {
       // Use the provided signal or the timeout controller
       const finalSignal = signal || controller.signal;
 
-      // Generate fresh Turnstile token for EACH request (tokens are single-use!)
+      // Simple approach: Don't send token, rely on Cloudflare infrastructure protection
       const headers = { 'Content-Type': 'application/json' };
       
       if (envConfig.enableVerification) {
-        try {
-          // Check if user has completed initial verification
-          const isVerified = sessionStorage.getItem('turnstile_verified') === 'true';
-          
-          if (!isVerified) {
-            this.debug('❌ User not verified yet');
-            return {
-              output: '',
-              error: '🔒 Please complete verification first.\n\nRefresh the page if you don\'t see the verification widget.',
-            };
-          }
-          
-          // Generate fresh token for THIS request
-          this.debug('🔄 Generating fresh token for request...');
-          const freshToken = await turnstileOnDemand.generateToken();
-          
-          this.debug('✅ Fresh token generated, making API request');
-          headers['CF-Turnstile-Token'] = freshToken;
-          
-        } catch (err) {
-          console.error('❌ Failed to generate fresh token:', err);
+        // Check if user has completed initial verification (for UX only)
+        const isVerified = sessionStorage.getItem('turnstile_verified') === 'true';
+        
+        if (!isVerified) {
+          this.debug('❌ User not verified yet');
           return {
             output: '',
-            error: '🔒 Verification failed.\n\nPlease refresh the page and try again.\n\nError: ' + err.message,
+            error: '🔒 Please complete verification first.\n\nRefresh the page if you don\'t see the verification widget.',
           };
         }
+        
+        this.debug('✅ User verified, making API request (no token needed)');
       }
 
       const response = await fetch(`${this.baseUrl}${API_ENDPOINTS.EXECUTE}`, {
