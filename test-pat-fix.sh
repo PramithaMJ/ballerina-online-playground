@@ -17,11 +17,11 @@ echo ""
 
 # Check if build exists
 if [ ! -d "frontend-vite/dist" ]; then
-    echo "❌ Build not found! Run 'cd frontend-vite && npm run build' first"
+    echo " Build not found! Run 'cd frontend-vite && npm run build' first"
     exit 1
 fi
 
-echo "✅ Build exists"
+echo " Build exists"
 echo ""
 
 # Start dev server in background
@@ -47,8 +47,8 @@ echo "   [ ] Enter main application"
 echo ""
 echo "3. Browser Console Check (DevTools → Console):"
 echo "   [ ] NO 'Request for the Private Access Token challenge' errors"
-echo "   [ ] NO '⏱️ Token generation timeout' warnings"
-echo "   [ ] NO '❌ Failed to pre-generate token' errors"
+echo "   [ ] NO ' Token generation timeout' warnings"
+echo "   [ ] NO ' Failed to pre-generate token' errors"
 echo "   [ ] See '🔐 Using Turnstile token from session'"
 echo ""
 echo "4. Code Execution:"
@@ -56,7 +56,7 @@ echo "   [ ] Write some Ballerina code"
 echo "   [ ] Click 'Run Code'"
 echo "   [ ] Code executes successfully"
 echo "   [ ] See output without errors"
-echo "   [ ] Check console: '✅ Request successful - token was accepted'"
+echo "   [ ] Check console: ' Request successful - token was accepted'"
 echo ""
 echo "5. Multiple Executions:"
 echo "   [ ] Run code 2-3 more times"
@@ -67,7 +67,7 @@ echo ""
 echo "6. Token Expiration Test (Wait 4+ minutes):"
 echo "   [ ] Wait 4-5 minutes"
 echo "   [ ] Try to run code"
-echo "   [ ] See message: '🔒 Verification token expired...'"
+echo "   [ ] See message: ' Verification token expired...'"
 echo "   [ ] Refresh page"
 echo "   [ ] Complete verification again"
 echo "   [ ] Code execution works again"

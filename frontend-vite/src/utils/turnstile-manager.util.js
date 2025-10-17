@@ -192,7 +192,7 @@ class TurnstileManager {
       }
     }
     
-    this.debug(`✅ Token pool initialized with ${this.tokenPool.length} tokens`);
+    this.debug(` Token pool initialized with ${this.tokenPool.length} tokens`);
   }
 
   /**
@@ -201,7 +201,7 @@ class TurnstileManager {
   generateToken() {
     return new Promise((resolve, reject) => {
       if (this.isGenerating) {
-        this.debug('⏳ Token generation already in progress...');
+        this.debug(' Token generation already in progress...');
         // Queue this request
         setTimeout(() => {
           this.generateToken().then(resolve).catch(reject);
@@ -220,13 +220,13 @@ class TurnstileManager {
       }
 
       try {
-        this.debug('🔄 Generating new token...');
+        this.debug(' Generating new token...');
         window.turnstile.reset(this.widgetId);
         
         // Timeout after 15 seconds (increased from 5)
         setTimeout(() => {
           if (this.isGenerating && this.pendingResolve === resolve) {
-            console.warn('⏱️ Token generation timeout');
+            console.warn(' Token generation timeout');
             this.isGenerating = false;
             this.pendingResolve = null;
             reject(new Error('Token generation timeout'));

@@ -41,7 +41,7 @@
     <!-- Feature 1 -->
     <circle cx="0" cy="0" r="8" fill="#48BB78"/>
     <text x="20" y="5" font-family="'Segoe UI', Arial, sans-serif" font-size="22" fill="#E2E8F0" font-weight="500">
-      🚀 Multiple Ballerina Versions
+       Multiple Ballerina Versions
     </text>
     
     <!-- Feature 2 -->

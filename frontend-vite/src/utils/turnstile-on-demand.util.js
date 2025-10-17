@@ -59,7 +59,7 @@ class TurnstileOnDemandGenerator {
 
     // Add message
     const message = document.createElement('div');
-    message.textContent = '🔒 Verifying your request...';
+    message.textContent = ' Verifying your request...';
     message.style.cssText = `
       margin-bottom: 16px;
       font-size: 16px;
@@ -71,7 +71,7 @@ class TurnstileOnDemandGenerator {
     this.overlayElement.appendChild(this.containerElement);
     document.body.appendChild(this.overlayElement);
 
-    this.log('✅ On-demand generator initialized');
+    this.log(' On-demand generator initialized');
   }
 
   /**
@@ -99,7 +99,7 @@ class TurnstileOnDemandGenerator {
       }, 30000); // 30 second timeout
 
       try {
-        this.log('🔄 Generating fresh token...');
+        this.log(' Generating fresh token...');
 
         // Create a div for the widget inside the container
         const widgetDiv = document.createElement('div');
@@ -109,21 +109,21 @@ class TurnstileOnDemandGenerator {
           sitekey: envConfig.turnstileSiteKey,
           callback: (token) => {
             clearTimeout(timeout);
-            this.log('✅ Fresh token generated');
+            this.log(' Fresh token generated');
             this.overlayElement.style.display = 'none';
             this.cleanup();
             resolve(token);
           },
           'error-callback': (error) => {
             clearTimeout(timeout);
-            console.error('❌ Token generation failed:', error);
+            console.error(' Token generation failed:', error);
             this.overlayElement.style.display = 'none';
             this.cleanup();
             reject(new Error(`Token generation failed: ${error}`));
           },
           'timeout-callback': () => {
             clearTimeout(timeout);
-            console.error('⏱️ Token generation timeout');
+            console.error(' Token generation timeout');
             this.overlayElement.style.display = 'none';
             this.cleanup();
             reject(new Error('Token generation timeout'));
