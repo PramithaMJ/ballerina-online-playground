@@ -116,15 +116,18 @@
   border: 1px solid rgba(226, 232, 240, 0.8);
   opacity: 1;
   animation: fadeIn 0.3s ease-in;
+  transition: opacity 0.3s ease;
 }
 
-.turnstile-widget-hidden {
-  position: absolute;
-  opacity: 0;
+/* Hide widget content during loading, but keep container visible */
+.turnstile-widget.widget-loading {
+  opacity: 0.3;
   pointer-events: none;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
+}
+
+/* Remove the hidden class - no longer needed */
+.turnstile-widget-hidden {
+  display: none;
 }
 
 .turnstile-loading {

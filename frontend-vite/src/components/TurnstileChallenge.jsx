@@ -117,14 +117,16 @@ export const TurnstileChallenge = ({ onVerified }) => {
         'expired-callback': handleExpired,
         'timeout-callback': handleTimeout,
         'before-interactive-callback': () => {
-          if (DEBUG_MODE) console.log(' Turnstile widget becoming interactive...');
+          if (DEBUG_MODE) console.log('⏳ Turnstile widget becoming interactive...');
         },
         'after-interactive-callback': () => {
           if (DEBUG_MODE) console.log('✓ Turnstile widget is interactive');
-          setIsLoading(false);
+          if (mountedRef.current) {
+            setIsLoading(false);
+          }
         },
         'unsupported-callback': () => {
-          console.error(' Turnstile is not supported in this browser');
+          console.error('❌ Turnstile is not supported in this browser');
           setError('Your browser does not support the verification system. Please use a modern browser.');
           setIsLoading(false);
         },
@@ -142,12 +144,23 @@ export const TurnstileChallenge = ({ onVerified }) => {
           siteKey: TURNSTILE_SITE_KEY
         });
       }
+
+      // Set a timeout to detect if widget never loads
+      const widgetCheckTimeout = setTimeout(() => {
+        if (mountedRef.current && isLoading && !isVerified) {
+          console.warn('⚠️ Turnstile widget did not load in time');
+          setError('Verification widget failed to load. Please refresh the page.');
+          setIsLoading(false);
+        }
+      }, 15000); // 15 second timeout
+
+      return () => clearTimeout(widgetCheckTimeout);
     } catch (err) {
-      console.error(' Error rendering Turnstile widget:', err);
+      console.error('❌ Error rendering Turnstile widget:', err);
       setError('Failed to initialize verification. Please refresh the page.');
       setIsLoading(false);
     }
-  }, [handleSuccess, handleError, handleExpired, handleTimeout]);
+  }, [handleSuccess, handleError, handleExpired, handleTimeout, isLoading, isVerified]);
 
   // Load Turnstile script
   useEffect(() => {
@@ -362,23 +375,14 @@ export const TurnstileChallenge = ({ onVerified }) => {
             </div>
           )}
           
-          {/* Widget Container with modern styling */}
-          {!error && !isLoading && (
+          {/* Widget Container - always rendered when no error */}
+          {!error && (
             <div 
               ref={turnstileRef} 
-              className="turnstile-widget"
+              className={`turnstile-widget ${isLoading ? 'widget-loading' : ''}`}
               role="region"
               aria-label="Cloudflare Turnstile verification widget"
-            />
-          )}
-          
-          {/* Hidden container for initial render */}
-          {!error && isLoading && (
-            <div 
-              ref={turnstileRef} 
-              className="turnstile-widget-hidden"
-              role="region"
-              aria-label="Cloudflare Turnstile verification widget"
+              style={{ minHeight: '65px' }} // Reserve space for widget
             />
           )}
           
