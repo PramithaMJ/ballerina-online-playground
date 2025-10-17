@@ -43,28 +43,26 @@ class ApiService {
       return null;
     }
 
-    // Check if user has completed initial verification
+    // Check if user has completed initial verification (one-time check)
     const isVerified = sessionStorage.getItem('turnstile_verified') === 'true';
-    const timestamp = sessionStorage.getItem('turnstile_timestamp');
-    const isVerificationValid = timestamp && (Date.now() - parseInt(timestamp)) < 4 * 60 * 1000;
 
-    if (!isVerified || !isVerificationValid) {
+    if (!isVerified) {
       throw new Error('VERIFICATION_REQUIRED');
     }
 
     try {
-      // Generate fresh token on-demand
+      // Generate fresh token on-demand (tokens are valid for 5 minutes each)
       this.debug(`🎫 Generating fresh Turnstile token (attempt ${retryCount + 1}/${maxRetries + 1})...`);
       const token = await turnstileTokenGenerator.generateToken();
-      this.debug(' Fresh token generated', { tokenLength: token.length });
+      this.debug('✅ Fresh token generated', { tokenLength: token.length });
       return token;
     } catch (error) {
-      console.error(` Failed to generate token (attempt ${retryCount + 1}):`, error);
+      console.error(`❌ Failed to generate token (attempt ${retryCount + 1}):`, error);
       
       // Retry with exponential backoff
       if (retryCount < maxRetries) {
         const backoffDelay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s...
-        this.debug(` Retrying in ${backoffDelay}ms...`);
+        this.debug(`⏳ Retrying in ${backoffDelay}ms...`);
         
         await new Promise(resolve => setTimeout(resolve, backoffDelay));
         return this.getTurnstileToken(retryCount + 1, maxRetries);
