@@ -14,3 +14,4 @@ export { useCodeEditorFullscreen } from './useCodeEditorFullscreen';
 export { useOutputFullscreen } from './useOutputFullscreen';
 export { useBallerinaVersion } from './useBallerinaVersion';
 export { useDebugSession } from './useDebugSession';
+export { useToast } from './useToast';

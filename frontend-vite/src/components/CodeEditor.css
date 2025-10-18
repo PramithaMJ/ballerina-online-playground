@@ -344,6 +344,273 @@
   border-left: 3px solid #ffeb3b;
 }
 
+/* Modern Monaco Editor Autocomplete/Suggestion Widget Styling */
+
+/* Suggestion widget container */
+.editor-container .monaco-editor .suggest-widget {
+  background: rgba(30, 30, 30, 0.98) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  border: 1px solid rgba(82, 195, 194, 0.3) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5),
+              0 4px 16px rgba(82, 195, 194, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  overflow: hidden !important;
+  padding: 4px !important;
+}
+
+/* Light theme variant */
+[data-theme="light"] .editor-container .monaco-editor .suggest-widget {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15),
+              0 4px 16px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Suggestion list container */
+.editor-container .monaco-editor .suggest-widget .monaco-list {
+  background: transparent !important;
+}
+
+/* Individual suggestion items */
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row {
+  background: transparent !important;
+  border-radius: 4px !important;
+  margin: 2px 4px !important;
+  padding: 4px 8px !important;
+  transition: all 0.15s ease !important;
+  border: 1px solid transparent !important;
+}
+
+/* Suggestion item hover state */
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row:hover {
+  background: rgba(82, 195, 194, 0.15) !important;
+  border-color: rgba(82, 195, 194, 0.3) !important;
+}
+
+/* Suggestion item focused/selected state */
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused {
+  background: rgba(82, 195, 194, 0.25) !important;
+  border-color: rgba(82, 195, 194, 0.5) !important;
+  box-shadow: 0 0 0 1px rgba(82, 195, 194, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Light theme focused state */
+[data-theme="light"] .editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused {
+  background: rgba(82, 195, 194, 0.2) !important;
+  border-color: rgba(82, 195, 194, 0.6) !important;
+}
+
+/* Suggestion item icon */
+.editor-container .monaco-editor .suggest-widget .monaco-icon-label {
+  padding-left: 4px !important;
+}
+
+/* Suggestion item text */
+.editor-container .monaco-editor .suggest-widget .monaco-highlighted-label {
+  color: #e4e4e4 !important;
+  font-weight: 500 !important;
+}
+
+/* Light theme text */
+[data-theme="light"] .editor-container .monaco-editor .suggest-widget .monaco-highlighted-label {
+  color: #1e1e1e !important;
+}
+
+/* Highlighted matching characters */
+.editor-container .monaco-editor .suggest-widget .monaco-highlighted-label .highlight {
+  color: #52c3c2 !important;
+  font-weight: 700 !important;
+  background: rgba(82, 195, 194, 0.15) !important;
+  border-radius: 2px !important;
+  padding: 0 2px !important;
+}
+
+/* Suggestion details panel */
+.editor-container .monaco-editor .suggest-widget .details {
+  background: rgba(20, 20, 20, 0.95) !important;
+  border-left: 1px solid rgba(82, 195, 194, 0.3) !important;
+  border-radius: 0 8px 8px 0 !important;
+  padding: 8px !important;
+}
+
+/* Light theme details panel */
+[data-theme="light"] .editor-container .monaco-editor .suggest-widget .details {
+  background: rgba(250, 250, 250, 0.95) !important;
+  border-left: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Suggestion widget status bar */
+.editor-container .monaco-editor .suggest-widget .suggest-status-bar {
+  background: rgba(40, 40, 40, 0.8) !important;
+  border-top: 1px solid rgba(82, 195, 194, 0.2) !important;
+  color: #8b92a7 !important;
+  font-size: 11px !important;
+  padding: 4px 8px !important;
+}
+
+/* Light theme status bar */
+[data-theme="light"] .editor-container .monaco-editor .suggest-widget .suggest-status-bar {
+  background: rgba(240, 240, 240, 0.8) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+  color: #666 !important;
+}
+
+/* Parameter hints widget (function signatures) */
+.editor-container .monaco-editor .parameter-hints-widget {
+  background: rgba(30, 30, 30, 0.98) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  border: 1px solid rgba(82, 195, 194, 0.3) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5),
+              0 4px 16px rgba(82, 195, 194, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  padding: 8px 12px !important;
+}
+
+/* Light theme parameter hints */
+[data-theme="light"] .editor-container .monaco-editor .parameter-hints-widget {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15),
+              0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Hover widget (documentation on hover) */
+.editor-container .monaco-editor .monaco-hover {
+  background: rgba(30, 30, 30, 0.98) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  border: 1px solid rgba(82, 195, 194, 0.3) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5),
+              0 4px 16px rgba(82, 195, 194, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  padding: 8px !important;
+  max-width: 500px !important;
+}
+
+/* Light theme hover widget */
+[data-theme="light"] .editor-container .monaco-editor .monaco-hover {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15),
+              0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Hover widget content */
+.editor-container .monaco-editor .monaco-hover-content {
+  color: #e4e4e4 !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+}
+
+/* Light theme hover content */
+[data-theme="light"] .editor-container .monaco-editor .monaco-hover-content {
+  color: #1e1e1e !important;
+}
+
+/* Code in hover widget */
+.editor-container .monaco-editor .monaco-hover-content code {
+  background: rgba(82, 195, 194, 0.15) !important;
+  color: #52c3c2 !important;
+  padding: 2px 6px !important;
+  border-radius: 3px !important;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace !important;
+}
+
+/* Light theme code in hover */
+[data-theme="light"] .editor-container .monaco-editor .monaco-hover-content code {
+  background: rgba(82, 195, 194, 0.2) !important;
+  color: #2a9d8f !important;
+}
+
+/* Scrollbar in suggestion widget */
+.editor-container .monaco-editor .suggest-widget .monaco-scrollable-element > .scrollbar {
+  background: transparent !important;
+}
+
+.editor-container .monaco-editor .suggest-widget .monaco-scrollable-element > .scrollbar > .slider {
+  background: rgba(82, 195, 194, 0.3) !important;
+  border-radius: 4px !important;
+}
+
+.editor-container .monaco-editor .suggest-widget .monaco-scrollable-element > .scrollbar > .slider:hover {
+  background: rgba(82, 195, 194, 0.5) !important;
+}
+
+/* Reduce opacity when suggestion widget is not focused */
+.editor-container .monaco-editor .suggest-widget:not(.focused) {
+  opacity: 0.95 !important;
+}
+
+/* Smooth animations */
+.editor-container .monaco-editor .suggest-widget,
+.editor-container .monaco-editor .parameter-hints-widget,
+.editor-container .monaco-editor .monaco-hover {
+  animation: fadeInScale 0.15s ease-out !important;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Make the suggestion widget semi-transparent to see code behind */
+.editor-container .monaco-editor .suggest-widget.transparent {
+  opacity: 0.92 !important;
+}
+
+/* Improve readability when widget overlaps code */
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row {
+  font-size: 13px !important;
+  line-height: 22px !important;
+  min-height: 26px !important;
+}
+
+/* Icon colors for different suggestion types */
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row .codicon-symbol-method {
+  color: #dcdcaa !important;
+}
+
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row .codicon-symbol-function {
+  color: #dcdcaa !important;
+}
+
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row .codicon-symbol-variable {
+  color: #9cdcfe !important;
+}
+
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row .codicon-symbol-keyword {
+  color: #569cd6 !important;
+}
+
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row .codicon-symbol-class {
+  color: #4ec9b0 !important;
+}
+
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row .codicon-symbol-interface {
+  color: #4ec9b0 !important;
+}
+
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row .codicon-symbol-property {
+  color: #9cdcfe !important;
+}
+
+.editor-container .monaco-editor .suggest-widget .monaco-list .monaco-list-row .codicon-symbol-string {
+  color: #ce9178 !important;
+}
+
 @media (max-width: 768px) {
   .editor-container {
     min-height: 300px;
@@ -355,5 +622,14 @@
 
   .editor-info {
     gap: 0.5rem;
+  }
+  
+  /* Smaller suggestion widget on mobile */
+  .editor-container .monaco-editor .suggest-widget {
+    max-width: 90vw !important;
+  }
+  
+  .editor-container .monaco-editor .monaco-hover {
+    max-width: 85vw !important;
   }
 }
