@@ -28,6 +28,11 @@ export const useDebugSession = () => {
    * Start a debugging session
    */
   const startDebugging = useCallback(async (code, version = '2201.12.0') => {
+    // 🚧 TEMPORARY: Debug feature coming soon
+    alert('🚧 Debug Feature Coming Soon!\n\nWe are currently working on implementing the debugging feature.\nThis will allow you to:\n\n✓ Set breakpoints in your code\n✓ Step through execution\n✓ Inspect variables\n✓ View call stack\n\nStay tuned! 🚀');
+    return;
+    
+    /* ORIGINAL CODE - COMMENTED OUT TEMPORARILY
     console.log('🐛 [useDebugSession] Starting debug session...');
     setIsInitializing(true);
     setError(null);
@@ -59,6 +64,7 @@ export const useDebugSession = () => {
       setIsInitializing(false);
       console.log('🐛 [useDebugSession] Set isInitializing = false');
     }
+    */
   }, [breakpoints]);
 
   /**
@@ -77,6 +83,10 @@ export const useDebugSession = () => {
    * Toggle breakpoint at a line
    */
   const toggleBreakpoint = useCallback((lineNumber) => {
+    // 🚧 TEMPORARY: Debug feature coming soon - disable breakpoint toggling
+    return;
+    
+    /* ORIGINAL CODE - COMMENTED OUT TEMPORARILY
     if (!editorRef.current || !monacoRef.current) {
       console.warn('Editor not initialized');
       return;
@@ -138,6 +148,7 @@ export const useDebugSession = () => {
 
       return newBreakpoints;
     });
+    */
   }, [isDebugging]);
 
   /**
