@@ -97,6 +97,7 @@ export const EDITOR_OPTIONS = {
   glyphMargin: true,
   folding: true,
   renderValidationDecorations: 'on',
+  renderLineHighlight: 'none', // Disable current line highlighting
   hover: { enabled: true },
   scrollbar: {
     verticalScrollbarSize: 10,
