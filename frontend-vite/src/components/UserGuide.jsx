@@ -62,7 +62,21 @@ const UserGuide = ({ isOpen, onClose, isFirstVisit = false }) => {
             </p>
           </section>
 
-          {/* Getting Started */}
+          <section className="guide-section">
+            <h3><Info size={20} /> Ballerina Lint VsCode extension</h3>
+            <p>
+              A Best Practices Checker for Ballerina that integrates with VSCode to provide
+              real-time feedback on code quality and adherence to best practices as you write code.
+            </p>
+            <ul className="feature-list">
+              <li>
+                <a href="https://pramithamj.github.io/ballerina-lint/" target="_blank" rel="noopener noreferrer">
+                  Ballerina Lint Extension
+                </a>
+              </li>
+            </ul> 
+          </section>
+
           <section className="guide-section">
             <h3><Zap size={20} /> Getting Started</h3>
             <ol>
