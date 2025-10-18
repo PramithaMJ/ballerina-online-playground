@@ -4,6 +4,7 @@
  */
 
 import { envConfig } from '../config/env.config';
+import { apiService } from './api.service';
 
 const DEBUG_MODE = import.meta.env.DEV;
 
@@ -35,10 +36,33 @@ class DebugService {
   async startDebugging(code, version = '2201.12.0') {
     try {
       this.debug('🐛 Starting debug session...');
-      
+      // Prepare headers and attach Turnstile token when enabled
+      const headers = { 'Content-Type': 'application/json' };
+
+      if (envConfig.enableVerification) {
+        try {
+          const token = await apiService.getTurnstileToken();
+          if (token) {
+            headers['CF-Turnstile-Token'] = token;
+            this.debug('🎫 Turnstile token attached to debug/start request');
+          }
+        } catch (err) {
+          // Mirror api.service error semantics so caller can display friendly messages
+          if (err.message === 'VERIFICATION_REQUIRED') {
+            throw new Error('Verification expired. Please refresh the page to verify again.');
+          }
+
+          if (err.message === 'TOKEN_GENERATION_FAILED') {
+            throw new Error('Failed to generate verification token. Please try again or refresh the page.');
+          }
+
+          throw err;
+        }
+      }
+
       const response = await fetch(`${envConfig.apiUrl}/debug/start`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ code, version }),
       });
 
