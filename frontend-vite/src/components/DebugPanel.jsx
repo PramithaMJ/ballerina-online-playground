@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Play, StepForward, StepInto, CornerDownLeft, Square, Bug } from 'lucide-react';
+import { Play, StepForward, ArrowDownToLine, CornerDownLeft, Square, Bug } from 'lucide-react';
 import { debugService } from '../services/debug.service';
 import './DebugPanel.css';
 
@@ -152,7 +152,7 @@ const DebugPanel = ({ isDebugging, onStopDebugging }) => {
           className="debug-btn debug-btn-step"
           title="Step Into (F11)"
         >
-          <StepInto size={16} />
+          <ArrowDownToLine size={16} />
           <span>Step Into</span>
         </button>
 
