@@ -6,7 +6,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { debugService } from '../services/debug.service';
 
-export const useDebugSession = () => {
+export const useDebugSession = (showToast) => {
   const [isDebugging, setIsDebugging] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [breakpoints, setBreakpoints] = useState(new Set());
@@ -29,7 +29,23 @@ export const useDebugSession = () => {
    */
   const startDebugging = useCallback(async (code, version = '2201.12.0') => {
     // 🚧 TEMPORARY: Debug feature coming soon
-    alert('🚧 Debug Feature Coming Soon!\n\nWe are currently working on implementing the debugging feature.\nThis will allow you to:\n\n✓ Set breakpoints in your code\n✓ Step through execution\n✓ Inspect variables\n✓ View call stack\n\nStay tuned! 🚀');
+    if (showToast) {
+      showToast({
+        type: 'warning',
+        title: '🚧 Debug Feature Coming Soon!',
+        message: 'We are currently working on implementing the debugging feature for enhanced security.',
+        list: [
+          'Set breakpoints in your code',
+          'Step through execution line by line',
+          'Inspect variables and values',
+          'View call stack and program flow'
+        ],
+        duration: 7000
+      });
+    } else {
+      // Fallback to alert if toast not available
+      alert('🚧 Debug Feature Coming Soon!\n\nWe are currently working on implementing the debugging feature.\nThis will allow you to:\n\n✓ Set breakpoints in your code\n✓ Step through execution\n✓ Inspect variables\n✓ View call stack\n\nStay tuned! 🚀');
+    }
     return;
     
     /* ORIGINAL CODE - COMMENTED OUT TEMPORARILY
@@ -65,7 +81,7 @@ export const useDebugSession = () => {
       console.log('🐛 [useDebugSession] Set isInitializing = false');
     }
     */
-  }, [breakpoints]);
+  }, [breakpoints, showToast]);
 
   /**
    * Stop debugging session

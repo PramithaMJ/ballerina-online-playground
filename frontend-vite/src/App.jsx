@@ -12,8 +12,8 @@ import ResizablePanels from './components/ResizablePanels';
 import ConfirmDialog from './components/ConfirmDialog';
 import ErrorNotification from './components/ErrorNotification';
 import UserGuide from './components/UserGuide';
-import { TurnstileChallenge, DebugPanel } from './components';
-import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress, useBallerinaVersion, useDebugSession } from './hooks';
+import { TurnstileChallenge, DebugPanel, ToastContainer } from './components';
+import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress, useBallerinaVersion, useDebugSession, useToast } from './hooks';
 import { DEFAULT_SAMPLE_CODE } from './constants/app.constants';
 import { isFirstVisit, markAsVisited } from './utils';
 import { turnstileTokenGenerator } from './utils/turnstile-token-generator.util';
@@ -44,8 +44,9 @@ function App() {
   const { output, error, isRunning, progress: executionProgress, executeCode, stopExecution, clearOutput } = useCodeExecution();
   const { elapsedTime, formattedTime, progress } = useExecutionProgress(isRunning);
   const { version: ballerinaVersion, changeVersion } = useBallerinaVersion();
+  const { toasts, removeToast, addToast } = useToast();
   
-  // Debug hook
+  // Debug hook (pass toast function)
   const {
     isDebugging,
     isInitializing,
@@ -54,7 +55,7 @@ function App() {
     setEditorRefs,
     startDebugging,
     stopDebugging,
-  } = useDebugSession();
+  } = useDebugSession(addToast);
 
   // Debug logging for isDebugging state
   useEffect(() => {
@@ -358,6 +359,9 @@ function App() {
         onClose={handleCloseUserGuide}
         isFirstVisit={isFirstTime}
       />
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 }
