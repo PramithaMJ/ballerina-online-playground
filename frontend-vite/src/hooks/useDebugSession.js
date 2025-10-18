@@ -28,13 +28,18 @@ export const useDebugSession = () => {
    * Start a debugging session
    */
   const startDebugging = useCallback(async (code, version = '2201.12.0') => {
+    console.log('🐛 [useDebugSession] Starting debug session...');
     setIsInitializing(true);
     setError(null);
 
     try {
+      console.log('🐛 [useDebugSession] Calling debugService.startDebugging...');
       const id = await debugService.startDebugging(code, version);
+      console.log('🐛 [useDebugSession] Debug service returned session ID:', id);
+      
       setSessionId(id);
       setIsDebugging(true);
+      console.log('🐛 [useDebugSession] Set isDebugging = true');
 
       // Apply existing breakpoints to the session
       breakpoints.forEach(line => {
@@ -49,8 +54,10 @@ export const useDebugSession = () => {
       console.error('❌ Failed to start debugging:', err);
       setError(err.message);
       setIsDebugging(false);
+      console.log('🐛 [useDebugSession] Set isDebugging = false due to error');
     } finally {
       setIsInitializing(false);
+      console.log('🐛 [useDebugSession] Set isInitializing = false');
     }
   }, [breakpoints]);
 

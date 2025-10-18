@@ -56,6 +56,12 @@ function App() {
     stopDebugging,
   } = useDebugSession();
 
+  // Debug logging for isDebugging state
+  useEffect(() => {
+    console.log('🎯 [App] isDebugging changed:', isDebugging);
+    console.log('🎯 [App] isInitializing changed:', isInitializing);
+  }, [isDebugging, isInitializing]);
+
   // Check for Turnstile verification on mount
   useEffect(() => {
     if (!envConfig.enableVerification) return;
