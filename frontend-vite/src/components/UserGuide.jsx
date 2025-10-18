@@ -227,6 +227,9 @@ const UserGuide = ({ isOpen, onClose, isFirstVisit = false }) => {
           {/* Example Code */}
           <section className="guide-section">
             <h3><Info size={20} /> Example Code</h3>
+            <a href="https://ballerina.io/learn/by-example/" target="_blank" rel="noopener noreferrer">
+                  Ballerina By Example
+            </a>
             <div className="code-example">
               <pre><code>{`import ballerina/io;
 
@@ -266,6 +269,11 @@ public function main() {
           <section className="guide-section">
             <h3><Info size={20} /> Additional Resources</h3>
             <ul>
+              <li>
+                <a href="https://ballerina.io/learn/by-example/" target="_blank" rel="noopener noreferrer">
+                  Ballerina By Example
+                </a>
+              </li>
               <li>
                 <a href="https://ballerina.io/learn/" target="_blank" rel="noopener noreferrer">
                   Official Ballerina Documentation
