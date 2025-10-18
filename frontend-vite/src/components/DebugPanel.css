@@ -18,6 +18,17 @@
   border-bottom: 1px solid #e0e0e0;
 }
 
+.debug-warning {
+  padding: 12px 16px;
+  background-color: #fff3cd;
+  border-bottom: 1px solid #ffc107;
+  color: #856404;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .debug-title {
   display: flex;
   align-items: center;

@@ -80,8 +80,14 @@ class DebugService {
       this.debugSession = sessionId;
       this.debug('✅ Debug session created:', sessionId);
       
-      // Connect WebSocket
-      await this.connectWebSocket(sessionId);
+      // Connect WebSocket - don't fail if connection fails
+      try {
+        await this.connectWebSocket(sessionId);
+      } catch (wsError) {
+        console.warn('⚠️ WebSocket connection failed, but debug session created:', wsError);
+        // Don't throw - let the debug panel show even if WebSocket fails
+        // The panel will show connection error state
+      }
       
       return sessionId;
     } catch (error) {

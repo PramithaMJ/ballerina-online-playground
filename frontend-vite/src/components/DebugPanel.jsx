@@ -14,10 +14,12 @@ const DebugPanel = ({ isDebugging, onStopDebugging }) => {
   const [currentLine, setCurrentLine] = useState(null);
   const [status, setStatus] = useState('ready');
   const [isPaused, setIsPaused] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     if (isDebugging) {
       // Register event listeners
+      debugService.addListener('connected', handleConnected);
       debugService.addListener('started', handleStarted);
       debugService.addListener('stopped', handleStopped);
       debugService.addListener('continued', handleContinued);
@@ -26,10 +28,12 @@ const DebugPanel = ({ isDebugging, onStopDebugging }) => {
       debugService.addListener('callStack', handleCallStack);
       debugService.addListener('stepped', handleStepped);
       debugService.addListener('error', handleError);
+      debugService.addListener('disconnected', handleDisconnected);
     }
 
     return () => {
       // Clean up listeners
+      debugService.removeListener('connected', handleConnected);
       debugService.removeListener('started', handleStarted);
       debugService.removeListener('stopped', handleStopped);
       debugService.removeListener('continued', handleContinued);
@@ -38,8 +42,19 @@ const DebugPanel = ({ isDebugging, onStopDebugging }) => {
       debugService.removeListener('callStack', handleCallStack);
       debugService.removeListener('stepped', handleStepped);
       debugService.removeListener('error', handleError);
+      debugService.removeListener('disconnected', handleDisconnected);
     };
   }, [isDebugging]);
+
+  const handleConnected = (data) => {
+    setIsConnected(true);
+    setStatus('ready');
+  };
+
+  const handleDisconnected = (data) => {
+    setIsConnected(false);
+    setStatus('error');
+  };
 
   const handleStarted = (data) => {
     setStatus('running');
@@ -117,13 +132,20 @@ const DebugPanel = ({ isDebugging, onStopDebugging }) => {
             {status === 'paused' && '⏸ Paused'}
             {status === 'ready' && '⏹ Ready'}
             {status === 'completed' && '✓ Completed'}
-            {status === 'error' && '✗ Error'}
+            {status === 'error' && '✗ Connection Error'}
           </span>
           {currentLine && (
             <span className="current-line">Line {currentLine}</span>
           )}
         </div>
       </div>
+
+      {!isConnected && (
+        <div className="debug-warning">
+          ⚠️ WebSocket connection failed. Debug controls may not work properly.
+          Check that the backend is running and accessible.
+        </div>
+      )}
 
       <div className="debug-controls">
         <button
