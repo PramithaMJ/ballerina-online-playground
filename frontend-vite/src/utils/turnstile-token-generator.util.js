@@ -82,21 +82,24 @@ class TurnstileTokenGenerator {
   /**
    * Wait for Turnstile API to load
    */
-  async waitForTurnstile(timeout = 10000) {
+  async waitForTurnstile(timeout = 30000) {
     return new Promise((resolve, reject) => {
       if (window.turnstile) {
         resolve();
         return;
       }
 
+      this.debug('⏳ Waiting for Turnstile API to load...');
+      
       const startTime = Date.now();
       const interval = setInterval(() => {
         if (window.turnstile) {
           clearInterval(interval);
+          this.debug('✅ Turnstile API loaded');
           resolve();
         } else if (Date.now() - startTime > timeout) {
           clearInterval(interval);
-          reject(new Error('Turnstile API loading timeout'));
+          reject(new Error('Turnstile API loading timeout - script may be blocked or slow to load'));
         }
       }, 100);
     });
