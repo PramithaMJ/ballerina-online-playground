@@ -1,4 +1,26 @@
-# Quick Start Checklist - Debug Feature
+# Quick Debug Panel Visibility Test Guide
+
+## ⚠️ IMPORTANT: Current Issue
+
+### Backend Error
+```
+Failed to upgrade to WebSocket: websocket: response does not implement http.Hijacker
+```
+
+**This error means Cloudflare Tunnel does NOT support WebSocket upgrades!**
+
+### What's Working
+- ✅ Debug session created: `debug-1760811737436453088`
+- ✅ Turnstile verification working
+- ✅ POST `/debug/start` endpoint working
+
+### What's Not Working
+- ❌ WebSocket upgrade fails (Cloudflare Tunnel limitation)
+- ❌ Debug Panel not showing in frontend (needs deployment verification)
+
+---
+
+# Quick Start: Running Debug Feature Locally
 
 ## ✅ Implementation Checklist
 
@@ -278,5 +300,151 @@ All the code is implemented and ready. Just:
 3. Test the feature (5 minutes)
 
 **Total time to integrate: ~15-20 minutes**
+
+---
+
+# 🔍 TESTING IN PRODUCTION
+
+## Step 1: Wait for Deployment (2-3 minutes)
+Latest commit: `3c77800` - **"debug: Add extensive logging"**
+
+1. Check Cloudflare Pages dashboard for deployment
+2. Wait for "Deployed" status
+3. Note the deployment time
+
+## Step 2: Hard Refresh Browser
+**Critical: Clear cache to get latest code!**
+
+- Windows/Linux: `Ctrl + Shift + R` or `Ctrl + F5`
+- Mac: `Cmd + Shift + R`
+- Or: Open in **Incognito/Private window**
+
+## Step 3: Open DevTools Console
+Press `F12` or right-click → Inspect → Console tab
+
+## Step 4: Test Debug Button
+1. Click a line number's **left margin** to add breakpoint (red dot should appear)
+2. Click **"Debug"** button in header
+3. **Watch console output carefully!**
+
+### Expected Console Output:
+```javascript
+🐛 [useDebugSession] Starting debug session...
+🐛 [useDebugSession] Calling debugService.startDebugging...
+🐛 Starting debug session...
+🎫 Turnstile token attached to debug/start request
+✅ Debug session created: debug-1760811737436453088
+⚠️ WebSocket connection failed, but debug session created: Event
+🐛 [useDebugSession] Debug service returned session ID: debug-xxx
+🐛 [useDebugSession] Set isDebugging = true
+🎯 [App] isDebugging changed: true
+🎯 [App] isInitializing changed: false
+✅ Debugging session started: debug-xxx
+```
+
+### ✅ Success Indicators:
+- Console shows: `Set isDebugging = true`
+- Console shows: `[App] isDebugging changed: true`
+- **Debug Panel appears on RIGHT SIDE** with:
+  - 🐛 Debug Session header
+  - ⚠️ Warning: "WebSocket connection failed"
+  - Debug controls (Continue, Step Over, etc.)
+  - Variables section
+  - Call Stack section
+
+### ❌ Failure Indicators:
+- Console shows: `Set isDebugging = false`
+- Debug Panel does NOT appear
+- Only Output Panel visible on right side
+
+## Step 5: Share Results
+Take screenshots of:
+1. **Browser Console** (full output)
+2. **Network Tab** (filter: debug)
+3. **Full UI** (showing or not showing Debug Panel)
+4. **Backend logs** (the hijacker error)
+
+---
+
+# 🔧 WebSocket Issue & Solutions
+
+## Current Problem
+```
+Failed to upgrade to WebSocket: websocket: response does not implement http.Hijacker
+```
+
+### Root Cause
+**Cloudflare Tunnel does NOT support WebSocket protocol upgrades!**
+
+The tunnel can proxy HTTP requests but cannot upgrade the connection to WebSocket (bidirectional real-time communication).
+
+### Why This Matters
+- ✅ Debug session **creates** successfully
+- ✅ Debug Panel **should show** (if deployment is correct)
+- ❌ Debug **controls won't work** (no WebSocket = no real-time communication)
+- ❌ Variables/Call Stack **won't update** (need WebSocket events)
+
+### Solutions (Choose One)
+
+#### Option 1: Use Different Tunnel (Recommended for Dev)
+Use **ngrok** which supports WebSocket:
+```bash
+# Install ngrok
+brew install ngrok  # Mac
+# or download from ngrok.com
+
+# Run tunnel
+ngrok http 8080
+
+# Update frontend .env with ngrok URL
+VITE_API_URL=https://abc123.ngrok.io
+```
+
+#### Option 2: Deploy to WebSocket-Compatible Host (Recommended for Prod)
+Deploy backend to:
+- **Fly.io** (free tier, supports WebSocket)
+- **Railway** (free tier, supports WebSocket)
+- **Azure App Service** (enable WebSocket in settings)
+- **AWS ECS** with ALB
+- **Google Cloud Run** (HTTP/2)
+
+#### Option 3: Replace WebSocket with Server-Sent Events (SSE)
+Modify backend to use SSE for one-way server→client communication:
+- Pro: Works through any proxy
+- Con: Requires code changes
+- Con: Client→Server still needs HTTP POST
+
+#### Option 4: Use HTTP Polling (Quick Fix)
+Replace WebSocket with polling:
+```javascript
+// Poll every 500ms
+setInterval(() => {
+  fetch(`/debug/status/${sessionId}`)
+    .then(r => r.json())
+    .then(data => updateDebugState(data));
+}, 500);
+```
+- Pro: Works immediately
+- Con: Less efficient
+- Con: Higher latency
+
+### Recommendation
+**For Testing Now**: Option 1 (ngrok)
+**For Production**: Option 2 (Deploy to proper host)
+
+---
+
+# 📊 Current Status Summary
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Backend `/debug/start` | ✅ Working | Session creates successfully |
+| Backend WebSocket | ❌ Blocked | Cloudflare Tunnel limitation |
+| Frontend Code | ✅ Fixed | Debug Panel should show |
+| Frontend Deployment | ⏳ Pending | Waiting for Cloudflare Pages |
+| Debug Panel UI | ⏳ Unknown | Need to test after deployment |
+| Full Debug Flow | ❌ Blocked | Needs WebSocket fix |
+
+**Next Action**: Test after Cloudflare Pages deploys commit `3c77800`!
 
 Good luck! 🚀
