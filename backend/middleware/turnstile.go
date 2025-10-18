@@ -115,7 +115,7 @@ func respondWithError(w http.ResponseWriter, r *http.Request, statusCode int, me
 			"http://localhost:3000",
 			"http://127.0.0.1:5173",
 		}
-		
+
 		for _, allowedOrigin := range allowedOrigins {
 			if origin == allowedOrigin {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
@@ -126,7 +126,7 @@ func respondWithError(w http.ResponseWriter, r *http.Request, statusCode int, me
 			}
 		}
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
