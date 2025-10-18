@@ -158,10 +158,18 @@ class TurnstileTokenGenerator {
       };
 
       try {
-        this.debug(' Executing Turnstile challenge...');
+        this.debug('🔄 Executing Turnstile challenge...');
         
-        // Execute immediately without reset to avoid PAT challenge failures
-        // Reset is only needed after errors, not before every execution
+        // Reset widget before execution to get a fresh token and avoid PAT errors
+        // This prevents "widget was already executed" warning
+        try {
+          window.turnstile.reset(this.widgetId);
+          this.debug('✅ Widget reset before execution');
+        } catch (resetError) {
+          // If reset fails, try to continue anyway
+          this.debug('⚠️ Reset failed, continuing...', resetError);
+        }
+        
         window.turnstile.execute(this.containerElement);
       } catch (error) {
         this.currentRequest.reject(error);
