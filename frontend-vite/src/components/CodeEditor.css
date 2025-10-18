@@ -346,27 +346,29 @@
 
 /* Modern Monaco Editor Autocomplete/Suggestion Widget Styling */
 
-/* Suggestion widget container */
+/* Suggestion widget container - more transparent to see code behind */
 .editor-container .monaco-editor .suggest-widget {
-  background: rgba(30, 30, 30, 0.98) !important;
-  backdrop-filter: blur(20px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
-  border: 1px solid rgba(82, 195, 194, 0.3) !important;
+  background: rgba(30, 30, 30, 0.85) !important;
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+  border: 1px solid rgba(82, 195, 194, 0.4) !important;
   border-radius: 8px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5),
-              0 4px 16px rgba(82, 195, 194, 0.1),
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6),
+              0 4px 16px rgba(82, 195, 194, 0.15),
               inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   overflow: hidden !important;
   padding: 4px !important;
+  opacity: 0.96 !important;
 }
 
-/* Light theme variant */
+/* Light theme variant - more transparent */
 [data-theme="light"] .editor-container .monaco-editor .suggest-widget {
-  background: rgba(255, 255, 255, 0.98) !important;
-  border: 1px solid rgba(0, 0, 0, 0.15) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15),
-              0 4px 16px rgba(0, 0, 0, 0.1),
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+              0 4px 16px rgba(0, 0, 0, 0.12),
               inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  opacity: 0.95 !important;
 }
 
 /* Suggestion list container */
@@ -543,16 +545,50 @@
   background: rgba(82, 195, 194, 0.5) !important;
 }
 
-/* Reduce opacity when suggestion widget is not focused */
+/* Reduce opacity when suggestion widget is not focused - see through code better */
 .editor-container .monaco-editor .suggest-widget:not(.focused) {
-  opacity: 0.95 !important;
+  opacity: 0.88 !important;
+  background: rgba(30, 30, 30, 0.75) !important;
 }
 
-/* Smooth animations */
+[data-theme="light"] .editor-container .monaco-editor .suggest-widget:not(.focused) {
+  opacity: 0.85 !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Make the suggestion widget semi-transparent to see code behind */
+.editor-container .monaco-editor .suggest-widget.transparent {
+  opacity: 0.85 !important;
+  background: rgba(30, 30, 30, 0.70) !important;
+}
+
+[data-theme="light"] .editor-container .monaco-editor .suggest-widget.transparent {
+  opacity: 0.80 !important;
+  background: rgba(255, 255, 255, 0.70) !important;
+}
+
+/* Extra transparency when typing to see code underneath */
+.editor-container .monaco-editor.vs-dark .suggest-widget,
+.editor-container .monaco-editor.hc-black .suggest-widget {
+  background: rgba(30, 30, 30, 0.82) !important;
+}
+
+.editor-container .monaco-editor.vs .suggest-widget,
+.editor-container .monaco-editor.hc-light .suggest-widget {
+  background: rgba(255, 255, 255, 0.80) !important;
+}
+
+.editor-container .monaco-editor.vs .suggest-widget,
+.editor-container .monaco-editor.hc-light .suggest-widget {
+  background: rgba(255, 255, 255, 0.80) !important;
+}
+
+/* Smooth animations for widget appearance */
 .editor-container .monaco-editor .suggest-widget,
 .editor-container .monaco-editor .parameter-hints-widget,
 .editor-container .monaco-editor .monaco-hover {
   animation: fadeInScale 0.15s ease-out !important;
+  transition: opacity 0.2s ease, background 0.2s ease !important;
 }
 
 @keyframes fadeInScale {
@@ -566,9 +602,15 @@
   }
 }
 
-/* Make the suggestion widget semi-transparent to see code behind */
-.editor-container .monaco-editor .suggest-widget.transparent {
-  opacity: 0.92 !important;
+/* Increase opacity on hover for better readability */
+.editor-container .monaco-editor .suggest-widget:hover {
+  opacity: 1 !important;
+  background: rgba(30, 30, 30, 0.95) !important;
+}
+
+[data-theme="light"] .editor-container .monaco-editor .suggest-widget:hover {
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Improve readability when widget overlaps code */
