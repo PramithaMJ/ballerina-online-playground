@@ -215,6 +215,10 @@ func main() {
 	http.HandleFunc("/compile", protectedChain(handler.CompileCode))
 	http.HandleFunc("/execute", protectedChain(handler.RunCode))
 
+	// Debug endpoints
+	http.HandleFunc("/debug/start", protectedChain(handler.StartDebugHandler))
+	http.HandleFunc("/debug/ws/", enableCORS(handler.DebugWebSocketHandler)) // WebSocket endpoint doesn't need all middleware
+
 	// Configure server with security optimizations
 	server := &http.Server{
 		Addr:           ":8081",

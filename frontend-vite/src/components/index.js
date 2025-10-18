@@ -8,6 +8,7 @@ export { default as CodeEditor } from './CodeEditor';
 export { default as OutputPanel } from './OutputPanel';
 export { default as ResizablePanels } from './ResizablePanels';
 export { default as Header } from './Header';
+export { default as DebugPanel } from './DebugPanel';
 
 // UI components
 export { default as EditorToolbar } from './EditorToolbar';

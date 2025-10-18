@@ -311,6 +311,39 @@
   to { transform: rotate(360deg); }
 }
 
+/* Breakpoint styling */
+.breakpoint-glyph {
+  background: #e51400;
+  border-radius: 50%;
+  width: 12px !important;
+  height: 12px !important;
+  margin-left: 4px;
+  margin-top: 4px;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(229, 20, 0, 0.6);
+}
+
+.breakpoint-line {
+  background: rgba(229, 20, 0, 0.1);
+}
+
+.current-execution-glyph {
+  background: #ffeb3b;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 14px solid #ffeb3b;
+  margin-left: 6px;
+  margin-top: 3px;
+  cursor: pointer;
+}
+
+.current-execution-line {
+  background: rgba(255, 235, 59, 0.2);
+  border-left: 3px solid #ffeb3b;
+}
+
 @media (max-width: 768px) {
   .editor-container {
     min-height: 300px;

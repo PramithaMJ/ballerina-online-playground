@@ -1,6 +1,6 @@
 /**
  * CodeEditor Component
- * Monaco-based code editor with Ballerina support
+ * Monaco-based code editor with Ballerina support and debugging
  * @component
  */
 
@@ -19,8 +19,9 @@ import './CodeEditor.css';
  * @param {Object} props
  * @param {string} props.code - Current code value
  * @param {Function} props.onChange - Code change handler
+ * @param {Function} props.onEditorMount - Editor mount callback
  */
-const CodeEditor = ({ code, onChange }) => {
+const CodeEditor = ({ code, onChange, onEditorMount }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [editorRef, setEditorRef] = useState(null);
@@ -52,6 +53,11 @@ const CodeEditor = ({ code, onChange }) => {
     setIsLoading(false);
     setEditorRef(editor);
     setupMonacoEditor(editor, monaco, theme);
+    
+    // Call parent's onEditorMount if provided
+    if (onEditorMount) {
+      onEditorMount(editor, monaco);
+    }
   };
 
   // Calculate line count

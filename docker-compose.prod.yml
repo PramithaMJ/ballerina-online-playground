@@ -16,7 +16,7 @@ services:
       - GOMAXPROCS=2
       - ALLOWED_ORIGIN=https://pramithamj.github.io,https://ballerina-online-playground.pages.dev
       # Cloudflare Turnstile - IMPORTANT: Replace with actual secret key for production!
-      - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY:-0x4AAAAAAB6jL8GkY6JoK2n471Y50s2lLvM}
+      - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY:-0x4AAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAA}
       - ENABLE_TURNSTILE_VERIFICATION=${ENABLE_TURNSTILE_VERIFICATION:-true}
     env_file:
       - ./backend/.env
