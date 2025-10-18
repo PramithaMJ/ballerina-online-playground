@@ -57,7 +57,7 @@ class ApiService {
       this.debug('✅ Fresh token generated', { tokenLength: token.length });
       return token;
     } catch (error) {
-      console.error(`❌ Failed to generate token (attempt ${retryCount + 1}):`, error);
+      console.error(` Failed to generate token (attempt ${retryCount + 1}):`, error);
       
       // Retry with exponential backoff
       if (retryCount < maxRetries) {

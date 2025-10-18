@@ -126,7 +126,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
           }
         },
         'unsupported-callback': () => {
-          console.error('❌ Turnstile is not supported in this browser');
+          console.error(' Turnstile is not supported in this browser');
           setError('Your browser does not support the verification system. Please use a modern browser.');
           setIsLoading(false);
         },
@@ -156,7 +156,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
 
       return () => clearTimeout(widgetCheckTimeout);
     } catch (err) {
-      console.error('❌ Error rendering Turnstile widget:', err);
+      console.error(' Error rendering Turnstile widget:', err);
       setError('Failed to initialize verification. Please refresh the page.');
       setIsLoading(false);
     }
@@ -360,7 +360,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
                   className="retry-button"
                   aria-label="Retry verification"
                 >
-                  🔄 Try Again
+                  Try Again
                 </button>
                 {retryCount > 2 && (
                   <button 
@@ -368,7 +368,7 @@ export const TurnstileChallenge = ({ onVerified }) => {
                     className="refresh-button"
                     aria-label="Refresh page"
                   >
-                    🔃 Refresh Page
+                    Refresh Page
                   </button>
                 )}
               </div>
