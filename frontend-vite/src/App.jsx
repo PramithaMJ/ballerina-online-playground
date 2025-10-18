@@ -12,11 +12,12 @@ import ResizablePanels from './components/ResizablePanels';
 import ConfirmDialog from './components/ConfirmDialog';
 import ErrorNotification from './components/ErrorNotification';
 import UserGuide from './components/UserGuide';
-import { TurnstileChallenge } from './components';
-import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress, useBallerinaVersion } from './hooks';
+import { TurnstileChallenge, DebugPanel } from './components';
+import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress, useBallerinaVersion, useDebugSession } from './hooks';
 import { DEFAULT_SAMPLE_CODE } from './constants/app.constants';
 import { isFirstVisit, markAsVisited } from './utils';
 import { turnstileTokenGenerator } from './utils/turnstile-token-generator.util';
+import { debugService } from './services';
 import { envConfig } from './config';
 import './App.css';
 
@@ -43,6 +44,17 @@ function App() {
   const { output, error, isRunning, progress: executionProgress, executeCode, stopExecution, clearOutput } = useCodeExecution();
   const { elapsedTime, formattedTime, progress } = useExecutionProgress(isRunning);
   const { version: ballerinaVersion, changeVersion } = useBallerinaVersion();
+  
+  // Debug hook
+  const {
+    isDebugging,
+    isInitializing,
+    toggleBreakpoint,
+    highlightCurrentLine,
+    setEditorRefs,
+    startDebugging,
+    stopDebugging,
+  } = useDebugSession();
 
   // Check for Turnstile verification on mount
   useEffect(() => {
@@ -223,6 +235,52 @@ function App() {
     setTimeout(() => setIsFirstTime(false), 300);
   };
 
+  // Debug handlers
+  const handleEditorMount = (editor, monaco) => {
+    // Pass editor refs to debug hook
+    setEditorRefs(editor, monaco);
+    
+    // Enable breakpoint toggling on glyph margin click
+    editor.onMouseDown((e) => {
+      const targetType = monaco.editor.MouseTargetType;
+      if (e.target.type === targetType.GUTTER_GLYPH_MARGIN) {
+        const lineNumber = e.target.position?.lineNumber;
+        if (lineNumber) {
+          toggleBreakpoint(lineNumber);
+        }
+      }
+    });
+
+    // Listen for debug events
+    debugService.addListener('stopped', (data) => {
+      if (data.line) {
+        highlightCurrentLine(data.line);
+      }
+    });
+
+    debugService.addListener('continued', () => {
+      highlightCurrentLine(null);
+    });
+
+    debugService.addListener('completed', () => {
+      highlightCurrentLine(null);
+    });
+  };
+
+  const handleStartDebug = async () => {
+    try {
+      setConnectionError(null);
+      await startDebugging(code, ballerinaVersion);
+    } catch (err) {
+      setConnectionError('Failed to start debugging: ' + err.message);
+    }
+  };
+
+  const handleStopDebug = () => {
+    stopDebugging();
+    highlightCurrentLine(null);
+  };
+
   // Get current layout from ref
   const currentLayout = resizablePanelsRef.current?.layout || 'horizontal';
 
@@ -246,12 +304,25 @@ function App() {
         onOpenUserGuide={handleOpenUserGuide}
         ballerinaVersion={ballerinaVersion}
         onVersionChange={changeVersion}
+        onDebug={handleStartDebug}
+        isDebugging={isDebugging}
+        isInitializing={isInitializing}
+        onStopDebug={handleStopDebug}
       />
       
       <ResizablePanels
         ref={resizablePanelsRef}
-        leftPanel={<CodeEditor code={code} onChange={setCode} />}
-        rightPanel={<OutputPanel output={output} error={error} isRunning={isRunning} progress={executionProgress} />}
+        leftPanel={<CodeEditor code={code} onChange={setCode} onEditorMount={handleEditorMount} />}
+        rightPanel={
+          isDebugging ? (
+            <DebugPanel
+              isDebugging={isDebugging}
+              onStopDebugging={handleStopDebug}
+            />
+          ) : (
+            <OutputPanel output={output} error={error} isRunning={isRunning} progress={executionProgress} />
+          )
+        }
       />
 
       {/* Stop Confirmation Dialog */}

@@ -17,7 +17,8 @@ import {
   Maximize2, 
   Maximize, 
   Minimize,
-  BookOpen
+  BookOpen,
+  Bug
 } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import VersionSelector from './VersionSelector';
@@ -42,6 +43,10 @@ import './Header.css';
  * @param {Function} props.onOpenUserGuide - User guide handler
  * @param {string} props.ballerinaVersion - Selected Ballerina version
  * @param {Function} props.onVersionChange - Version change handler
+ * @param {Function} props.onDebug - Debug handler
+ * @param {boolean} props.isDebugging - Debugging state
+ * @param {boolean} props.isInitializing - Debug initializing state
+ * @param {Function} props.onStopDebug - Stop debug handler
  */
 const Header = ({ 
   onRun, 
@@ -60,7 +65,11 @@ const Header = ({
   onToggleFullscreen,
   onOpenUserGuide,
   ballerinaVersion = '2201.12.0',
-  onVersionChange
+  onVersionChange,
+  onDebug,
+  isDebugging = false,
+  isInitializing = false,
+  onStopDebug
 }) => {
   const isHorizontal = layout === 'horizontal';
   const isDark = theme === 'dark';
@@ -90,7 +99,17 @@ const Header = ({
         <div className="header-divider" role="separator"></div>
 
         {/* Primary Actions */}
-        {isRunning ? (
+        {isDebugging ? (
+          <button 
+            className="btn btn-stop" 
+            onClick={onStopDebug}
+            aria-label="Stop debugging"
+            title="Stop debugging"
+          >
+            <Square size={18} />
+            <span>Stop Debug</span>
+          </button>
+        ) : isRunning ? (
           <div className="execution-container">
             <button 
               className="btn btn-stop" 
@@ -121,15 +140,27 @@ const Header = ({
             </div>
           </div>
         ) : (
-          <button 
-            className="btn btn-primary" 
-            onClick={onRun}
-            disabled={isRunning}
-            aria-label="Run code"
-          >
-            <Play size={18} />
-            Run Code
-          </button>
+          <>
+            <button 
+              className="btn btn-debug" 
+              onClick={onDebug}
+              disabled={isRunning || isInitializing}
+              aria-label="Debug code"
+              title="Start debugging with breakpoints"
+            >
+              <Bug size={18} />
+              {isInitializing ? 'Starting...' : 'Debug'}
+            </button>
+            <button 
+              className="btn btn-primary" 
+              onClick={onRun}
+              disabled={isRunning}
+              aria-label="Run code"
+            >
+              <Play size={18} />
+              Run Code
+            </button>
+          </>
         )}
         
         <button 
