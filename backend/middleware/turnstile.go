@@ -103,7 +103,30 @@ func init() {
 }
 
 // respondWithError sends a JSON error response
-func respondWithError(w http.ResponseWriter, statusCode int, message string, details interface{}) {
+func respondWithError(w http.ResponseWriter, r *http.Request, statusCode int, message string, details interface{}) {
+	// Set CORS headers before sending error response
+	origin := r.Header.Get("Origin")
+	if origin != "" {
+		// Allow requests from known origins
+		allowedOrigins := []string{
+			"https://ballerina-online-playground.pages.dev",
+			"https://pramithamj.github.io",
+			"http://localhost:5173",
+			"http://localhost:3000",
+			"http://127.0.0.1:5173",
+		}
+		
+		for _, allowedOrigin := range allowedOrigins {
+			if origin == allowedOrigin {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, HEAD")
+				w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, CF-Turnstile-Token")
+				w.Header().Set("Access-Control-Expose-Headers", "Content-Length, Content-Type")
+				break
+			}
+		}
+	}
+	
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
@@ -120,7 +143,7 @@ func respondWithError(w http.ResponseWriter, statusCode int, message string, det
 }
 
 // handleVerificationFailure processes verification failures with detailed error messages
-func handleVerificationFailure(w http.ResponseWriter, resp *TurnstileResponse, token string) {
+func handleVerificationFailure(w http.ResponseWriter, r *http.Request, resp *TurnstileResponse, token string) {
 	errorMsg := "Verification failed"
 	statusCode := http.StatusUnauthorized
 
@@ -150,7 +173,7 @@ func handleVerificationFailure(w http.ResponseWriter, resp *TurnstileResponse, t
 	}
 
 	log.Printf(" Turnstile verification failed: %v (token prefix: %s...)\n", resp.ErrorCodes, token[:min(10, len(token))])
-	respondWithError(w, statusCode, errorMsg, map[string]interface{}{
+	respondWithError(w, r, statusCode, errorMsg, map[string]interface{}{
 		"error_codes": resp.ErrorCodes,
 	})
 }
@@ -230,21 +253,21 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 
 			if token == "" {
 				log.Println(" Missing Turnstile token")
-				respondWithError(w, http.StatusUnauthorized, "Missing verification token", nil)
+				respondWithError(w, r, http.StatusUnauthorized, "Missing verification token", nil)
 				return
 			}
 
 			// Validate token format
 			if len(token) > 2048 {
 				log.Println(" Token too long")
-				respondWithError(w, http.StatusBadRequest, "Invalid token format", nil)
+				respondWithError(w, r, http.StatusBadRequest, "Invalid token format", nil)
 				return
 			}
 
 			// Check if token was already used (prevent replay attacks)
 			if cache.isUsed(token) {
 				log.Printf(" Token already used: %s...\n", token[:min(10, len(token))])
-				respondWithError(w, http.StatusUnauthorized, "Token already used. Please generate a new token.", nil)
+				respondWithError(w, r, http.StatusUnauthorized, "Token already used. Please generate a new token.", nil)
 				return
 			}
 
@@ -255,12 +278,12 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 			isValid, resp, err := verifyTokenWithRetry(token, remoteIP, config)
 			if err != nil {
 				log.Printf(" Turnstile verification error: %v\n", err)
-				respondWithError(w, http.StatusServiceUnavailable, "Verification service unavailable. Please try again.", nil)
+				respondWithError(w, r, http.StatusServiceUnavailable, "Verification service unavailable. Please try again.", nil)
 				return
 			}
 
 			if !isValid {
-				handleVerificationFailure(w, resp, token)
+				handleVerificationFailure(w, r, resp, token)
 				return
 			}
 
@@ -279,7 +302,7 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 
 				if !hostnameValid {
 					log.Printf(" Hostname mismatch: expected %v, got %s\n", config.ExpectedHostnames, resp.Hostname)
-					respondWithError(w, http.StatusUnauthorized, "Invalid request origin", nil)
+					respondWithError(w, r, http.StatusUnauthorized, "Invalid request origin", nil)
 					return
 				}
 			}
@@ -294,7 +317,7 @@ func VerifyTurnstile(config TurnstileConfig) func(http.Handler) http.Handler {
 					}
 					if age > 5*time.Minute {
 						log.Printf(" Token expired: %.1f minutes old\n", age.Minutes())
-						respondWithError(w, http.StatusUnauthorized, "Token expired. Please generate a new token.", nil)
+						respondWithError(w, r, http.StatusUnauthorized, "Token expired. Please generate a new token.", nil)
 						return
 					}
 				}
