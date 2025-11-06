@@ -147,7 +147,11 @@ func loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		next(w, r)
-		log.Printf("%s %s - %v", r.Method, r.URL.Path, time.Since(start))
+		// Only log slow requests (> 5 seconds) or errors
+		duration := time.Since(start)
+		if duration > 5*time.Second {
+			log.Printf("SLOW: %s %s - %v", r.Method, r.URL.Path, duration)
+		}
 	}
 }
 
@@ -162,25 +166,19 @@ func chain(handler http.HandlerFunc, middlewares ...func(http.HandlerFunc) http.
 func main() {
 	// Initialize container pool in background
 	ctx := context.Background()
-	log.Println("Starting Ballerina Compiler Backend...")
+	log.Println("Ballerina Playground Backend starting...")
 
 	// Initialize Turnstile configuration
 	turnstileConfig := middleware.NewTurnstileConfig()
-	if turnstileConfig.Enabled {
-		if turnstileConfig.SecretKey == "" {
-			log.Println("  Turnstile enabled but no secret key configured")
-		} else {
-			log.Println(" Turnstile verification enabled")
-		}
-	} else {
-		log.Println("  Turnstile verification is DISABLED - tokens will not be validated!")
+	if turnstileConfig.Enabled && turnstileConfig.SecretKey != "" {
+		log.Println("✓ Turnstile bot protection enabled")
 	}
 
 	// Initialize the container pool (pre-pull images and create containers)
 	go func() {
 		if err := utils.InitializePool(ctx); err != nil {
-			log.Printf(" Failed to initialize container pool: %v", err)
-			log.Println(" Will fallback to docker run for code execution")
+			log.Printf("⚠️  Container pool initialization failed: %v", err)
+			log.Println("   Fallback mode: Using docker run")
 		}
 	}()
 
@@ -215,9 +213,9 @@ func main() {
 	http.HandleFunc("/compile", protectedChain(handler.CompileCode))
 	http.HandleFunc("/execute", protectedChain(handler.RunCode))
 
-	// Debug endpoints
+	// Debug endpoints (WebSocket doesn't need Turnstile)
 	http.HandleFunc("/debug/start", protectedChain(handler.StartDebugHandler))
-	http.HandleFunc("/debug/ws/", enableCORS(handler.DebugWebSocketHandler)) // WebSocket endpoint doesn't need all middleware
+	http.HandleFunc("/debug/ws/", enableCORS(handler.DebugWebSocketHandler))
 
 	// Configure server with security optimizations
 	server := &http.Server{
@@ -229,17 +227,10 @@ func main() {
 		MaxHeaderBytes: 1 << 20,           // 1 MB
 	}
 
-	log.Println("Server started on port 8081")
-	log.Println(" Security features enabled:")
-	log.Println("  - Rate limiting: 5 requests per 5 seconds")
-	log.Println("  - Code validation and sanitization")
-	log.Println("  - Docker isolation with security constraints")
-	log.Println("  - Network disabled in containers")
-	log.Println("  - Resource limits enforced")
-	log.Println("  - Execution timeout: 60 seconds")
-	log.Println("  - Container pooling for performance")
+	log.Println("✓ Server ready on port 8081")
+	log.Println("  Security: Rate limiting, Docker isolation, Resource limits")
 	if turnstileConfig.Enabled {
-		log.Println("  - Cloudflare Turnstile bot protection")
+		log.Println("  Bot protection: Cloudflare Turnstile")
 	}
 
 	// Setup graceful shutdown
@@ -255,14 +246,14 @@ func main() {
 
 	// Wait for interrupt signal
 	<-stop
-	log.Println(" Shutting down server...")
+	log.Println("⏸ Shutting down gracefully...")
 
 	// Graceful shutdown with timeout
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer shutdownCancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Printf("Server forced to shutdown: %v", err)
+		log.Printf("⚠️  Forced shutdown: %v", err)
 	}
 
 	// Cleanup container pool
@@ -270,5 +261,5 @@ func main() {
 		utils.Pool.Shutdown(context.Background())
 	}
 
-	log.Println(" Server gracefully stopped")
+	log.Println("✓ Server stopped")
 }

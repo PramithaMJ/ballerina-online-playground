@@ -57,12 +57,6 @@ function App() {
     stopDebugging,
   } = useDebugSession(addToast);
 
-  // Debug logging for isDebugging state
-  useEffect(() => {
-    console.log('🎯 [App] isDebugging changed:', isDebugging);
-    console.log('🎯 [App] isInitializing changed:', isInitializing);
-  }, [isDebugging, isInitializing]);
-
   // Check for Turnstile verification on mount
   useEffect(() => {
     if (!envConfig.enableVerification) return;
@@ -120,27 +114,9 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isRunning, code, ballerinaVersion]);
 
-  // DISABLED: Background token manager causes PAT challenge failures
-  // Tokens will be generated on-demand when needed instead
-  // useEffect(() => {
-  //   if (isVerified && envConfig.enableVerification) {
-  //     if (import.meta.env.DEV) {
-  //       console.log(' Initializing background token manager...');
-  //     }
-  //     turnstileManager.initialize();
-  //     
-  //     return () => {
-  //       turnstileManager.destroy();
-  //     };
-  //   }
-  // }, [isVerified]);
 
   // Handler functions
   const handleTurnstileVerified = (token) => {
-    if (import.meta.env.DEV) {
-      console.log('✓ App: Turnstile verification successful');
-    }
-    
     // Only initialize token generator for new verifications, not session-valid
     const shouldInitTokenGenerator = token !== 'session-valid';
     
@@ -149,24 +125,14 @@ function App() {
 
     // Initialize on-demand token generator after initial verification
     if (shouldInitTokenGenerator && envConfig.enableVerification) {
-      if (import.meta.env.DEV) {
-        console.log(' Initializing on-demand token generator...');
-      }
-      turnstileTokenGenerator.initialize().then(() => {
-        if (import.meta.env.DEV) {
-          console.log(' Token generator ready');
-        }
-      }).catch(error => {
-        console.error(' Failed to initialize token generator:', error);
+      turnstileTokenGenerator.initialize().catch(error => {
+        console.error('Failed to initialize token generator:', error);
       });
     } else if (token === 'session-valid' && envConfig.enableVerification) {
       // For session-valid, still ensure token generator is ready
-      if (import.meta.env.DEV) {
-        console.log(' Session valid - ensuring token generator is ready...');
-      }
       if (!turnstileTokenGenerator.isReady()) {
         turnstileTokenGenerator.initialize().catch(error => {
-          console.error(' Failed to initialize token generator:', error);
+          console.error('Failed to initialize token generator:', error);
         });
       }
     }

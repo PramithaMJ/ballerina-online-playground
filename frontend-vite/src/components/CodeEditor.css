@@ -344,6 +344,31 @@
   border-left: 3px solid #ffeb3b;
 }
 
+/* Remove Monaco Editor current line highlight */
+.editor-container .monaco-editor .view-overlays .current-line {
+  background: transparent !important;
+  border: none !important;
+}
+
+.editor-container .monaco-editor .margin-view-overlays .current-line {
+  background: transparent !important;
+  border: none !important;
+}
+
+.editor-container .monaco-editor .view-line {
+  background: transparent !important;
+}
+
+/* Remove cursor line decorations */
+.editor-container .monaco-editor .view-overlays .current-line-exact {
+  background: transparent !important;
+}
+
+/* Remove any line highlight backgrounds */
+.editor-container .monaco-editor .line-numbers {
+  background: transparent !important;
+}
+
 /* Modern Monaco Editor Autocomplete/Suggestion Widget Styling */
 
 /* Suggestion widget container - highly transparent to see code behind */
