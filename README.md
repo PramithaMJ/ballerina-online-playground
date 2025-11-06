@@ -268,6 +268,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ![1760042371205](images/README/1760042371205.png)
 
+### AI Assistant
+
+![1762461883002](images/README/1762461883002.png)
+
+![1762462022565](images/README/1762462022565.png)
+
 ### Settings
 
 ![1760042377305](images/README/1760042377305.png)
