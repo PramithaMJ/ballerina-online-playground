@@ -7,6 +7,7 @@
   transition: background-color 0.3s ease;
   height: 100%;
   width: 100%;
+  min-height: 0;
 }
 
 /* Fullscreen mode for output panel */
@@ -142,9 +143,14 @@
 
 .output-wrapper {
   flex: 1;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: auto;
   background: var(--bg-secondary);
   transition: background-color 0.3s ease;
+  min-height: 0;
+  max-height: 100%;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Custom scrollbar for Output Panel */
@@ -263,8 +269,11 @@
   color: var(--text-primary);
   white-space: pre-wrap;
   word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
   overflow-x: auto;
   transition: color 0.3s ease;
+  max-width: 100%;
 }
 
 .error-text {

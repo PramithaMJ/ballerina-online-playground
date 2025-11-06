@@ -20,6 +20,16 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchTo
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Configure marked for markdown rendering
+  useEffect(() => {
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
+      headerIds: false,
+      mangle: false,
+    });
+  }, []);
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -260,11 +270,10 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchTo
               {msg.role === 'user' ? <User size={20} /> : <Bot size={20} />}
             </div>
             <div className="message-bubble">
-              <div className="message-content">
-                {msg.content.split('\n').map((line, i) => (
-                  <p key={i}>{line}</p>
-                ))}
-              </div>
+              <div 
+                className="message-content"
+                dangerouslySetInnerHTML={{ __html: marked.parse(msg.content || '') }}
+              />
               {msg.suggestedCode && (
                 <div className="suggested-code-container">
                   <div className="code-header">

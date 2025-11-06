@@ -100,7 +100,18 @@ export const EDITOR_OPTIONS = {
   renderLineHighlight: 'none', // Disable current line highlighting
   hover: { enabled: true },
   scrollbar: {
-    verticalScrollbarSize: 10,
-    horizontalScrollbarSize: 10,
+    verticalScrollbarSize: 14,
+    horizontalScrollbarSize: 14,
+    useShadows: true,
+    vertical: 'visible',
+    horizontal: 'visible',
+    verticalHasArrows: false,
+    horizontalHasArrows: false,
+    verticalScrollbarSize: 14,
+    horizontalScrollbarSize: 14,
+    arrowSize: 30,
   },
+  overviewRulerLanes: 0,
+  hideCursorInOverviewRuler: true,
+  overviewRulerBorder: false,
 };
