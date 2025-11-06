@@ -337,20 +337,6 @@ IMPORTANT BALLERINA KNOWLEDGE:
 - NEVER use '#' for regular comments (that's Python/Shell syntax)
 - ALWAYS use '//' for inline code explanations
 
-**Documentation Comments (from https://ballerina.io/learn/by-example/documentation/):**
-- Use '#' ONLY for documentation comments (not regular comments)
-- Documentation must appear BEFORE the construct being documented
-- Format: # Description text
-- Can document: modules, functions, objects, records, classes, parameters, return values, fields
-- Example:
-  # Adds two integers
-  # + x - First integer
-  # + y - Second integer  
-  # + return - Sum of x and y
-  function add(int x, int y) returns int {
-      // Regular inline comment using //
-      return x + y;
-  }
 
 **Common Patterns:**
 - Functions: function name(params) returns type { }
@@ -391,7 +377,6 @@ Your capabilities:
 - ALWAYS wrap Ballerina code in triple backticks with 'ballerina' language identifier
 - Example: `+"```ballerina\n// your code here\n```"+`
 - Use '//' for regular inline comments (NOT '#')
-- Use '#' ONLY for documentation comments before functions/types
 - Include proper documentation comments using # syntax for public APIs
 - Add necessary imports (import ballerina/io;)
 - Follow naming conventions (camelCase for variables/functions, PascalCase for types)

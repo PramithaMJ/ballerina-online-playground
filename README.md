@@ -1,16 +1,19 @@
 <div align="center">
 
 <!-- Row 1: Deployment & Status -->
+
 [![Deploy to GitHub Pages](https://github.com/PramithaMJ/ballerina-online-playground/actions/workflows/deploy-github-pages.yml/badge.svg)](https://github.com/PramithaMJ/ballerina-online-playground/actions/workflows/deploy-github-pages.yml)
 [![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Deployed-F38020?logo=cloudflare&logoColor=white)](https://ballerina-online-playground.pages.dev/)
 [![Website Status](https://img.shields.io/website?url=https%3A%2F%2Fballerina-online-playground.pages.dev&logo=cloudflare&label=Website)](https://ballerina-online-playground.pages.dev/)
 
 <!-- Row 2: License & Project Info -->
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Project Name](https://img.shields.io/badge/Project-Ballerina%20Online%20Playground-4A90E2?logo=ballerina)](https://github.com/PramithaMJ/ballerina-online-playground)
 [![GitHub Repo](https://img.shields.io/badge/Repo-ballerina--online--playground-181717?logo=github)](https://github.com/PramithaMJ/ballerina-online-playground)
 
 <!-- Row 3: Technology Stack -->
+
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Go](https://img.shields.io/badge/Go-1.23-00ADD8?logo=go&logoColor=white)](https://go.dev/)
@@ -18,12 +21,14 @@
 [![Monaco Editor](https://img.shields.io/badge/Monaco-Editor-0066B8?logo=visualstudiocode)](https://microsoft.github.io/monaco-editor/)
 
 <!-- Row 4: GitHub Stats -->
+
 [![GitHub Stars](https://img.shields.io/github/stars/PramithaMJ/ballerina-online-playground?style=social)](https://github.com/PramithaMJ/ballerina-online-playground/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/PramithaMJ/ballerina-online-playground?style=social)](https://github.com/PramithaMJ/ballerina-online-playground/network/members)
 [![GitHub Issues](https://img.shields.io/github/issues/PramithaMJ/ballerina-online-playground)](https://github.com/PramithaMJ/ballerina-online-playground/issues)
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/PramithaMJ/ballerina-online-playground)](https://github.com/PramithaMJ/ballerina-online-playground/commits/main)
 
 <!-- Row 5: Features -->
+
 [![AI Powered](https://img.shields.io/badge/AI-Gemini%20%26%20GPT-FF6B6B?logo=openai)](https://github.com/PramithaMJ/ballerina-online-playground)
 [![Ballerina Versions](https://img.shields.io/badge/Ballerina%20Versions-26-FF5722)](https://ballerina.io/)
 [![Security](https://img.shields.io/badge/Security-Rate%20Limited%20%26%20Isolated-success?logo=shield)](https://github.com/PramithaMJ/ballerina-online-playground)
