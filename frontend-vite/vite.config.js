@@ -13,9 +13,19 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: false,
-    minify: 'esbuild',
+    sourcemap: false, // Disabled to prevent DevTools auto-opening to Sources
+    minify: 'terser',
     chunkSizeWarningLimit: 1000,
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove all console.log in production
+        drop_debugger: true, // Remove all debugger statements
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
+      },
+      format: {
+        comments: false, // Remove all comments
+      },
+    },
     rollupOptions: {
       output: {
         manualChunks: {
