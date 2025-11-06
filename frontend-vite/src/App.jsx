@@ -327,6 +327,7 @@ function App() {
               ballerinaVersion={ballerinaVersion}
               onError={handleAIError}
               onSwitchToOutput={handleToggleAIChat}
+              onOpenUserGuide={handleOpenUserGuide}
             />
           ) : isDebugging ? (
             <DebugPanel
