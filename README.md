@@ -248,6 +248,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📸 Screenshots
 
+### Human verification
+
+![1762426592659](images/README/1762426592659.png)
+
 ### Main Interface
 
 ![1760422684730](images/README/1760422684730.png)

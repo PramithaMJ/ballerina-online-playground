@@ -12,7 +12,7 @@ import ResizablePanels from './components/ResizablePanels';
 import ConfirmDialog from './components/ConfirmDialog';
 import ErrorNotification from './components/ErrorNotification';
 import UserGuide from './components/UserGuide';
-import { TurnstileChallenge, DebugPanel, ToastContainer } from './components';
+import { TurnstileChallenge, DebugPanel, ToastContainer, AIChatPanel } from './components';
 import { useTheme, useFullscreen, useCodeExecution, useExecutionProgress, useBallerinaVersion, useDebugSession, useToast } from './hooks';
 import { DEFAULT_SAMPLE_CODE } from './constants/app.constants';
 import { isFirstVisit, markAsVisited } from './utils';
@@ -36,6 +36,7 @@ function App() {
   const [connectionError, setConnectionError] = useState(null);
   const [showUserGuide, setShowUserGuide] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
   const resizablePanelsRef = useRef(null);
 
   // Custom hooks for feature management
@@ -254,6 +255,36 @@ function App() {
     highlightCurrentLine(null);
   };
 
+  // AI Chat handlers
+  const handleToggleAIChat = () => {
+    setShowAIChat(!showAIChat);
+  };
+
+  const handleCodeInsert = (suggestedCode) => {
+    if (suggestedCode) {
+      setCode(prevCode => {
+        // If editor is empty, replace completely
+        if (!prevCode.trim()) {
+          return suggestedCode;
+        }
+        // Otherwise append with newlines
+        return prevCode + '\n\n' + suggestedCode;
+      });
+      
+      addToast({
+        type: 'success',
+        message: 'Code inserted from AI assistant',
+      });
+    }
+  };
+
+  const handleAIError = (errorMessage) => {
+    addToast({
+      type: 'error',
+      message: errorMessage,
+    });
+  };
+
   // Get current layout from ref
   const currentLayout = resizablePanelsRef.current?.layout || 'horizontal';
 
@@ -281,13 +312,22 @@ function App() {
         isDebugging={isDebugging}
         isInitializing={isInitializing}
         onStopDebug={handleStopDebug}
+        showAIChat={showAIChat}
+        onToggleAIChat={handleToggleAIChat}
       />
       
       <ResizablePanels
         ref={resizablePanelsRef}
         leftPanel={<CodeEditor code={code} onChange={setCode} onEditorMount={handleEditorMount} />}
         rightPanel={
-          isDebugging ? (
+          showAIChat ? (
+            <AIChatPanel
+              code={code}
+              onCodeInsert={handleCodeInsert}
+              ballerinaVersion={ballerinaVersion}
+              onError={handleAIError}
+            />
+          ) : isDebugging ? (
             <DebugPanel
               isDebugging={isDebugging}
               onStopDebugging={handleStopDebug}

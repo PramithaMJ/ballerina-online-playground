@@ -18,7 +18,8 @@ import {
   Maximize, 
   Minimize,
   BookOpen,
-  Bug
+  Bug,
+  Sparkles
 } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import VersionSelector from './VersionSelector';
@@ -47,6 +48,8 @@ import './Header.css';
  * @param {boolean} props.isDebugging - Debugging state
  * @param {boolean} props.isInitializing - Debug initializing state
  * @param {Function} props.onStopDebug - Stop debug handler
+ * @param {boolean} props.showAIChat - AI chat visibility state
+ * @param {Function} props.onToggleAIChat - AI chat toggle handler
  */
 const Header = ({ 
   onRun, 
@@ -69,7 +72,9 @@ const Header = ({
   onDebug,
   isDebugging = false,
   isInitializing = false,
-  onStopDebug
+  onStopDebug,
+  showAIChat = false,
+  onToggleAIChat
 }) => {
   const isHorizontal = layout === 'horizontal';
   const isDark = theme === 'dark';
@@ -229,6 +234,15 @@ const Header = ({
         <div className="header-divider" role="separator"></div>
 
         {/* Theme and External Links */}
+        <button 
+          className={`btn btn-icon ${showAIChat ? 'active' : ''}`}
+          onClick={onToggleAIChat}
+          title={showAIChat ? "Close AI Assistant" : "Open AI Assistant"}
+          aria-label={showAIChat ? "Close AI Assistant" : "Open AI Assistant"}
+        >
+          <Sparkles size={20} />
+        </button>
+
         <button 
           className="btn btn-icon" 
           onClick={onOpenUserGuide}
