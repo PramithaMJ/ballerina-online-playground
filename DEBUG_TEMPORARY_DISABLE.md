@@ -19,7 +19,7 @@ This will allow you to:
 ✓ Inspect variables
 ✓ View call stack
 
-Stay tuned! 🚀
+Stay tuned!
 ```
 
 ### What Was Changed
@@ -89,7 +89,7 @@ Edit `frontend-vite/src/hooks/useDebugSession.js`:
 
 #### Option 2: Fix WebSocket Issue
 
-Follow the guide in `WEBSOCKET_FIX_NGROK.md`:
+Follow the guide :
 
 1. **Install ngrok**: `brew install ngrok/ngrok/ngrok`
 2. **Stop Cloudflare Tunnel**: `pkill cloudflared`
@@ -121,41 +121,3 @@ chmod +x setup-ngrok.sh
 4. ✅ **Temporary Disable**: Added "Coming Soon" message (current state)
 5. ⏳ **Future**: Fix WebSocket issue OR deploy to WebSocket-compatible host
 6. ⏳ **Re-enable**: Remove temporary disable code, deploy
-
-### Production Deployment Options
-
-When ready to deploy with full debug support:
-
-1. **ngrok** (Development only)
-
-   - Fast setup
-   - WebSocket support
-   - Not suitable for production
-2. **Fly.io / Railway / Render** (Production)
-
-   - Full WebSocket support
-   - Easy deployment
-   - Free tiers available
-3. **Azure App Service / AWS Elastic Beanstalk** (Enterprise)
-
-   - Full WebSocket support
-   - Scalable
-   - Professional hosting
-4. **Alternative: Server-Sent Events (SSE)**
-
-   - Replace WebSocket with SSE
-   - Works with Cloudflare Tunnel
-   - Requires code changes
-
-### Testing Checklist (When Re-enabled)
-
-After re-enabling, verify:
-
-- [ ]  Debug button shows Debug Panel (not "Coming Soon" alert)
-- [ ]  Breakpoints can be set by clicking line numbers
-- [ ]  Red dot appears in gutter for breakpoints
-- [ ]  WebSocket connects successfully (check browser console)
-- [ ]  Backend creates debug session without errors
-- [ ]  Debug controls work (Continue, Step Over, etc.)
-- [ ]  Variables panel shows data
-- [ ]  Call stack displays correctly

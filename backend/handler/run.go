@@ -41,8 +41,6 @@ func RunCode(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
 	w.Header().Set("Access-Control-Expose-Headers", "Content-Length, Content-Type")
 
-	log.Printf("DEBUG: Set CORS headers with origin: %s", origin)
-
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -191,10 +189,6 @@ func RunCode(w http.ResponseWriter, r *http.Request) {
 	cacheMutex.Unlock()
 
 	w.Header().Set("Content-Type", "application/json")
-
-	// Log response headers before sending
-	log.Printf("DEBUG: Response headers: %v", w.Header())
-	log.Printf("DEBUG: Sending response with output length: %d", len(response.Output))
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		log.Printf("ERROR: Failed to encode response: %v", err)
