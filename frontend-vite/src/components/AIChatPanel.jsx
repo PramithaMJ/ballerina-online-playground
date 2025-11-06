@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Sparkles, Lightbulb, Wrench, Zap, HelpCircle, Trash2, User, Bot, Copy, Send, Loader2, AlertCircle } from 'lucide-react';
+import { marked } from 'marked';
 import { aiService } from '../services';
 import './AIChatPanel.css';
 
@@ -197,11 +198,10 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError }) => {
               {msg.role === 'user' ? <User size={20} /> : <Bot size={20} />}
             </div>
             <div className="message-bubble">
-              <div className="message-content">
-                {msg.content.split('\n').map((line, i) => (
-                  <p key={i}>{line}</p>
-                ))}
-              </div>
+              <div 
+                className="message-content"
+                dangerouslySetInnerHTML={{ __html: marked.parse(msg.content) }}
+              />
               {msg.suggestedCode && (
                 <div className="suggested-code-container">
                   <div className="code-header">
