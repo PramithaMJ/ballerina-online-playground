@@ -72,6 +72,25 @@
   gap: 0.75rem;
 }
 
+.switch-ai-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #cccccc);
+  border: 1px solid var(--vscode-button-border, #454545);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.switch-ai-btn:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+  transform: translateY(-1px);
+}
+
 .output-status {
   display: flex;
   gap: 0.5rem;

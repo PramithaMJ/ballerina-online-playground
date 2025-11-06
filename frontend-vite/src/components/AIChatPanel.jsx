@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Lightbulb, Wrench, Zap, HelpCircle, Trash2, User, Bot, Copy, Send, Loader2, AlertCircle } from 'lucide-react';
+import { Sparkles, Lightbulb, Wrench, Zap, HelpCircle, Trash2, User, Bot, Copy, Send, Loader2, AlertCircle, Terminal, Activity } from 'lucide-react';
+import { marked } from 'marked';
 import { aiService } from '../services';
 import './AIChatPanel.css';
 
@@ -7,7 +8,7 @@ import './AIChatPanel.css';
  * AI Chat Panel Component
  * Provides AI-powered code assistance and chat for Ballerina code
  */
-const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError }) => {
+const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchToOutput }) => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -78,15 +79,55 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError }) => {
         messages.slice(-5) // Last 5 messages for context
       );
 
-      const aiMessage = {
+      // Create assistant message with streaming effect
+      const fullText = response.response || '';
+      const suggestedCode = response.suggestedCode || null;
+      
+      // Add initial empty message
+      const assistantMessage = {
         role: 'assistant',
-        content: response.response,
-        suggestedCode: response.suggestedCode || null,
+        content: '',
+        suggestedCode: suggestedCode,
+        isStreaming: true,
       };
+      
+      setMessages((prev) => [...prev, assistantMessage]);
+      setIsLoading(false);
 
-      setMessages((prev) => [...prev, aiMessage]);
+      // Animate text display character by character (like ChatGPT)
+      let currentIndex = 0;
+      
+      const streamInterval = setInterval(() => {
+        if (currentIndex < fullText.length) {
+          // Add 2-4 characters at a time for smoother, faster display
+          const charsToAdd = Math.min(3, fullText.length - currentIndex);
+          currentIndex += charsToAdd;
+          
+          setMessages((prev) => {
+            const newMessages = [...prev];
+            const lastMessage = newMessages[newMessages.length - 1];
+            if (lastMessage.role === 'assistant' && lastMessage.isStreaming) {
+              lastMessage.content = fullText.substring(0, currentIndex);
+            }
+            return newMessages;
+          });
+        } else {
+          // Streaming complete
+          clearInterval(streamInterval);
+          setMessages((prev) => {
+            const newMessages = [...prev];
+            const lastMessage = newMessages[newMessages.length - 1];
+            if (lastMessage.role === 'assistant') {
+              delete lastMessage.isStreaming;
+            }
+            return newMessages;
+          });
+        }
+      }, 15); // Adjust speed: lower = faster (15ms for smooth, fast display)
+
     } catch (error) {
       console.error('AI Chat Error:', error);
+      setIsLoading(false);
       
       const errorMessage = {
         role: 'assistant',
@@ -100,7 +141,6 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError }) => {
         onError(error.message);
       }
     } finally {
-      setIsLoading(false);
       inputRef.current?.focus();
     }
   };
@@ -165,14 +205,27 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError }) => {
           <Sparkles className="ai-icon" size={20} />
           <h3>AI Assistant</h3>
         </div>
-        <button
-          onClick={clearConversation}
-          className="clear-btn"
-          title="Clear conversation"
-          aria-label="Clear conversation"
-        >
-          <Trash2 size={18} />
-        </button>
+        <div className="ai-header-actions">
+          {onSwitchToOutput && (
+            <button
+              onClick={onSwitchToOutput}
+              className="switch-view-btn"
+              title="Switch to Output/Console"
+              aria-label="Switch to Output/Console"
+            >
+              <Terminal size={16} />
+              <span>Output</span>
+            </button>
+          )}
+          <button
+            onClick={clearConversation}
+            className="clear-btn"
+            title="Clear conversation"
+            aria-label="Clear conversation"
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
       </div>
 
       <div className="quick-actions">

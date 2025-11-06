@@ -326,6 +326,7 @@ function App() {
               onCodeInsert={handleCodeInsert}
               ballerinaVersion={ballerinaVersion}
               onError={handleAIError}
+              onSwitchToOutput={handleToggleAIChat}
             />
           ) : isDebugging ? (
             <DebugPanel
@@ -333,7 +334,13 @@ function App() {
               onStopDebugging={handleStopDebug}
             />
           ) : (
-            <OutputPanel output={output} error={error} isRunning={isRunning} progress={executionProgress} />
+            <OutputPanel 
+              output={output} 
+              error={error} 
+              isRunning={isRunning} 
+              progress={executionProgress}
+              onSwitchToAI={handleToggleAIChat}
+            />
           )
         }
       />
