@@ -16,9 +16,9 @@ services:
       - HOST_TEMP_DIR=/tmp/ballerina-playground
       - GOMAXPROCS=2
       # AI Configuration - Add your API keys via .env file or directly here
-      - AI_PROVIDER=${AI_PROVIDER:-auto}
+      - AI_PROVIDER=${AI_PROVIDER:-auto}  # auto, openai, gemini
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-1.5-flash}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
       - AI_MAX_TOKENS=${AI_MAX_TOKENS:-2000}

@@ -226,7 +226,7 @@ func callGemini(messages []Message) (string, string, error) {
 
 	model := os.Getenv("GEMINI_MODEL")
 	if model == "" {
-		model = "gemini-1.5-flash" // Free tier model
+		model = "gemini-2.0-flash-exp" // Use the latest flash model
 	}
 
 	// Convert messages to Gemini format
@@ -266,7 +266,7 @@ func callGemini(messages []Message) (string, string, error) {
 		return "", "", fmt.Errorf("failed to marshal request: %v", err)
 	}
 
-	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", model, apiKey)
+	url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1/models/%s:generateContent?key=%s", model, apiKey)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
