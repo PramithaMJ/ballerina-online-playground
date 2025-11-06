@@ -290,6 +290,13 @@
   background: rgba(82, 195, 194, 0.1);
 }
 
+.btn-icon.active {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  background: rgba(82, 195, 194, 0.2);
+  box-shadow: 0 0 10px rgba(82, 195, 194, 0.3);
+}
+
 .spinner {
   width: 16px;
   height: 16px;

@@ -9,6 +9,7 @@ export { default as OutputPanel } from './OutputPanel';
 export { default as ResizablePanels } from './ResizablePanels';
 export { default as Header } from './Header';
 export { default as DebugPanel } from './DebugPanel';
+export { default as AIChatPanel } from './AIChatPanel';
 
 // UI components
 export { default as EditorToolbar } from './EditorToolbar';

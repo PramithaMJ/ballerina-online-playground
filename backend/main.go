@@ -217,6 +217,21 @@ func main() {
 	http.HandleFunc("/debug/start", protectedChain(handler.StartDebugHandler))
 	http.HandleFunc("/debug/ws/", enableCORS(handler.DebugWebSocketHandler))
 
+	// AI endpoints (with rate limiting but lighter protection)
+	aiChain := func(h http.HandlerFunc) http.HandlerFunc {
+		return chain(
+			h,
+			middleware.RateLimitMiddleware(rateLimiter),
+			performanceMiddleware,
+			loggingMiddleware,
+			enableCORS,
+		)
+	}
+	http.HandleFunc("/api/ai/chat", aiChain(handler.HandleAIChat))
+	http.HandleFunc("/api/ai/explain", aiChain(handler.HandleAIExplain))
+	http.HandleFunc("/api/ai/fix", aiChain(handler.HandleAIFix))
+	http.HandleFunc("/api/ai/suggest", aiChain(handler.HandleAISuggest))
+
 	// Configure server with security optimizations
 	server := &http.Server{
 		Addr:           ":8081",
