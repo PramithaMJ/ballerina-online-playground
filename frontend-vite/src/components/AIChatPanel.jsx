@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Lightbulb, Wrench, Zap, HelpCircle, Trash2, User, Bot, Copy, Send, Loader2, AlertCircle, Terminal, Activity } from 'lucide-react';
+import { Sparkles, Lightbulb, Wrench, Zap, HelpCircle, Trash2, User, Bot, Copy, Send, Loader2, AlertCircle, Terminal, Activity, BookOpen } from 'lucide-react';
 import { marked } from 'marked';
 import { aiService } from '../services';
 import './AIChatPanel.css';
@@ -8,7 +8,7 @@ import './AIChatPanel.css';
  * AI Chat Panel Component
  * Provides AI-powered code assistance and chat for Ballerina code
  */
-const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchToOutput }) => {
+const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchToOutput, onOpenUserGuide }) => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -206,6 +206,16 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchTo
           <h3>AI Assistant</h3>
         </div>
         <div className="ai-header-actions">
+          {onOpenUserGuide && (
+            <button
+              onClick={onOpenUserGuide}
+              className="user-guide-btn"
+              title="Open User Guide"
+              aria-label="Open User Guide"
+            >
+              <BookOpen size={16} />
+            </button>
+          )}
           {onSwitchToOutput && (
             <button
               onClick={onSwitchToOutput}

@@ -36,9 +36,8 @@ type OpenAIResponse struct {
 
 // Gemini API structures
 type GeminiRequest struct {
-	Contents          []GeminiContent          `json:"contents"`
-	GenerationConfig  GeminiGenerationConfig   `json:"generationConfig"`
-	SystemInstruction *GeminiSystemInstruction `json:"systemInstruction,omitempty"`
+	Contents         []GeminiContent        `json:"contents"`
+	GenerationConfig GeminiGenerationConfig `json:"generationConfig"`
 }
 
 type GeminiContent struct {
@@ -53,10 +52,6 @@ type GeminiPart struct {
 type GeminiGenerationConfig struct {
 	Temperature     float64 `json:"temperature"`
 	MaxOutputTokens int     `json:"maxOutputTokens"`
-}
-
-type GeminiSystemInstruction struct {
-	Parts []GeminiPart `json:"parts"`
 }
 
 type GeminiResponse struct {
@@ -231,14 +226,19 @@ func callGemini(messages []Message) (string, string, error) {
 
 	// Convert messages to Gemini format
 	var contents []GeminiContent
-	var systemInstruction *GeminiSystemInstruction
 
 	for _, msg := range messages {
 		if msg.Role == "system" {
-			// System messages go in systemInstruction
-			systemInstruction = &GeminiSystemInstruction{
-				Parts: []GeminiPart{{Text: msg.Content}},
-			}
+			// For Gemini v1, prepend system message as a user message
+			contents = append(contents, GeminiContent{
+				Role:  "user",
+				Parts: []GeminiPart{{Text: "SYSTEM INSTRUCTIONS: " + msg.Content}},
+			})
+			// Add a model acknowledgment
+			contents = append(contents, GeminiContent{
+				Role:  "model",
+				Parts: []GeminiPart{{Text: "Understood. I will follow these instructions."}},
+			})
 		} else {
 			// Convert role: OpenAI uses "assistant", Gemini uses "model"
 			role := msg.Role
@@ -258,7 +258,6 @@ func callGemini(messages []Message) (string, string, error) {
 			Temperature:     0.7,
 			MaxOutputTokens: 2000,
 		},
-		SystemInstruction: systemInstruction,
 	}
 
 	jsonData, err := json.Marshal(reqBody)

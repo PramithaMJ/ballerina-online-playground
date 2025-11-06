@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { X, BookOpen, Check, AlertCircle, Info, Keyboard, Zap } from 'lucide-react';
+import { X, BookOpen, Check, AlertCircle, Info, Keyboard, Zap, Sparkles, Bot, Lightbulb, Wrench } from 'lucide-react';
 import './UserGuide.css';
 
 /**
@@ -85,6 +85,73 @@ const UserGuide = ({ isOpen, onClose, isFirstVisit = false }) => {
               <li>View the execution output in the <strong>Output Panel</strong> (right panel)</li>
               <li>Use <strong>"Reset"</strong> to restore sample code or <strong>"Clear"</strong> to start fresh</li>
             </ol>
+          </section>
+
+          {/* AI Assistant Feature */}
+          <section className="guide-section ai-feature-section">
+            <h3><Sparkles size={20} className="ai-icon" /> AI Assistant</h3>
+            <p>
+              Get intelligent help with your Ballerina code using our built-in AI assistant powered by Google Gemini and OpenAI.
+              The AI assistant provides real-time coding assistance, explanations, and suggestions.
+            </p>
+            
+            <h4><Bot size={18} /> How to Use AI Assistant</h4>
+            <ol>
+              <li>Click the <strong><Sparkles size={14} style={{display: 'inline'}} /> AI Assistant</strong> icon in the header to open the chat panel</li>
+              <li>Use quick action buttons for common tasks:
+                <ul className="feature-list">
+                  <li><Lightbulb size={14} className="inline-icon" /> <strong>Explain Code</strong> - Get detailed explanations of your code</li>
+                  <li><Wrench size={14} className="inline-icon" /> <strong>Fix Errors</strong> - Get help fixing compilation or runtime errors</li>
+                  <li><Zap size={14} className="inline-icon" /> <strong>Optimize</strong> - Get suggestions to improve code performance</li>
+                  <li><Info size={14} className="inline-icon" /> <strong>Help</strong> - Ask general questions about Ballerina</li>
+                </ul>
+              </li>
+              <li>Type custom questions in the chat input and press <strong>Send</strong> or hit <kbd>Enter</kbd></li>
+              <li>When AI provides code suggestions, click <strong>"Insert Code"</strong> to add it to your editor</li>
+              <li>Toggle between AI Assistant and Output Console using the view switcher buttons</li>
+            </ol>
+
+            <h4><Check size={18} className="success-icon" /> AI Features</h4>
+            <ul className="feature-list">
+              <li>
+                <Check size={16} className="check-icon" />
+                <span><strong>Code Explanations:</strong> Understand what your code does line by line</span>
+              </li>
+              <li>
+                <Check size={16} className="check-icon" />
+                <span><strong>Error Fixing:</strong> Get specific suggestions to fix compilation and runtime errors</span>
+              </li>
+              <li>
+                <Check size={16} className="check-icon" />
+                <span><strong>Code Optimization:</strong> Improve performance and follow best practices</span>
+              </li>
+              <li>
+                <Check size={16} className="check-icon" />
+                <span><strong>Documentation Help:</strong> Learn proper documentation syntax with # comments</span>
+              </li>
+              <li>
+                <Check size={16} className="check-icon" />
+                <span><strong>Ballerina Expertise:</strong> Trained on official Ballerina documentation and examples</span>
+              </li>
+              <li>
+                <Check size={16} className="check-icon" />
+                <span><strong>Streaming Responses:</strong> See responses appear in real-time like ChatGPT</span>
+              </li>
+              <li>
+                <Check size={16} className="check-icon" />
+                <span><strong>Markdown Support:</strong> Formatted responses with code blocks, bold, lists, and more</span>
+              </li>
+              <li>
+                <Check size={16} className="check-icon" />
+                <span><strong>Context-Aware:</strong> AI understands your current code and provides relevant suggestions</span>
+              </li>
+            </ul>
+
+            <div className="ai-tip">
+              <Info size={16} />
+              <span><strong>Tip:</strong> The AI has comprehensive knowledge of Ballerina syntax, standard library modules (io, http, sql, etc.), 
+              error handling patterns, and best practices from ballerina.io documentation.</span>
+            </div>
           </section>
 
           {/* Supported Features */}
