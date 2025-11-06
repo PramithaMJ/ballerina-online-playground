@@ -14,7 +14,7 @@ services:
       - TEMP_DIR=/tmp/ballerina-playground
       - HOST_TEMP_DIR=/tmp/ballerina-playground
       - GOMAXPROCS=2
-      - ALLOWED_ORIGIN=https://pramithamj.github.io,https://ballerina-online-playground.pages.dev
+      - ALLOWED_ORIGIN=https://pramithamj.github.io,https://ballerina-online-playground.pages.dev,https://19e46647.ballerina-online-playground.pages.dev
       # Cloudflare Turnstile - IMPORTANT: Replace with actual secret key for production!
       - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY:-0x4AAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAA}
       - ENABLE_TURNSTILE_VERIFICATION=${ENABLE_TURNSTILE_VERIFICATION:-true}
