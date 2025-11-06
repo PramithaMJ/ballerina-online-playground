@@ -4,7 +4,7 @@
  * @component
  */
 
-import { Terminal, Info, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
+import { Terminal, Info, AlertCircle, Maximize2, Minimize2, Sparkles } from 'lucide-react';
 import OutputStatus from './OutputStatus';
 import EmptyState from './EmptyState';
 import { useOutputFullscreen } from '../hooks';
@@ -16,8 +16,9 @@ import './OutputPanel.css';
  * @param {string} props.error - Error output
  * @param {boolean} props.isRunning - Whether code is currently executing
  * @param {number} props.progress - Execution progress (0-100)
+ * @param {Function} props.onSwitchToAI - Switch to AI Assistant handler
  */
-const OutputPanel = ({ output, error, isRunning, progress }) => {
+const OutputPanel = ({ output, error, isRunning, progress, onSwitchToAI }) => {
   const hasContent = output || error;
   const isSuccess = output && !error;
   const isError = !!error;
@@ -36,6 +37,18 @@ const OutputPanel = ({ output, error, isRunning, progress }) => {
         </div>
         
         <div className="output-header-controls">
+          {onSwitchToAI && (
+            <button 
+              className="switch-ai-btn" 
+              onClick={onSwitchToAI}
+              title="Switch to AI Assistant"
+              aria-label="Switch to AI Assistant"
+            >
+              <Sparkles size={16} />
+              <span>AI Assistant</span>
+            </button>
+          )}
+          
           {hasContent && !isRunning && (
             <div className="output-status">
               <OutputStatus isSuccess={isSuccess} isError={isError} />
