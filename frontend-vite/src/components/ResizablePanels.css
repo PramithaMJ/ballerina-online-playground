@@ -3,15 +3,20 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
+  flex: 1; /* Added to ensure it fills parent */
+  min-height: 0; /* Critical for flex children */
+  overflow: hidden; /* Prevent wrapper overflow */
 }
 
 /* Resizable Container */
 .resizable-container {
   display: flex;
   flex: 1;
-  overflow: hidden;
+  overflow: hidden; /* Keep hidden for proper layout */
   position: relative;
   min-height: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .resizable-container.resizing {
@@ -23,11 +28,25 @@
 }
 
 .resizable-panel {
-  overflow: hidden;
+  overflow: hidden; /* Keep hidden but ensure proper sizing */
   min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
+  position: relative;
+  height: 100%; /* Explicit height */
+  width: 100%; /* Explicit width */
+}
+
+/* Ensure child components fill the panel properly */
+.resizable-panel > * {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  width: 100%;
 }
 
 /* Resizer Handle */
@@ -135,12 +154,50 @@
     padding: 0.4rem 0.8rem;
   }
 
+  /* Make resizer thicker and easier to grab on mobile */
   .resizer.horizontal {
-    width: 6px;
+    width: 12px; /* Increased from 6px for easier touch */
   }
 
   .resizer.vertical {
-    height: 6px;
+    height: 12px; /* Increased from 6px for easier touch */
+  }
+
+  /* Always show handle on mobile for better visibility */
+  .resizer-handle {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+
+  .resizer.horizontal .resizer-handle {
+    width: 32px; /* Larger touch target */
+    height: 56px;
+  }
+
+  .resizer.vertical .resizer-handle {
+    width: 56px; /* Larger touch target */
+    height: 32px;
+  }
+
+  .resizer:active .resizer-handle,
+  .resizer:hover .resizer-handle {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+/* Extra small screens - even larger touch targets */
+@media (max-width: 480px) {
+  .resizer.horizontal {
+    width: 16px;
+  }
+
+  .resizer.vertical {
+    height: 16px;
+  }
+
+  .resizer-handle {
+    opacity: 0.8;
   }
 }
 
