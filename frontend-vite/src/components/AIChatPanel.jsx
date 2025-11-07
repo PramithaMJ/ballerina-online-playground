@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Lightbulb, Wrench, Zap, HelpCircle, Trash2, User, Bot, Copy, Send, Loader2, AlertCircle, Terminal, Activity, BookOpen, ArrowUp } from 'lucide-react';
+import { Sparkles, Lightbulb, Wrench, Zap, HelpCircle, Trash2, User, Bot, Copy, Send, Loader2, AlertCircle, Terminal, Activity, BookOpen, ArrowUp, MoreVertical, Maximize2, Minimize2 } from 'lucide-react';
 import { marked } from 'marked';
 import { aiService } from '../services';
 import './AIChatPanel.css';
@@ -18,9 +18,48 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchTo
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isNarrow, setIsNarrow] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const chatEndRef = useRef(null);
   const chatMessagesRef = useRef(null);
   const inputRef = useRef(null);
+  const mobileMenuRef = useRef(null);
+  const headerRef = useRef(null);
+
+  // Toggle fullscreen mode
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  // Detect narrow panels using ResizeObserver
+  useEffect(() => {
+    if (!headerRef.current) return;
+    
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        setIsNarrow(width < 500); // Show compact mode when panel is < 500px
+      }
+    });
+    
+    resizeObserver.observe(headerRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setShowMobileMenu(false);
+      }
+    };
+
+    if (showMobileMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMobileMenu]);
 
   // Configure marked for markdown rendering
   useEffect(() => {
@@ -246,42 +285,129 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchTo
   };
 
   return (
-    <div className="ai-chat-panel">
-      <div className="ai-header">
+    <div className={`ai-chat-panel ${isFullscreen ? 'ai-fullscreen' : ''}`}>
+      <div className="ai-header" ref={headerRef}>
         <div className="ai-header-title">
           <Sparkles className="ai-icon" size={20} />
-          <h3>AI Assistant</h3>
+          <h3 className={isNarrow ? 'hide-on-narrow' : ''}>AI Assistant</h3>
         </div>
+        
         <div className="ai-header-actions">
-          {onOpenUserGuide && (
-            <button
-              onClick={onOpenUserGuide}
-              className="user-guide-btn"
-              title="Open User Guide"
-              aria-label="Open User Guide"
-            >
-              <BookOpen size={16} />
-            </button>
+          {/* Desktop/Wide View - All buttons visible */}
+          {!isNarrow && (
+            <>
+              {onOpenUserGuide && (
+                <button
+                  onClick={onOpenUserGuide}
+                  className="user-guide-btn"
+                  title="Open User Guide"
+                  aria-label="Open User Guide"
+                >
+                  <BookOpen size={16} />
+                </button>
+              )}
+              {onSwitchToOutput && (
+                <button
+                  onClick={onSwitchToOutput}
+                  className="switch-view-btn"
+                  title="Switch to Output/Console"
+                  aria-label="Switch to Output/Console"
+                >
+                  <Terminal size={16} />
+                  <span>Output</span>
+                </button>
+              )}
+              <button
+                onClick={clearConversation}
+                className="clear-btn"
+                title="Clear conversation"
+                aria-label="Clear conversation"
+              >
+                <Trash2 size={18} />
+              </button>
+              <button
+                onClick={toggleFullscreen}
+                className="fullscreen-btn"
+                title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              >
+                {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+            </>
           )}
-          {onSwitchToOutput && (
-            <button
-              onClick={onSwitchToOutput}
-              className="switch-view-btn"
-              title="Switch to Output/Console"
-              aria-label="Switch to Output/Console"
-            >
-              <Terminal size={16} />
-              <span>Output</span>
-            </button>
+
+          {/* Narrow View - Compact menu */}
+          {isNarrow && (
+            <div className="narrow-controls" ref={mobileMenuRef}>
+              <button
+                className="control-btn compact-menu-btn"
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                title="More options"
+                aria-label="More options"
+              >
+                <MoreVertical size={16} />
+              </button>
+
+              {showMobileMenu && (
+                <div className="compact-dropdown-menu">
+                  {onOpenUserGuide && (
+                    <button
+                      className="compact-menu-item"
+                      onClick={() => {
+                        onOpenUserGuide();
+                        setShowMobileMenu(false);
+                      }}
+                    >
+                      <BookOpen size={16} />
+                      <span>User Guide</span>
+                    </button>
+                  )}
+                  
+                  {onSwitchToOutput && (
+                    <>
+                      <div className="compact-menu-divider" />
+                      <button
+                        className="compact-menu-item"
+                        onClick={() => {
+                          onSwitchToOutput();
+                          setShowMobileMenu(false);
+                        }}
+                      >
+                        <Terminal size={16} />
+                        <span>Output Console</span>
+                      </button>
+                    </>
+                  )}
+                  
+                  <div className="compact-menu-divider" />
+                  
+                  <button
+                    className="compact-menu-item"
+                    onClick={() => {
+                      clearConversation();
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    <Trash2 size={16} />
+                    <span>Clear Chat</span>
+                  </button>
+                  
+                  <div className="compact-menu-divider" />
+                  
+                  <button
+                    className="compact-menu-item"
+                    onClick={() => {
+                      toggleFullscreen();
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                    <span>{isFullscreen ? "Exit Fullscreen" : "Fullscreen"}</span>
+                  </button>
+                </div>
+              )}
+            </div>
           )}
-          <button
-            onClick={clearConversation}
-            className="clear-btn"
-            title="Clear conversation"
-            aria-label="Clear conversation"
-          >
-            <Trash2 size={18} />
-          </button>
         </div>
       </div>
 

@@ -4,7 +4,7 @@
  * @component
  */
 
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import { Code2 } from 'lucide-react';
 import EditorToolbar from './EditorToolbar';
@@ -26,6 +26,8 @@ const CodeEditor = ({ code, onChange, onEditorMount }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [editorRef, setEditorRef] = useState(null);
   const [monacoRef, setMonacoRef] = useState(null);
+  const [isNarrow, setIsNarrow] = useState(false);
+  const headerRef = useRef(null);
   
   const {
     fontSize,
@@ -41,6 +43,21 @@ const CodeEditor = ({ code, onChange, onEditorMount }) => {
     isEditorFullscreen,
     toggleEditorFullscreen,
   } = useCodeEditorFullscreen();
+
+  // Detect narrow panels using ResizeObserver
+  useEffect(() => {
+    if (!headerRef.current) return;
+    
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        setIsNarrow(width < 600); // Show compact mode when panel is < 600px
+      }
+    });
+    
+    resizeObserver.observe(headerRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   // Handle before mount - configure Monaco before initialization
   const handleEditorWillMount = (monaco) => {
@@ -125,15 +142,15 @@ const CodeEditor = ({ code, onChange, onEditorMount }) => {
 
   return (
     <div className={`editor-container ${isEditorFullscreen ? 'editor-fullscreen' : ''}`}>
-      <div className="panel-header">
+      <div className="panel-header" ref={headerRef}>
         <div className="panel-title">
           <Code2 size={18} />
-          <span>Code Editor</span>
+          <span className={isNarrow ? 'hide-on-narrow' : ''}>Code Editor</span>
         </div>
         
         <div className="editor-info">
           <span className="language-badge">Ballerina</span>
-          <span className="line-info">{lineCount} lines</span>
+          <span className={`line-info ${isNarrow ? 'hide-on-narrow' : ''}`}>{lineCount} lines</span>
         </div>
         
         <EditorToolbar
@@ -147,6 +164,7 @@ const CodeEditor = ({ code, onChange, onEditorMount }) => {
           onToggleSettings={() => setShowSettings(!showSettings)}
           isEditorFullscreen={isEditorFullscreen}
           onToggleEditorFullscreen={toggleEditorFullscreen}
+          isNarrow={isNarrow}
         />
       </div>
       

@@ -107,16 +107,16 @@
   align-items: center;
 }
 
-/* Desktop controls - hidden on mobile */
+/* Desktop controls - shown by default, hidden by JS when narrow */
 .desktop-controls {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-/* Mobile controls - hidden on desktop */
+/* Mobile controls - hidden by default, shown by JS when narrow */
 .mobile-controls {
-  display: none;
+  display: block;
   position: relative;
 }
 

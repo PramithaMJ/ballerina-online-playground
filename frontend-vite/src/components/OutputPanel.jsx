@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { Terminal, Info, AlertCircle, Maximize2, Minimize2, Sparkles, ArrowUp } from 'lucide-react';
+import { Terminal, Info, AlertCircle, Maximize2, Minimize2, Sparkles, ArrowUp, MoreVertical } from 'lucide-react';
 import OutputStatus from './OutputStatus';
 import EmptyState from './EmptyState';
 import { useOutputFullscreen } from '../hooks';
@@ -25,11 +25,44 @@ const OutputPanel = ({ output, error, isRunning, progress, onSwitchToAI }) => {
   const isError = !!error;
   const outputWrapperRef = useRef(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const mobileMenuRef = useRef(null);
+  const headerRef = useRef(null);
+  const [isNarrow, setIsNarrow] = useState(false);
   
   const {
     isOutputFullscreen,
     toggleOutputFullscreen,
   } = useOutputFullscreen();
+
+  // Detect narrow panels using ResizeObserver
+  useEffect(() => {
+    if (!headerRef.current) return;
+    
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        setIsNarrow(width < 500); // Show compact mode when panel is < 500px
+      }
+    });
+    
+    resizeObserver.observe(headerRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setShowMobileMenu(false);
+      }
+    };
+
+    if (showMobileMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMobileMenu]);
 
   // Scroll to top when new output arrives
   useEffect(() => {
@@ -67,39 +100,94 @@ const OutputPanel = ({ output, error, isRunning, progress, onSwitchToAI }) => {
 
   return (
     <div className={`output-container ${isOutputFullscreen ? 'output-fullscreen' : ''}`}>
-      <div className="panel-header">
+      <div className="panel-header" ref={headerRef}>
         <div className="panel-title">
           <Terminal size={18} />
-          <span>Output Console</span>
+          <span className={isNarrow ? 'hide-on-narrow' : ''}>Output Console</span>
         </div>
         
         <div className="output-header-controls">
-          {onSwitchToAI && (
-            <button 
-              className="switch-ai-btn" 
-              onClick={onSwitchToAI}
-              title="Switch to AI Assistant"
-              aria-label="Switch to AI Assistant"
-            >
-              <Sparkles size={16} />
-              <span>AI Assistant</span>
-            </button>
+          {/* Desktop/Wide View - All buttons visible */}
+          {!isNarrow && (
+            <>
+              {onSwitchToAI && (
+                <button 
+                  className="switch-ai-btn" 
+                  onClick={onSwitchToAI}
+                  title="Switch to AI Assistant"
+                  aria-label="Switch to AI Assistant"
+                >
+                  <Sparkles size={16} />
+                  <span>AI Assistant</span>
+                </button>
+              )}
+              
+              {hasContent && !isRunning && (
+                <div className="output-status">
+                  <OutputStatus isSuccess={isSuccess} isError={isError} />
+                </div>
+              )}
+              
+              <button 
+                className="control-btn" 
+                onClick={toggleOutputFullscreen}
+                title={isOutputFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                aria-label={isOutputFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              >
+                {isOutputFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+            </>
           )}
-          
-          {hasContent && !isRunning && (
-            <div className="output-status">
-              <OutputStatus isSuccess={isSuccess} isError={isError} />
+
+          {/* Narrow View - Compact buttons with menu */}
+          {isNarrow && (
+            <div className="narrow-controls" ref={mobileMenuRef}>
+              {hasContent && !isRunning && (
+                <div className="output-status-compact">
+                  <OutputStatus isSuccess={isSuccess} isError={isError} />
+                </div>
+              )}
+              
+              <button 
+                className="control-btn compact-menu-btn" 
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                title="More options"
+                aria-label="More options"
+              >
+                <MoreVertical size={16} />
+              </button>
+
+              {showMobileMenu && (
+                <div className="compact-dropdown-menu">
+                  {onSwitchToAI && (
+                    <button 
+                      className="compact-menu-item" 
+                      onClick={() => {
+                        onSwitchToAI();
+                        setShowMobileMenu(false);
+                      }}
+                    >
+                      <Sparkles size={16} />
+                      <span>AI Assistant</span>
+                    </button>
+                  )}
+                  
+                  <div className="compact-menu-divider" />
+                  
+                  <button 
+                    className="compact-menu-item" 
+                    onClick={() => {
+                      toggleOutputFullscreen();
+                      setShowMobileMenu(false);
+                    }}
+                  >
+                    {isOutputFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                    <span>{isOutputFullscreen ? "Exit Fullscreen" : "Fullscreen"}</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
-          
-          <button 
-            className="control-btn" 
-            onClick={toggleOutputFullscreen}
-            title={isOutputFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-            aria-label={isOutputFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {isOutputFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-          </button>
         </div>
       </div>
       
