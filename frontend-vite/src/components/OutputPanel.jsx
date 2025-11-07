@@ -4,7 +4,8 @@
  * @component
  */
 
-import { Terminal, Info, AlertCircle, Maximize2, Minimize2, Sparkles } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Terminal, Info, AlertCircle, Maximize2, Minimize2, Sparkles, ArrowUp } from 'lucide-react';
 import OutputStatus from './OutputStatus';
 import EmptyState from './EmptyState';
 import { useOutputFullscreen } from '../hooks';
@@ -22,11 +23,47 @@ const OutputPanel = ({ output, error, isRunning, progress, onSwitchToAI }) => {
   const hasContent = output || error;
   const isSuccess = output && !error;
   const isError = !!error;
+  const outputWrapperRef = useRef(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   
   const {
     isOutputFullscreen,
     toggleOutputFullscreen,
   } = useOutputFullscreen();
+
+  // Scroll to top when new output arrives
+  useEffect(() => {
+    if (outputWrapperRef.current && hasContent && !isRunning) {
+      // Scroll to top after content is rendered
+      setTimeout(() => {
+        if (outputWrapperRef.current) {
+          outputWrapperRef.current.scrollTop = 0;
+        }
+      }, 100);
+    }
+  }, [output, error, hasContent, isRunning]);
+
+  // Track scroll position to show/hide scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      if (outputWrapperRef.current) {
+        setShowScrollTop(outputWrapperRef.current.scrollTop > 200);
+      }
+    };
+
+    const wrapper = outputWrapperRef.current;
+    if (wrapper) {
+      wrapper.addEventListener('scroll', handleScroll);
+      return () => wrapper.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    if (outputWrapperRef.current) {
+      outputWrapperRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className={`output-container ${isOutputFullscreen ? 'output-fullscreen' : ''}`}>
@@ -80,7 +117,7 @@ const OutputPanel = ({ output, error, isRunning, progress, onSwitchToAI }) => {
         </div>
       )}
       
-      <div className="output-wrapper">
+      <div className="output-wrapper" ref={outputWrapperRef}>
         {!hasContent ? (
           <EmptyState
             icon={Info}
@@ -109,6 +146,18 @@ const OutputPanel = ({ output, error, isRunning, progress, onSwitchToAI }) => {
               </div>
             )}
           </div>
+        )}
+        
+        {/* Scroll to top button */}
+        {showScrollTop && (
+          <button 
+            className="scroll-to-top-btn" 
+            onClick={scrollToTop}
+            title="Scroll to top"
+            aria-label="Scroll to top"
+          >
+            <ArrowUp size={20} />
+          </button>
         )}
       </div>
     </div>

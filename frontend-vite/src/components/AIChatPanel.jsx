@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Lightbulb, Wrench, Zap, HelpCircle, Trash2, User, Bot, Copy, Send, Loader2, AlertCircle, Terminal, Activity, BookOpen } from 'lucide-react';
+import { Sparkles, Lightbulb, Wrench, Zap, HelpCircle, Trash2, User, Bot, Copy, Send, Loader2, AlertCircle, Terminal, Activity, BookOpen, ArrowUp } from 'lucide-react';
 import { marked } from 'marked';
 import { aiService } from '../services';
 import './AIChatPanel.css';
@@ -17,7 +17,9 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchTo
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const chatEndRef = useRef(null);
+  const chatMessagesRef = useRef(null);
   const inputRef = useRef(null);
 
   // Configure marked for markdown rendering
@@ -34,6 +36,32 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchTo
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Ensure chat container can scroll to top when user scrolls manually
+  useEffect(() => {
+    const chatContainer = chatEndRef.current?.parentElement;
+    if (chatContainer) {
+      // Set initial scroll position to top on mount
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  }, []);
+
+  // Track scroll position to show/hide scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      if (chatMessagesRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = chatMessagesRef.current;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
+        setShowScrollTop(!isNearBottom && scrollTop > 200);
+      }
+    };
+
+    const chatContainer = chatMessagesRef.current;
+    if (chatContainer) {
+      chatContainer.addEventListener('scroll', handleScroll);
+      return () => chatContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
 
   // Focus input on mount
   useEffect(() => {
@@ -208,6 +236,15 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchTo
     ]);
   };
 
+  /**
+   * Scroll to top of chat
+   */
+  const scrollToTop = () => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="ai-chat-panel">
       <div className="ai-header">
@@ -263,7 +300,7 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchTo
         ))}
       </div>
 
-      <div className="chat-messages">
+      <div className="chat-messages" ref={chatMessagesRef}>
         {messages.map((msg, idx) => (
           <div key={idx} className={`message ${msg.role} ${msg.isError ? 'error' : ''}`}>
             <div className="message-avatar">
@@ -312,6 +349,18 @@ const AIChatPanel = ({ code, onCodeInsert, ballerinaVersion, onError, onSwitchTo
         )}
         
         <div ref={chatEndRef} />
+        
+        {/* Scroll to top button */}
+        {showScrollTop && (
+          <button 
+            className="scroll-to-top-btn" 
+            onClick={scrollToTop}
+            title="Scroll to top"
+            aria-label="Scroll to top"
+          >
+            <ArrowUp size={20} />
+          </button>
+        )}
       </div>
 
       <div className="chat-input-container">
