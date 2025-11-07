@@ -4,10 +4,10 @@
   position: fixed;
   top: 80px;
   right: 20px;
-  max-width: 420px;
+  max-width: 480px;
   width: calc(100% - 40px);
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
   gap: 1rem;
   padding: 1.5rem;
   border-radius: 16px;
@@ -15,7 +15,7 @@
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.3),
     0 2px 8px rgba(255, 107, 107, 0.2);
-  animation: slideInRight 0.3s ease-out, shake 0.5s ease-in-out 0.3s;
+  animation: slideInRight 0.3s ease-out;
   z-index: 9999;
 }
 
@@ -32,47 +32,22 @@
   -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
 
-.error-icon {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 107, 107, 0.15);
-  border-radius: 12px;
-  color: #ff6b6b;
-  animation: pulse 2s ease-in-out infinite;
-}
-
 .error-content {
   flex: 1;
   min-width: 0;
-}
-
-.error-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #ff6b6b;
-  margin: 0 0 0.5rem 0;
-}
-
-.error-message {
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  margin: 0 0 0.75rem 0;
-  line-height: 1.5;
+  text-align: center;
 }
 
 .error-hint {
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  margin: 0;
-  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+  padding: 0.75rem 1rem;
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
+  border-radius: 8px;
   border-left: 3px solid #ff6b6b;
   font-family: 'Fira Code', monospace;
+  text-align: left;
 }
 
 :root[data-theme="light"] .error-hint {
@@ -81,9 +56,9 @@
 
 .error-actions {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex-shrink: 0;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
 }
 
 .error-btn {
@@ -137,29 +112,6 @@
   }
 }
 
-@keyframes shake {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  10%, 30%, 50%, 70%, 90% {
-    transform: translateX(-5px);
-  }
-  20%, 40%, 60%, 80% {
-    transform: translateX(5px);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .error-notification {
@@ -169,16 +121,14 @@
     max-width: none;
     width: auto;
     padding: 1rem;
-    flex-wrap: wrap;
   }
 
   .error-actions {
-    flex-direction: row;
-    width: 100%;
-    justify-content: flex-end;
+    flex-wrap: wrap;
   }
 
   .error-btn-retry {
     flex: 1;
+    min-width: 120px;
   }
 }

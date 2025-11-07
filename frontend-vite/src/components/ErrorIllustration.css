@@ -1,0 +1,187 @@
+/**
+ * ErrorIllustration Component Styles
+ * Responsive error illustration with Ballerina swan
+ */
+
+.error-illustration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  animation: fadeInError 0.4s ease-out;
+}
+
+.error-illustration.compact {
+  padding: 2rem 1rem;
+}
+
+@keyframes fadeInError {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Image Container */
+.error-illustration-image {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 2rem;
+  animation: swanShake 0.6s ease-in-out;
+}
+
+.error-illustration.compact .error-illustration-image {
+  max-width: 280px;
+  margin-bottom: 1.5rem;
+}
+
+@keyframes swanShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.error-illustration-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+/* Content */
+.error-illustration-content {
+  max-width: 500px;
+}
+
+.error-illustration-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #dc2626;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.025em;
+}
+
+.error-illustration.compact .error-illustration-title {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.error-illustration-message {
+  font-size: 1.125rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.error-illustration.compact .error-illustration-message {
+  font-size: 1rem;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .error-illustration-title {
+    color: #f87171;
+  }
+  
+  .error-illustration-message {
+    color: #94a3b8;
+  }
+}
+
+/* Light mode explicitly (when body has light class) */
+:root[data-theme="light"] .error-illustration-title,
+body.light-mode .error-illustration-title {
+  color: #dc2626;
+}
+
+:root[data-theme="light"] .error-illustration-message,
+body.light-mode .error-illustration-message {
+  color: #64748b;
+}
+
+/* Dark mode explicitly (when body has dark class) */
+:root[data-theme="dark"] .error-illustration-title,
+body.dark-mode .error-illustration-title {
+  color: #f87171;
+}
+
+:root[data-theme="dark"] .error-illustration-message,
+body.dark-mode .error-illustration-message {
+  color: #94a3b8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .error-illustration {
+    padding: 2rem 1rem;
+  }
+  
+  .error-illustration-image {
+    max-width: 320px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .error-illustration-title {
+    font-size: 1.5rem;
+  }
+  
+  .error-illustration-message {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .error-illustration {
+    padding: 1.5rem 1rem;
+  }
+  
+  .error-illustration-image {
+    max-width: 240px;
+    margin-bottom: 1rem;
+  }
+  
+  .error-illustration.compact .error-illustration-image {
+    max-width: 200px;
+  }
+  
+  .error-illustration-title {
+    font-size: 1.25rem;
+  }
+  
+  .error-illustration.compact .error-illustration-title {
+    font-size: 1.125rem;
+  }
+  
+  .error-illustration-message {
+    font-size: 0.9375rem;
+  }
+  
+  .error-illustration.compact .error-illustration-message {
+    font-size: 0.875rem;
+  }
+}
+
+/* Animation for error appearance */
+.error-section .error-illustration {
+  animation: errorBounce 0.5s ease-out;
+}
+
+@keyframes errorBounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  60% {
+    transform: scale(1.02) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

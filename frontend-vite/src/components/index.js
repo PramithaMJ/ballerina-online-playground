@@ -19,6 +19,7 @@ export { default as EmptyState } from './EmptyState';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as ConfirmDialog } from './ConfirmDialog';
 export { default as ErrorNotification } from './ErrorNotification';
+export { default as ErrorIllustration } from './ErrorIllustration';
 export { default as UserGuide } from './UserGuide';
 export { default as VersionSelector } from './VersionSelector';
 export { TurnstileChallenge } from './TurnstileChallenge';

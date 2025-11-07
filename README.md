@@ -35,13 +35,19 @@
 
 </div>
 
-# 🎯 Ballerina Online Playground
+# 🎯 Ballerina Online Playground - Free Ballerina Compiler & IDE
 
-A powerful, secure, and high-performance web-based IDE for writing, compiling, and executing Ballerina code in real-time. Built with modern web technologies and optimized for developer experience.
+> **The Best Free Online Ballerina Compiler and Playground** - Write, compile, and execute Ballerina code instantly in your browser. A powerful, secure, and high-performance web-based IDE for Ballerina programming language with AI assistance.
 
 **🌐 Try it now: [https://ballerina-online-playground.pages.dev/](https://ballerina-online-playground.pages.dev/)**
 
-Ballerina Lint Tool : [https://pramithamj.github.io/ballerina-lint/](https://pramithamj.github.io/ballerina-lint/)
+**📦 Source Code: [https://github.com/PramithaMJ/ballerina-online-playground](https://github.com/PramithaMJ/ballerina-online-playground)**
+
+**🔧 Ballerina Lint Tool: [https://pramithamj.github.io/ballerina-lint/](https://pramithamj.github.io/ballerina-lint/)**
+
+## 🔍 Keywords
+
+`ballerina online compiler` • `ballerina online playground` • `ballerina compiler` • `online ballerina editor` • `ballerina ide` • `ballerina code editor` • `run ballerina online` • `execute ballerina code` • `ballerina programming` • `ballerina swan lake` • `free ballerina compiler` • `ballerina web ide`
 
 ## ✨ Features
 

@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Terminal, Info, AlertCircle, Maximize2, Minimize2, Sparkles, ArrowUp, MoreVertical } from 'lucide-react';
 import OutputStatus from './OutputStatus';
 import EmptyState from './EmptyState';
+import ErrorIllustration from './ErrorIllustration';
 import { useOutputFullscreen } from '../hooks';
 import './OutputPanel.css';
 
@@ -216,9 +217,13 @@ const OutputPanel = ({ output, error, isRunning, progress, onSwitchToAI }) => {
           <div className="output-content">
             {error && (
               <div className="output-section error-section">
+                <ErrorIllustration 
+                  title="Compilation Error"
+                  message="Our swan got tangled in the code. Please try again!"
+                />
                 <div className="section-header">
                   <AlertCircle size={16} />
-                  <span>Error</span>
+                  <span>Error Details</span>
                 </div>
                 <pre className="output-text error-text">{error}</pre>
               </div>
