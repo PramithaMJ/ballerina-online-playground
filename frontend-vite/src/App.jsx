@@ -144,11 +144,6 @@ function App() {
     }
   };
 
-  // Show Turnstile verification page if not verified
-  if (!isVerified && envConfig.enableVerification) {
-    return <TurnstileChallenge onVerified={handleTurnstileVerified} />;
-  }
-
   // Handler functions
   const handleRun = async () => {
     try {
@@ -302,6 +297,11 @@ function App() {
       message: errorMessage,
     });
   };
+
+  // Show Turnstile verification page if not verified
+  if (!isVerified && envConfig.enableVerification) {
+    return <TurnstileChallenge onVerified={handleTurnstileVerified} />;
+  }
 
   return (
     <div className="app">
