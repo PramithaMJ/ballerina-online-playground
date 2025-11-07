@@ -197,12 +197,12 @@ const Header = ({
         >
           {isHorizontal ? (
             <>
-              <Columns size={18} />
+              <Rows size={18} />
               <span className="btn-text">Horizontal</span>
             </>
           ) : (
             <>
-              <Rows size={18} />
+              <Columns size={18} />
               <span className="btn-text">Vertical</span>
             </>
           )}

@@ -37,6 +37,11 @@ function App() {
   const [showUserGuide, setShowUserGuide] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
+  // Initialize layout from localStorage if available
+  const [currentLayout, setCurrentLayout] = useState(() => {
+    const savedLayout = localStorage.getItem('panelLayout');
+    return savedLayout || 'horizontal';
+  });
   const resizablePanelsRef = useRef(null);
 
   // Custom hooks for feature management
@@ -192,7 +197,20 @@ function App() {
 
   const handleToggleLayout = () => {
     resizablePanelsRef.current?.toggleLayout();
+    // Toggle the local state immediately (it alternates between 'horizontal' and 'vertical')
+    setCurrentLayout(prev => prev === 'horizontal' ? 'vertical' : 'horizontal');
   };
+
+  // Sync layout state with ref on mount and when ref updates
+  useEffect(() => {
+    // Small delay to ensure ref is populated
+    const timer = setTimeout(() => {
+      const layout = resizablePanelsRef.current?.layout || 'horizontal';
+      setCurrentLayout(layout);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleResetSplit = () => {
     resizablePanelsRef.current?.resetSplit();
@@ -284,9 +302,6 @@ function App() {
       message: errorMessage,
     });
   };
-
-  // Get current layout from ref
-  const currentLayout = resizablePanelsRef.current?.layout || 'horizontal';
 
   return (
     <div className="app">
