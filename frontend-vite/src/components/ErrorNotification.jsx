@@ -5,6 +5,7 @@
  */
 
 import { AlertTriangle, X, RefreshCw } from 'lucide-react';
+import ErrorIllustration from './ErrorIllustration';
 import './ErrorNotification.css';
 
 /**
@@ -16,13 +17,13 @@ import './ErrorNotification.css';
 const ErrorNotification = ({ message, onClose, onRetry }) => {
   return (
     <div className="error-notification glass-effect">
-      <div className="error-icon">
-        <AlertTriangle size={24} />
-      </div>
+      <ErrorIllustration 
+        title="Backend Connection Error"
+        message={message || "Unable to connect to the backend server"}
+        compact={true}
+      />
       
       <div className="error-content">
-        <h3 className="error-title">Backend Connection Error</h3>
-        <p className="error-message">{message}</p>
         <p className="error-hint">
           Make sure the backend server is running on port 8081
         </p>
