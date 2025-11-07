@@ -291,37 +291,36 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Human verification
 
-![1762426592659](images/README/1762426592659.png)
+<img src="./images/README/1762426592659.png" width="50%" alt="Human verification">
 
 ### Main Interface
 
-![1760422684730](images/README/1760422684730.png)
+<img src="./images/README/1760422684730.png" width="100%" alt="Human Main Interface">
 
 ### Version Selector
 
-![1760422698094](images/README/1760422698094.png)
+<img src="./images/README/1760422698094.png" width="50%" alt="version Selector">
 
 ### Code Execution
 
-![1760042352457](images/README/1760042352457.png)
+
+<img src="./images/README/1760042352457.png" width="100%" alt="Code Execution">
 
 ### Output Panel
 
-![1760042371205](images/README/1760042371205.png)
+<img src="./images/README/1760042371205.png" width="100%" alt="Output Panel">
 
 ### AI Assistant
 
-![1762461883002](images/README/1762461883002.png)
-
-![1762462022565](images/README/1762462022565.png)
+<img src="./images/README/1762462022565.png" width="100%" alt="AI Assistant">
 
 ### Settings
 
-![1760042377305](images/README/1760042377305.png)
+<img src="./images/README/1760042377305.png" width="100%" alt="Human verification">
 
 ### Error handling
 
-![1762520489436](images/README/1762520489436.png)
+<img src="./images/README/1762520489436.png" width="60%" alt="Something went wrong">
 
 ## 🔗 Links
 
