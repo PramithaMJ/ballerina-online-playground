@@ -22,6 +22,6 @@ export { default as ErrorNotification } from './ErrorNotification';
 export { default as ErrorIllustration } from './ErrorIllustration';
 export { default as UserGuide } from './UserGuide';
 export { default as VersionSelector } from './VersionSelector';
-export { TurnstileChallenge } from './TurnstileChallenge';
+export { default as TurnstileChallenge } from './TurnstileChallenge';
 export { default as Toast } from './Toast';
 export { default as ToastContainer } from './ToastContainer';
