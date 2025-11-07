@@ -1,2 +1,3 @@
-# SPA fallback - redirect all requests to index.html
-/*    /index.html   200
+# Cloudflare Pages SPA routing
+# Handle all routes and serve index.html
+/* /index.html 200

@@ -13,7 +13,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: false,
+    sourcemap: true, // Enable source maps for debugging production issues
     minify: 'esbuild',
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
@@ -24,6 +24,11 @@ export default defineConfig({
         }
       }
     }
+  },
+  // Define environment variables for build time
+  define: {
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL),
+    'import.meta.env.VITE_TURNSTILE_SITE_KEY': JSON.stringify(process.env.VITE_TURNSTILE_SITE_KEY),
+    'import.meta.env.VITE_ENABLE_VERIFICATION': JSON.stringify(process.env.VITE_ENABLE_VERIFICATION)
   }
 })
-
