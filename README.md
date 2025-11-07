@@ -319,6 +319,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ![1760042377305](images/README/1760042377305.png)
 
+### Error handling
+
+![1762520489436](images/README/1762520489436.png)
+
 ## 🔗 Links
 
 - **Live App**: [https://ballerina-online-playground.pages.dev/](https://ballerina-online-playground.pages.dev/)
