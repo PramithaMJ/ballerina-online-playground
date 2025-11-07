@@ -1,7 +1,31 @@
 {
-  "name": "ballerina-playground-frontend",
+  "name": "ballerina-online-playground",
+  "description": "Free online Ballerina compiler and playground - Write, compile, and execute Ballerina code instantly in your browser with AI assistance",
+  "version": "2.0.0",
+  "keywords": [
+    "ballerina",
+    "ballerina-compiler",
+    "online-compiler",
+    "playground",
+    "code-editor",
+    "monaco-editor",
+    "ballerina-ide",
+    "web-ide",
+    "ballerina-online",
+    "swan-lake",
+    "cloud-native"
+  ],
+  "author": "Pramitha Jayasooriya <pramithamj@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PramithaMJ/ballerina-online-playground"
+  },
+  "homepage": "https://ballerina-online-playground.pages.dev/",
+  "bugs": {
+    "url": "https://github.com/PramithaMJ/ballerina-online-playground/issues"
+  },
   "private": true,
-  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
