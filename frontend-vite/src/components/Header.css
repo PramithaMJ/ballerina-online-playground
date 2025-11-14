@@ -375,6 +375,7 @@
   .header {
     padding: 0.75rem 1rem;
     gap: 0.75rem;
+    flex-wrap: wrap;
   }
 
   .header-left {
@@ -429,16 +430,38 @@
   /* Show header-right when menu is open */
   .header-right.mobile-menu-open {
     display: flex;
+    flex-direction: column;
     animation: slideDown 0.3s ease;
     /* make the mobile menu an overlay so it covers left logo/content and looks modal */
     position: fixed;
     left: 1rem;
     right: 1rem;
-    top: 64px;
+    top: 70px;
     z-index: 1101;
-    max-height: calc(100vh - 80px);
-    overflow: auto;
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    overflow-x: hidden;
     padding: 1rem;
+    gap: 0.5rem;
+  }
+
+  /* Custom scrollbar for mobile menu */
+  .header-right.mobile-menu-open::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .header-right.mobile-menu-open::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+
+  .header-right.mobile-menu-open::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 3px;
+  }
+
+  .header-right.mobile-menu-open::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hover);
   }
 
   @keyframes slideDown {
@@ -457,7 +480,8 @@
     width: 100%;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 0.5rem;
+    padding: 0;
+    flex-wrap: nowrap;
   }
 
   .control-group.primary-actions,
@@ -467,7 +491,7 @@
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background: rgba(45, 45, 48, 0.5);
-    padding: 0.75rem;
+    padding: 0.5rem;
   }
 
   :root[data-theme="light"] .control-group.primary-actions,
