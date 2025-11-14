@@ -430,6 +430,15 @@
   .header-right.mobile-menu-open {
     display: flex;
     animation: slideDown 0.3s ease;
+    /* make the mobile menu an overlay so it covers left logo/content and looks modal */
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    top: 64px;
+    z-index: 1101;
+    max-height: calc(100vh - 80px);
+    overflow: auto;
+    padding: 1rem;
   }
 
   @keyframes slideDown {
@@ -472,6 +481,19 @@
   .header-divider,
   .control-group::after {
     display: none;
+  }
+
+  /* Backdrop that covers the page behind the mobile menu */
+  .mobile-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1100;
+  }
+
+  /* Ensure the toggle (X) stays above the backdrop */
+  .mobile-menu-toggle {
+    z-index: 1102;
   }
 
   /* Full width buttons in mobile */

@@ -123,6 +123,14 @@ const Header = ({
       >
         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
+      {/* Backdrop for mobile menu - clicking closes the menu */}
+      {isMobileMenuOpen && (
+        <div
+          className="mobile-menu-backdrop"
+          onClick={closeMobileMenu}
+          aria-hidden="true"
+        />
+      )}
       
       <div className={`header-right ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
         {/* Version Selector */}
