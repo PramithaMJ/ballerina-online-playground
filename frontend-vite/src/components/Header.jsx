@@ -133,8 +133,6 @@ const Header = ({
             disabled={isRunning}
           />
         </div>
-        
-        <div className="header-divider" role="separator"></div>
 
         {/* Primary Actions */}
         <div className="control-group primary-actions">
@@ -224,8 +222,6 @@ const Header = ({
         </div>
 
         {/* Layout Controls */}
-        <div className="header-divider" role="separator"></div>
-        
         <div className="control-group layout-controls">
         <button 
           className={`btn btn-secondary ${isHorizontal ? 'active' : ''}`}
@@ -256,8 +252,6 @@ const Header = ({
           <span className="btn-text">Reset Split</span>
         </button>
         </div>
-        
-        <div className="header-divider" role="separator"></div>
 
         {/* Fullscreen Control */}
         <div className="control-group">
@@ -271,8 +265,6 @@ const Header = ({
           <span className="btn-text">{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
         </button>
         </div>
-        
-        <div className="header-divider" role="separator"></div>
 
         {/* Theme and External Links */}
         <div className="control-group utility-controls">
