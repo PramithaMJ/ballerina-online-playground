@@ -43,10 +43,10 @@ class TurnstileManager {
 
     this.debug(' Initializing Turnstile manager with token pool...');
 
-    // Create invisible container
+    // Create hidden container - use compact size for mobile compatibility
     this.containerElement = document.createElement('div');
     this.containerElement.id = 'turnstile-refresh-widget';
-    this.containerElement.style.cssText = 'position: fixed; bottom: -200px; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none;';
+    this.containerElement.style.cssText = 'position: fixed; bottom: 0; left: 0; width: 300px; height: 65px; opacity: 0; pointer-events: none; z-index: -9999; overflow: hidden; transform: translateY(100px);';
     document.body.appendChild(this.containerElement);
 
     // Wait for Turnstile script to load
