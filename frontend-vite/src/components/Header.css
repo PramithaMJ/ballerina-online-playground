@@ -99,6 +99,28 @@
   gap: 0.5rem;
   align-items: center;
   flex-wrap: wrap;
+  position: relative;
+  padding-right: 0.75rem;
+}
+
+/* Add separator after specific control groups */
+.control-group:has(.version-selector)::after,
+.control-group.secondary-actions::after,
+.control-group.layout-controls::after,
+.control-group:has(.btn-secondary:not(.active))::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 24px;
+  background: rgba(82, 195, 194, 0.2);
+}
+
+/* Remove separator from last group */
+.control-group:last-child::after {
+  display: none;
 }
 
 .header-divider {
@@ -446,8 +468,9 @@
     background: rgba(255, 255, 255, 0.5);
   }
 
-  /* Hide dividers on mobile */
-  .header-divider {
+  /* Hide dividers and separators on mobile */
+  .header-divider,
+  .control-group::after {
     display: none;
   }
 
