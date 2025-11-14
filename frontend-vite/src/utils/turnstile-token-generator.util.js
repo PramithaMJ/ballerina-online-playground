@@ -5,7 +5,7 @@
  */
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
-const TOKEN_GENERATION_TIMEOUT = 15000; // 15 seconds
+const TOKEN_GENERATION_TIMEOUT = 180000; // 3 minutes (mobile networks can be slow)
 const DEBUG_MODE = import.meta.env.DEV;
 
 class TurnstileTokenGenerator {
@@ -138,9 +138,10 @@ class TurnstileTokenGenerator {
       this.isGenerating = true;
       
       const timeoutId = setTimeout(() => {
+        console.warn('⏱️ Token generation timeout after 3 minutes - mobile network may be slow');
         this.isGenerating = false;
-        this.processQueue(null, new Error('Token generation timeout'));
-        reject(new Error('Token generation timeout'));
+        this.processQueue(null, new Error('Token generation timeout - please check your internet connection'));
+        reject(new Error('Token generation timeout - please check your internet connection'));
       }, TOKEN_GENERATION_TIMEOUT);
 
       // Store resolve/reject for callback handling
