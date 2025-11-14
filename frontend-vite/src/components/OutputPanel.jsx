@@ -43,7 +43,7 @@ const OutputPanel = ({ output, error, isRunning, progress, onSwitchToAI }) => {
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const width = entry.contentRect.width;
-        setIsNarrow(width < 500); // Show compact mode when panel is < 500px
+        setIsNarrow(width < 600); // Show compact mode when panel is < 600px
       }
     });
     

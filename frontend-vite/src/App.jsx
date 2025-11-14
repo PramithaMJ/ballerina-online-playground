@@ -37,10 +37,11 @@ function App() {
   const [showUserGuide, setShowUserGuide] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
-  // Initialize layout from localStorage if available
+  // Initialize layout from localStorage if available, default to horizontal on mobile
   const [currentLayout, setCurrentLayout] = useState(() => {
     const savedLayout = localStorage.getItem('panelLayout');
-    return savedLayout || 'horizontal';
+    const isMobile = window.innerWidth <= 768;
+    return savedLayout || (isMobile ? 'horizontal' : 'horizontal');
   });
   const resizablePanelsRef = useRef(null);
 
@@ -333,7 +334,7 @@ function App() {
       
       <ResizablePanels
         ref={resizablePanelsRef}
-        leftPanel={<CodeEditor code={code} onChange={setCode} onEditorMount={handleEditorMount} />}
+        leftPanel={<CodeEditor code={code} onChange={setCode} onEditorMount={handleEditorMount} onRun={handleRun} isRunning={isRunning} />}
         rightPanel={
           showAIChat ? (
             <AIChatPanel
