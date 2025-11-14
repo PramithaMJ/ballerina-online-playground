@@ -69,6 +69,47 @@
               inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
+/* Mobile Run Button - Hidden on desktop, shown on mobile */
+.mobile-run-btn {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .mobile-run-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(82, 195, 194, 0.3);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .mobile-run-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%);
+    box-shadow: 0 3px 8px rgba(82, 195, 194, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .mobile-run-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .mobile-run-btn span {
+    font-size: 0.85rem;
+  }
+}
+
 /* Responsive header adjustments */
 @media (max-width: 480px) {
   .panel-header {

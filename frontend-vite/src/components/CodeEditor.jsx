@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
-import { Code2 } from 'lucide-react';
+import { Code2, Play } from 'lucide-react';
 import EditorToolbar from './EditorToolbar';
 import EditorSettings from './EditorSettings';
 import LoadingSpinner from './LoadingSpinner';
@@ -20,8 +20,10 @@ import './CodeEditor.css';
  * @param {string} props.code - Current code value
  * @param {Function} props.onChange - Code change handler
  * @param {Function} props.onEditorMount - Editor mount callback
+ * @param {Function} props.onRun - Run code handler
+ * @param {boolean} props.isRunning - Running state
  */
-const CodeEditor = ({ code, onChange, onEditorMount }) => {
+const CodeEditor = ({ code, onChange, onEditorMount, onRun, isRunning }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [editorRef, setEditorRef] = useState(null);
@@ -147,6 +149,20 @@ const CodeEditor = ({ code, onChange, onEditorMount }) => {
           <Code2 size={18} />
           <span className={isNarrow ? 'hide-on-narrow' : ''}>Code Editor</span>
         </div>
+        
+        {/* Mobile Run Button */}
+        {onRun && (
+          <button 
+            className="mobile-run-btn"
+            onClick={onRun}
+            disabled={isRunning}
+            aria-label="Run code"
+            title="Run code"
+          >
+            <Play size={16} />
+            <span>Run</span>
+          </button>
+        )}
         
         <div className="editor-info">
           <span className="language-badge">Ballerina</span>
