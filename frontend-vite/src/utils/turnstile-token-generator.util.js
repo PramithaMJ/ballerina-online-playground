@@ -39,25 +39,27 @@ class TurnstileTokenGenerator {
       // Wait for Turnstile API to load
       await this.waitForTurnstile();
 
-      // Create invisible container
+      // Create hidden container - use compact size for mobile compatibility
       this.containerElement = document.createElement('div');
       this.containerElement.id = 'turnstile-token-generator';
       this.containerElement.style.cssText = `
         position: fixed;
-        bottom: -300px;
-        left: -300px;
-        width: 1px;
-        height: 1px;
+        bottom: 0;
+        left: 0;
+        width: 300px;
+        height: 65px;
         opacity: 0;
         pointer-events: none;
         z-index: -9999;
+        overflow: hidden;
+        transform: translateY(100px);
       `;
       document.body.appendChild(this.containerElement);
 
       // Render invisible widget
       this.widgetId = window.turnstile.render(this.containerElement, {
         sitekey: TURNSTILE_SITE_KEY,
-        size: 'invisible',
+        size: 'compact',
         theme: 'light',
         execution: 'execute', // Manual execution only
         appearance: 'interaction-only', // Show only during user interaction
