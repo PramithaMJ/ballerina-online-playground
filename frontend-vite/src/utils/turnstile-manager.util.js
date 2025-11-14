@@ -9,7 +9,7 @@ const TOKEN_VALIDITY_DURATION = 4 * 60 * 1000; // 4 minutes (tokens valid for 5 
 const TOKEN_POOL_SIZE = 1; // Keep only 1 pre-generated token (avoid rate limiting)
 const REFRESH_INTERVAL = 4 * 60 * 1000; // 4 minutes - periodic cleanup and refill
 const TOKEN_GENERATION_DELAY = 2000; // 2 seconds between token generations (avoid rate limiting)
-const TOKEN_GENERATION_TIMEOUT = 30000; // 30 seconds timeout for token generation (increased)
+const TOKEN_GENERATION_TIMEOUT = 180000; // 3 minutes for mobile networks
 
 class TurnstileManager {
   constructor() {
@@ -99,7 +99,7 @@ class TurnstileManager {
         theme: 'light',
         action: 'pool-refresh',
         retry: 'auto',
-        'retry-interval': 2000,
+        'retry-interval': 8000, // Longer interval for mobile compatibility
       });
       this.debug(' Background widget rendered with ID:', this.widgetId);
     } catch (err) {
@@ -223,13 +223,13 @@ class TurnstileManager {
         this.debug(' Generating new token...');
         window.turnstile.reset(this.widgetId);
         
-        // Timeout after 15 seconds (increased from 5)
+        // Timeout after 3 minutes for mobile compatibility
         setTimeout(() => {
           if (this.isGenerating && this.pendingResolve === resolve) {
-            console.warn(' Token generation timeout');
+            console.warn(' Token generation timeout after 3 minutes - mobile network may be slow');
             this.isGenerating = false;
             this.pendingResolve = null;
-            reject(new Error('Token generation timeout'));
+            reject(new Error('Token generation timeout - please check your internet connection'));
           }
         }, TOKEN_GENERATION_TIMEOUT);
       } catch (err) {

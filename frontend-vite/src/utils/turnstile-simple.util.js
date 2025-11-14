@@ -6,6 +6,7 @@
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
 const TOKEN_VALIDITY_DURATION = 4 * 60 * 1000; // 4 minutes
+const TOKEN_GENERATION_TIMEOUT = 180000; // 3 minutes (mobile networks can be slow)
 const DEBUG_MODE = import.meta.env.DEV;
 
 class SimpleTurnstileManager {
@@ -159,10 +160,10 @@ class SimpleTurnstileManager {
 
         this.debug('🎨 Widget rendered with ID:', this.widgetId);
 
-        // Set timeout
+        // Set timeout for mobile compatibility
         setTimeout(() => {
           if (this.widgetId) {
-            console.error(' Token generation timeout (30s)');
+            console.error(' Token generation timeout (180s) - mobile network may be slow');
             
             // Clean up
             if (window.turnstile) {
@@ -174,9 +175,9 @@ class SimpleTurnstileManager {
               }
             }
             
-            reject(new Error('Token generation timeout'));
+            reject(new Error('Token generation timeout - please check your internet connection'));
           }
-        }, 30000);
+        }, TOKEN_GENERATION_TIMEOUT);
 
       } catch (err) {
         console.error(' Error rendering widget:', err);

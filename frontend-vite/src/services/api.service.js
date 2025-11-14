@@ -36,9 +36,10 @@ class ApiService {
 
   /**
    * Get a fresh Turnstile token for API request with retry logic
+   * Mobile networks may need more retries due to slower challenge completion
    * @returns {Promise<string|null>} Fresh token or null if verification not enabled
    */
-  async getTurnstileToken(retryCount = 0, maxRetries = 2) {
+  async getTurnstileToken(retryCount = 0, maxRetries = 3) {
     if (!envConfig.enableVerification) {
       return null;
     }
@@ -59,10 +60,10 @@ class ApiService {
     } catch (error) {
       console.error(` Failed to generate token (attempt ${retryCount + 1}):`, error);
       
-      // Retry with exponential backoff
+      // Retry with exponential backoff (increased for mobile)
       if (retryCount < maxRetries) {
-        const backoffDelay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s...
-        this.debug(`⏳ Retrying in ${backoffDelay}ms...`);
+        const backoffDelay = Math.min(Math.pow(2, retryCount) * 2000, 10000); // 2s, 4s, 8s, max 10s
+        this.debug(`⏳ Retrying in ${backoffDelay}ms... (mobile-optimized)`);
         
         await new Promise(resolve => setTimeout(resolve, backoffDelay));
         return this.getTurnstileToken(retryCount + 1, maxRetries);
