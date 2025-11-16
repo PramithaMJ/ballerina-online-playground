@@ -1,0 +1,228 @@
+package utils
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestResourceExhaustionAttacks(t *testing.T) {
+	tests := []struct {
+		name          string
+		code          string
+		shouldBlock   bool
+		expectedError string
+	}{
+		{
+			name: "Large iteration count with underscores",
+			code: `import ballerina/io;
+
+public function main() {
+    int maxIterations = 10_000_000;
+    int count = 0;
+    while count < maxIterations {
+        count += 1;
+    }
+}`,
+			shouldBlock:   true,
+			expectedError: "Large numeric literal (10_000_000) assigned to loop-related variable",
+		},
+		{
+			name: "runtime:sleep usage",
+			code: `import ballerina/io;
+import ballerina/lang.runtime as runtime;
+
+public function main() {
+    int count = 0;
+    while count < 1000 {
+        runtime:sleep(1);
+        count += 1;
+    }
+}`,
+			shouldBlock:   true,
+			expectedError: "Runtime operations are not allowed",
+		},
+		{
+			name: "Large numeric literal in loop",
+			code: `public function main() {
+    int i = 0;
+    while i < 5000000 {
+        i += 1;
+    }
+}`,
+			shouldBlock:   true,
+			expectedError: "Large numeric literal (5000000) used in loop condition",
+		},
+		{
+			name: "Large array allocation",
+			code: `public function main() {
+    int[] arr = [];
+    int i = 0;
+    while i < 100000 {
+        arr.push(i);
+        i += 1;
+    }
+}`,
+			shouldBlock:   true,
+			expectedError: "Large numeric literal (100000)",
+		},
+		{
+			name: "Safe small loop",
+			code: `import ballerina/io;
+
+public function main() {
+    int count = 0;
+    while count < 100 {
+        io:println("Count: ", count);
+        count += 1;
+    }
+}`,
+			shouldBlock:   false,
+			expectedError: "",
+		},
+		{
+			name: "Safe foreach loop",
+			code: `import ballerina/io;
+
+public function main() {
+    int[] items = [1, 2, 3, 4, 5];
+    foreach int x in items {
+        io:println("Item: ", x);
+    }
+}`,
+			shouldBlock:   false,
+			expectedError: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateCode(tt.code)
+
+			if tt.shouldBlock {
+				if err == nil {
+					t.Errorf("Expected code to be blocked, but validation passed")
+					return
+				}
+
+				validationErr, ok := err.(*ValidationError)
+				if !ok {
+					t.Errorf("Expected ValidationError, got %T", err)
+					return
+				}
+
+				if !strings.Contains(validationErr.Reason, tt.expectedError) && !strings.Contains(validationErr.Reason, "Runtime operations") {
+					t.Errorf("Expected error containing '%s', got '%s'", tt.expectedError, validationErr.Reason)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Expected code to pass validation, but got error: %v", err)
+				}
+			}
+		})
+	}
+}
+
+func TestLargeNumericLiterals(t *testing.T) {
+	tests := []struct {
+		name        string
+		code        string
+		shouldBlock bool
+	}{
+		{
+			name:        "10 million with underscores",
+			code:        `int max = 10_000_000;`,
+			shouldBlock: true,
+		},
+		{
+			name:        "1 million without underscores",
+			code:        `int max = 1000000;`,
+			shouldBlock: true,
+		},
+		{
+			name:        "Safe number (10k)",
+			code:        `int max = 10000;`,
+			shouldBlock: false,
+		},
+		{
+			name:        "Safe number with underscores",
+			code:        `int max = 10_000;`,
+			shouldBlock: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := checkLargeNumericLiterals(tt.code)
+
+			if tt.shouldBlock && err == nil {
+				t.Errorf("Expected numeric literal to be blocked, but validation passed")
+			}
+
+			if !tt.shouldBlock && err != nil {
+				t.Errorf("Expected numeric literal to pass, but got error: %v", err)
+			}
+		})
+	}
+}
+
+func TestBlockedImports(t *testing.T) {
+	tests := []struct {
+		name          string
+		importStr     string
+		shouldBlock   bool
+		expectedError string
+	}{
+		{
+			name:          "ballerina/lang.runtime",
+			importStr:     "import ballerina/lang.runtime as runtime;",
+			shouldBlock:   true,
+			expectedError: "Runtime operations are not allowed",
+		},
+		{
+			name:          "ballerina/runtime",
+			importStr:     "import ballerina/runtime;",
+			shouldBlock:   true,
+			expectedError: "Runtime operations are not allowed",
+		},
+		{
+			name:          "ballerina/time",
+			importStr:     "import ballerina/time;",
+			shouldBlock:   true,
+			expectedError: "Time/sleep operations are restricted",
+		},
+		{
+			name:          "ballerina/regex",
+			importStr:     "import ballerina/regex;",
+			shouldBlock:   true,
+			expectedError: "Regex operations are not allowed",
+		},
+		{
+			name:          "ballerina/io (allowed)",
+			importStr:     "import ballerina/io;",
+			shouldBlock:   false,
+			expectedError: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			code := tt.importStr + "\npublic function main() {}"
+			err := ValidateCode(code)
+
+			if tt.shouldBlock {
+				if err == nil {
+					t.Errorf("Expected import to be blocked, but validation passed")
+					return
+				}
+
+				if !strings.Contains(err.Error(), tt.expectedError) {
+					t.Errorf("Expected error containing '%s', got '%s'", tt.expectedError, err.Error())
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Expected import to be allowed, but got error: %v", err)
+				}
+			}
+		})
+	}
+}
