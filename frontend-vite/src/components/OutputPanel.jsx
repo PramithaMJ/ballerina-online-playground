@@ -218,14 +218,18 @@ const OutputPanel = ({ output, error, isRunning, progress, onSwitchToAI }) => {
             {error && (
               <div className="output-section error-section">
                 <ErrorIllustration 
-                  title="Compilation Error"
+                  title={error.includes('SECURITY_VALIDATION_ERROR:') ? 'Security Validation Error' : 'Compilation Error'}
                   message="Our swan got tangled in the code. Please try again!"
                 />
                 <div className="section-header">
                   <AlertCircle size={16} />
                   <span>Error Details</span>
                 </div>
-                <pre className="output-text error-text">{error}</pre>
+                <pre className="output-text error-text">
+                  {error.includes('SECURITY_VALIDATION_ERROR:') 
+                    ? error.replace('SECURITY_VALIDATION_ERROR: ', '').trim()
+                    : error}
+                </pre>
               </div>
             )}
             

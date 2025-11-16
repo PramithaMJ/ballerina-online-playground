@@ -97,6 +97,7 @@ func checkForbiddenPatterns(code string) error {
 		{"import\\s+ballerina/system", "System operations are not allowed"},
 		{"import\\s+ballerina/runtime", "Runtime operations are not allowed"},
 		{"import\\s+ballerina/reflect", "Reflection is not allowed"},
+		{"import\\s+ballerina/regex", "Regex operations are not allowed (can cause DoS)"},
 	}
 
 	for _, forbidden := range forbiddenImports {
@@ -179,9 +180,37 @@ func checkComplexity(code string) error {
 		pattern string
 		reason  string
 	}{
-		{`while\s*\(\s*true\s*\)`, "Infinite loop detected: while(true)"},
-		{`while\s*\(\s*1\s*==\s*1\s*\)`, "Potential infinite loop detected"},
-		{`foreach.*in\s+1\.\.\.[\d]{6,}`, "Excessive iteration range detected"},
+		// Basic infinite loops
+		{`while\s*\(\s*true\s*\)`, "Infinite loop detected: while(true) is not allowed"},
+		{`while\s*true\s*\{`, "Infinite loop detected: while true is not allowed"},
+		{`while\s*\(\s*1\s*==\s*1\s*\)`, "Infinite loop detected: while(1==1) is not allowed"},
+		{`while\s*\(\s*1\s*\)`, "Infinite loop detected: while(1) is not allowed"},
+
+		// Loop keyword (Ballerina's forever loop)
+		{`loop\s*\{`, "Infinite loop detected: loop keyword is not allowed"},
+
+		// For loops with no condition or always-true condition
+		{`for\s*\(\s*;\s*;\s*\)`, "Infinite loop detected: for(;;) is not allowed"},
+		{`for\s*\(\s*;true;`, "Infinite loop detected: for with always-true condition is not allowed"},
+
+		// Excessive iterations
+		{`foreach.*in\s+1\.\.\.[\d]{6,}`, "Excessive iteration range detected (over 100k iterations)"},
+		{`foreach.*in\s+0\.\.\.[\d]{6,}`, "Excessive iteration range detected (over 100k iterations)"},
+		{`\.\.<\s*[\d]{6,}`, "Excessive range detected (over 100k elements)"},
+
+		// Potential recursion bombs - recursive function calls
+		{`function\s+(\w+)[^}]*\1\s*\(`, "Potential recursion detected - direct recursive call"},
+
+		// Suspicious large string repetitions (can cause memory DoS)
+		{`["\'](.)\1{10000,}["\']`, "Suspicious large string repetition detected"},
+
+		// Regex DoS patterns - catastrophic backtracking
+		{"re\\s+`[^`]*\\([^)]*\\+[^)]*\\)\\+", "Potentially dangerous regex with nested quantifiers detected"},
+		{"re\\s+`[^`]*\\([^)]*\\*[^)]*\\)\\+", "Potentially dangerous regex with nested quantifiers detected"},
+		{"re\\s+`[^`]*\\([^)]*\\+[^)]*\\)\\*", "Potentially dangerous regex with nested quantifiers detected"},
+
+		// Ballerina regex patterns (re `pattern`)
+		{"re\\s+`.*\\(.*\\)\\{[0-9]{3,},", "Regex with large repetition count detected"},
 	}
 
 	for _, suspicious := range suspiciousPatterns {
