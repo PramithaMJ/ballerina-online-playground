@@ -96,7 +96,11 @@ func checkForbiddenPatterns(code string) error {
 		{"import\\s+ballerina/os", "OS operations are not allowed"},
 		{"import\\s+ballerina/system", "System operations are not allowed"},
 		{"import\\s+ballerina/runtime", "Runtime operations are not allowed"},
+		{"import\\s+ballerina/lang\\.runtime", "Runtime operations are not allowed (can cause DoS)"},
 		{"import\\s+ballerina/reflect", "Reflection is not allowed"},
+		{"import\\s+ballerina/regex", "Regex operations are not allowed (can cause DoS)"},
+		{"import\\s+ballerina/lang\\.thread", "Thread operations are not allowed"},
+		{"import\\s+ballerina/time", "Time/sleep operations are restricted"},
 	}
 
 	for _, forbidden := range forbiddenImports {
@@ -174,14 +178,60 @@ func checkComplexity(code string) error {
 		}
 	}
 
-	// Check for suspicious patterns that might cause infinite loops
+	// Check for large numeric literals that could indicate resource exhaustion
+	if err := checkLargeNumericLiterals(code); err != nil {
+		return err
+	}
+
+	// Check for suspicious patterns that might cause infinite loops or resource exhaustion
 	suspiciousPatterns := []struct {
 		pattern string
 		reason  string
 	}{
-		{`while\s*\(\s*true\s*\)`, "Infinite loop detected: while(true)"},
-		{`while\s*\(\s*1\s*==\s*1\s*\)`, "Potential infinite loop detected"},
-		{`foreach.*in\s+1\.\.\.[\d]{6,}`, "Excessive iteration range detected"},
+		// Basic infinite loops
+		{`while\s*\(\s*true\s*\)`, "Infinite loop detected: while(true) is not allowed"},
+		{`while\s*true\s*\{`, "Infinite loop detected: while true is not allowed"},
+		{`while\s*\(\s*1\s*==\s*1\s*\)`, "Infinite loop detected: while(1==1) is not allowed"},
+		{`while\s*\(\s*1\s*\)`, "Infinite loop detected: while(1) is not allowed"},
+
+		// Loop keyword (Ballerina's forever loop)
+		{`loop\s*\{`, "Infinite loop detected: loop keyword is not allowed"},
+
+		// For loops with no condition or always-true condition
+		{`for\s*\(\s*;\s*;\s*\)`, "Infinite loop detected: for(;;) is not allowed"},
+		{`for\s*\(\s*;true;`, "Infinite loop detected: for with always-true condition is not allowed"},
+
+		// Resource exhaustion: Variables with suspicious names (removed broad numeric pattern)
+		{`(maxIterations|max_iterations|iterations|loop_count|huge|massive|enormous)\s*=\s*[0-9]{5,}`, "Suspicious high iteration variable detected"},
+
+		// Sleep/delay operations (even if import blocked, check for usage)
+		{`runtime:sleep\s*\(`, "Sleep operation is not allowed"},
+		{`thread:sleep\s*\(`, "Sleep operation is not allowed"},
+		{`time:sleep\s*\(`, "Sleep operation is not allowed"},
+		{`sleep\s*\(`, "Sleep/delay operation is not allowed"},
+
+		// Excessive iterations
+		{`foreach.*in\s+1\\.\\.\\.[\\.]{6,}`, "Excessive iteration range detected (over 100k iterations)"},
+		{`foreach.*in\s+0\\.\\.\\.[\\.]{6,}`, "Excessive iteration range detected (over 100k iterations)"},
+		{`\\.\\.<\s*[\\d]{6,}`, "Excessive range detected (over 100k elements)"},
+
+		// Large array/map allocations
+		{`\\[\\s*[0-9]{5,}\\s*\\]`, "Large array size detected (potential memory exhaustion)"},
+		{`int\\[\\]\\s+\\w+\\s*=\\s*\\[.*[0-9]{4,}`, "Large array initialization detected"},
+
+		// Potential recursion bombs - recursive function calls
+		{`function\s+(\w+)[^}]*\1\s*\(`, "Potential recursion detected - direct recursive call"},
+
+		// Suspicious large string repetitions (can cause memory DoS)
+		{`["\'](.)\1{10000,}["\']`, "Suspicious large string repetition detected"},
+
+		// Regex DoS patterns - catastrophic backtracking
+		{"re\\s+`[^`]*\\([^)]*\\+[^)]*\\)\\+", "Potentially dangerous regex with nested quantifiers detected"},
+		{"re\\s+`[^`]*\\([^)]*\\*[^)]*\\)\\+", "Potentially dangerous regex with nested quantifiers detected"},
+		{"re\\s+`[^`]*\\([^)]*\\+[^)]*\\)\\*", "Potentially dangerous regex with nested quantifiers detected"},
+
+		// Ballerina regex patterns (re `pattern`)
+		{"re\\s+`.*\\(.*\\)\\{[0-9]{3,},", "Regex with large repetition count detected"},
 	}
 
 	for _, suspicious := range suspiciousPatterns {
@@ -197,7 +247,65 @@ func checkComplexity(code string) error {
 	return nil
 }
 
-// SanitizeErrorOutput removes sensitive information from error messages
+// checkLargeNumericLiterals detects numeric literals that could cause resource exhaustion
+func checkLargeNumericLiterals(code string) error {
+	// Pattern to match numeric literals (including those with underscores like 10_000_000)
+	// Matches: 10000000, 10_000_000, 1000000, etc.
+	numericPattern := regexp.MustCompile(`\b(\d[\d_]*)\b`)
+	matches := numericPattern.FindAllString(code, -1)
+
+	for _, match := range matches {
+		// Remove underscores to get actual number
+		numStr := strings.ReplaceAll(match, "_", "")
+
+		// Check if it's a large number (more than 100,000)
+		// Exception: numbers that look like timestamps (10 digits) are allowed
+		if len(numStr) >= 6 && len(numStr) <= 9 {
+			// Check if this number is used in any context that could cause issues
+
+			// 1. Check for comparison operators near the number (loop conditions)
+			comparisonPattern := regexp.MustCompile(`(while|for|foreach)[^{;]*[<>=!]+\s*` + regexp.QuoteMeta(match) + `|` +
+				regexp.QuoteMeta(match) + `\s*[<>=!]+`)
+			if comparisonPattern.MatchString(code) {
+				return &ValidationError{
+					Message: "Resource exhaustion pattern detected",
+					Reason:  fmt.Sprintf("Large numeric literal (%s) used in loop condition - potential DoS attack", match),
+				}
+			}
+
+			// 2. Check for assignment patterns with suspicious variable names
+			assignmentPattern := regexp.MustCompile(`(?i)(max|count|iteration|limit|size|huge|massive|enormous|stress|loop)\w*\s*=\s*` + regexp.QuoteMeta(match))
+			if assignmentPattern.MatchString(code) {
+				return &ValidationError{
+					Message: "Resource exhaustion pattern detected",
+					Reason:  fmt.Sprintf("Large numeric literal (%s) assigned to loop-related variable - potential DoS attack", match),
+				}
+			}
+
+			// 3. Check if number appears in same line as 'while', 'for', or 'foreach'
+			lines := strings.Split(code, "\n")
+			for _, line := range lines {
+				lineLower := strings.ToLower(line)
+				if strings.Contains(line, match) {
+					if strings.Contains(lineLower, "while") ||
+						strings.Contains(lineLower, "foreach") ||
+						strings.Contains(lineLower, "for") {
+						// Not a comment line
+						if !strings.Contains(lineLower, "//") ||
+							strings.Index(lineLower, "//") > strings.Index(line, match) {
+							return &ValidationError{
+								Message: "Resource exhaustion pattern detected",
+								Reason:  fmt.Sprintf("Large numeric literal (%s) detected in loop statement - potential DoS attack", match),
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return nil
+} // SanitizeErrorOutput removes sensitive information from error messages
 func SanitizeErrorOutput(output string) string {
 	// Remove file system paths
 	pathPattern := regexp.MustCompile(`(/[a-zA-Z0-9_\-./]+|[A-Z]:\\[a-zA-Z0-9_\-\\./]+)`)

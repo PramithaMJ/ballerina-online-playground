@@ -40,9 +40,17 @@ func CompileCode(w http.ResponseWriter, r *http.Request) {
 
 	// Security validation
 	if err := utils.ValidateCode(req.Code); err != nil {
+		// Extract just the reason from ValidationError
+		var errorMsg string
+		if validationErr, ok := err.(*utils.ValidationError); ok {
+			errorMsg = validationErr.Reason
+		} else {
+			errorMsg = err.Error()
+		}
+
 		response := CodeResponse{
 			Output: "",
-			Error:  "Security validation failed: " + err.Error(),
+			Error:  "SECURITY_VALIDATION_ERROR: " + errorMsg,
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
